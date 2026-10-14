@@ -1,0 +1,570 @@
+Created At: 2026-10-08T08:33:50+07:00
+Completed At: 2026-10-08T08:33:50+07:00
+File Path: `file:///c:/laragon/www/radarhc/resources/views/employee/index.blade.php`
+Total Lines: 691
+Total Bytes: 55136
+Showing lines 1 to 691
+Content truncated: showing bytes 0-46080 of 55136. To see more, call this tool again with the same line range and ContentOffset=46080.
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: @extends('layouts.app')
+2: @section('title', 'Employee Data')
+3: @section('content')
+4: <div class="mb-6 flex justify-between items-end">
+5:     <div>
+6:         <h1 class="text-2xl font-bold text-gray-900">{{ isset($headKaryawan) ? 'Data Karyawan' : 'Employee data' }}</h1>
+7:         <p class="text-sm text-gray-500 mt-1">Monitor company employee information</p>
+8:     </div>
+9:     <div class="flex gap-3">
+10:         <button onclick="document.getElementById('importEmployeeModal').classList.remove('hidden')" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] hover:border-gray-300">
+11:             <i class="fas fa-file-import text-gray-400"></i> Import
+12:         </button>
+13:         <button onclick="document.getElementById('addEmployeeModal').classList.remove('hidden')" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-[0_4px_12px_rgba(14,165,233,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)] flex items-center gap-2">
+14:             <i class="fas fa-plus"></i> Add Employee
+15:         </button>
+16:     </div>
+17: </div>
+18: 
+19: @if(isset($headKaryawan))
+20: <!-- Head Profile Card -->
+21: <div class="card-3d bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between mb-6 shadow-sm">
+22:     <div class="flex items-center gap-4">
+23:         @if($headKaryawan->foto)
+24:             <img src="{{ $headKaryawan->foto }}" alt="Avatar" class="w-16 h-16 rounded-full object-cover shadow-sm">
+25:         @else
+26:             <img src="https://ui-avatars.com/api/?name={{ urlencode($headKaryawan->nama) }}&background=f8fafc&color=334155" alt="Avatar" class="w-16 h-16 rounded-full object-cover shadow-sm border border-gray-100">
+27:         @endif
+28:         <div>
+29:             <div class="flex items-center gap-2">
+30:                 <h2 class="text-lg font-bold text-gray-900">{{ $headKaryawan->nama }}</h2>
+31:             </div>
+32:             <p class="text-[11px] text-gray-500 mt-0.5">NPK: {{ $headKaryawan->npk }} <span class="mx-2 text-gray-300">|</span> Departemen: {{ $headKaryawan->department ? $headKaryawan->department->nama_departemen : '-' }}</p>
+33:             <p class="text-xs font-medium text-gray-700 mt-1">{{ ucwords($headKaryawan->position?->nama_jabatan) }}</p>
+34:         </div>
+35:     </div>
+36:     
+37:     <div class="flex gap-8 text-right pr-4">
+38:         <div>
+39:             <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Masa Kerja</p>
+40:             <p class="text-base font-bold text-[#065f46]">
+41:                 @php
+42:                     $masuk = \Carbon\Carbon::parse($headKaryawan->masuk_kerja);
+43:                     $diff = $masuk->diff(\Carbon\Carbon::now());
+44:                     echo $diff->y > 0 ? $diff->y . ' Thn' : $diff->m . ' Bln';
+45:                 @endphp
+46:             </p>
+47:         </div>
+48:     </div>
+49: </div>
+50: @endif
+51: 
+52: <div class="card-3d overflow-hidden">
+53:     <!-- Header / Actions / Filters -->
+54:     <form method="GET" action="{{ route('employee.index') }}" class="p-4 border-b border-gray-100 flex justify-between items-center bg-white relative">
+55:         <div class="relative w-72">
+56:             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+57:                 <i class="fas fa-search text-gray-400 text-sm"></i>
+58:             </div>
+59:             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Employee, Departemen, Kaderisasi..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all">
+60:             <button type="submit" class="hidden"></button>
+61:         </div>
+62:         
+63:         <div class="flex items-center gap-3 relative">
+64:             @if(request()->hasAny(['search', 'department_id', 'jabatan']))
+65:                 <a href="{{ route('employee.index') }}" class="text-xs text-red-500 hover:text-red-700 underline px-2">Reset</a>
+66:             @endif
+67: 
+68:             <button type="button" onclick="document.getElementById('filterDropdown').classList.toggle('hidden')" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 relative bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] hover:border-gray-300">
+69:                 <i class="fas fa-filter text-gray-400"></i> Filter
+70:                 @if(request()->hasAny(['department_id', 'jabatan']))
+71:                     <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+72:                 @endif
+73:             </button>
+74:             
+75:             <!-- Filter Dropdown (Small) -->
+76:             <div id="filterDropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-50 p-3">
+77:                 <div class="space-y-3">
+78:                     <div>
+79:                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Department</label>
+80:                         <select name="department_id" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0ea5e9]">
+81:                             <option value="">All</option>
+82:                             @foreach($departments as $dept)
+83:                                 <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
+84:                             @endforeach
+85:                         </select>
+86:                     </div>
+87:                     
+88:                     <div>
+89:                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Position</label>
+90:                         <select name="position_id" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0ea5e9]">
+91:                             <option value="">All</option>
+92:                             @foreach($positions as $pos)
+93:                                 <option value="{{ $pos->id }}" {{ request('position_id') == $pos->id ? 'selected' : '' }}>{{ $pos->nama_jabatan }}</option>
+94:                             @endforeach
+95:                         </select>
+96:                     </div>
+97:                     
+98:                     <button type="submit" class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors">
+99:                         Apply
+100:                     </button>
+101:                 </div>
+102:             </div>
+103:         </div>
+104:     </form>
+105: 
+106:     <!-- Table -->
+107:     <div class="overflow-x-auto">
+108:         <table class="w-full text-left border-collapse">
+109:             <thead class="text-[10px] text-white uppercase bg-[#06b6d4] shadow-md relative z-10">
+110:                 <tr>
+111:                     <th class="px-5 py-4 font-semibold tracking-wider w-12 text-center">No.</th>
+112:                     <th class="px-5 py-4 font-semibold tracking-wider">Employee</th>
+113:                     <th class="px-5 py-4 font-semibold tracking-wider text-center">NPK</th>
+114:                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Position</th>
+115:                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Department</th>
+116:                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Readiness</th>
+117:                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Actions</th>
+118:                 </tr>
+119:             </thead>
+120:             <tbody class="text-sm divide-y divide-gray-50">
+121:                 
+122:                 @forelse($employees as $emp)
+123:                 <tr class="transition-all duration-300 hover:shadow-[0_4px_15px_rgba(37,99,235,0.15)] hover:-translate-y-0.5 hover:z-10 relative bg-white group border-b-transparent">
+124:                     <td class="px-5 py-4 text-center text-gray-500 font-medium">
+125:                         {{ ($employees->currentPage() - 1) * $employees->perPage() + $loop->iteration }}
+126:                     </td>
+127:                     <td class="px-5 py-4">
+128:                         <div class="flex items-center gap-3">
+129:                             @if($emp->foto)
+130:                                 <img src="{{ $emp->foto }}" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
+131:                             @else
+132:                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($emp->nama) }}&background=random" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
+133:                             @endif
+134:                             <div>
+135:                                 <div class="font-semibold text-gray-900 group-hover:text-[#0ea5e9] transition-colors">{{ $emp->nama }}</div>
+136:                                 <div class="text-xs text-gray-500">{{ $emp->email ?? '-' }}</div>
+137:                             </div>
+138:                         </div>
+139:                     </td>
+140:                     <td class="px-5 py-4 text-center text-gray-600 font-medium">{{ $emp->npk }}</td>
+141:                     <td class="px-5 py-4 text-center text-gray-600">{{ $emp->position ? $emp->position->nama_jabatan : '-' }}</td>
+142:                     <td class="px-5 py-4 text-center text-gray-600">{{ $emp->department ? $emp->department->nama_departemen : '-' }}</td>
+143:                     <td class="px-5 py-4 text-center">
+144:                         @php
+145:                             $readinessStyles = [
+146:                                 'R1 ready' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
+147:                                 'R2 ready' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
+148:                                 'R3 ready' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
+149:                                 'R4 ready' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
+150:                                 'R5 ready' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
+151:                                 'not_ready' => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'border' => 'border-red-200/50', 'dot' => 'bg-red-500'],
+152:                             ];
+153:                             $style = $readinessStyles[$emp->readiness] ?? ['bg' => 'bg-gray-50', 'text' => 'text-gray-700', 'border' => 'border-gray-200/50', 'dot' => 'bg-gray-500'];
+154:                         @endphp
+155:                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium {{ $style['bg'] }} {{ $style['text'] }} border {{ $style['border'] }}">
+156:                             <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }}"></span> {{ $emp->readiness === 'not_ready' ? 'Not Ready' : ucwords($emp->readiness) }}
+157:                         </span>
+158:                     </td>
+159:                     <td class="px-5 py-4 text-center">
+160:                         <div class="flex items-center justify-center gap-2">
+161:                             <a href="{{ route('employee.show', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Detail">
+162:                                 <i class="fas fa-eye w-4"></i>
+163:                             </a>
+164:                             <button type="button" onclick="document.getElementById('editEmployeeModal-{{ $emp->id }}').classList.remove('hidden')" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit">
+165:                                 <i class="fas fa-edit w-4"></i>
+166:                             </button>
+167:                             <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+168:                                 @csrf
+169:                                 @method('DELETE')
+170:                                 <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Hapus">
+171:                                     <i class="fas fa-trash-alt w-4"></i>
+172:                                 </button>
+173:                             </form>
+174:                         </div>
+175:                     </td>
+176:                 </tr>
+177:                 @empty
+178:                 <!-- Empty State -->
+179:                 <tr>
+180:                     <td colspan="7" class="px-5 py-12 text-center text-gray-500">
+181:                         <div class="flex flex-col items-center justify-center">
+182:                             <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+183:                             <p class="font-medium text-gray-900">No employee data available</p>
+184:                             <p class="text-xs text-gray-400 mt-1">Silakan tambah karyawan baru atau import data</p>
+185:                         </div>
+186:                     </td>
+187:                 </tr>
+188:                 @endforelse
+189:             </tbody>
+190:         </table>
+191:     </div>
+192: 
+193:     <!-- Pagination -->
+194:     <div class="p-5 border-t border-gray-100 bg-white flex justify-between items-center">
+195:         @if(method_exists($employees, 'links'))
+196:             <div class="w-full">
+197:                 {{ $employees->links('pagination::tailwind') }}
+198:             </div>
+199:         @endif
+200:     </div>
+201: </div>
+202: 
+203: @endsection
+204: 
+205: @push('modals')
+206: <!-- Modal Tambah Karyawan -->
+207: <div id="addEmployeeModal" class="{{ ($errors->any() && !old('_method')) ? '' : 'hidden' }} fixed inset-0 z-[100] overflow-hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+208:     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
+209:         <!-- Background overlay -->
+210:         <div class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')"></div>
+211: 
+212:         <!-- Modal panel -->
+213:         <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl w-full max-w-2xl border border-gray-100">
+214:             <div class="bg-white px-6 pt-5 pb-3 sm:px-8 border-b border-gray-100 flex justify-between items-center">
+215:                 <div>
+216:                     <h3 class="text-xl font-bold text-gray-900" id="modal-title">
+217:                         Tambah Karyawan
+218:                     </h3>
+219:                     <p class="text-sm text-gray-500 mt-1">Masukkan informasi detail karyawan baru ke dalam sistem.</p>
+220:                 </div>
+221:                 <button type="button" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="bg-gray-50 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none transition-all">
+222:                     <span class="sr-only">Close</span>
+223:                     <i class="fas fa-times text-lg"></i>
+224:                 </button>
+225:             </div>
+226:             <form action="{{ route('employee.store') }}" method="POST" enctype="multipart/form-data" novalidate hx-encoding="multipart/form-data">
+227:                 @csrf
+228:                 <div class="bg-white px-6 py-4 sm:px-8 max-h-[65vh] overflow-y-auto custom-scrollbar">
+229:                     <!-- 2 column grid -->
+230:                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+231:                         <!-- NPK -->
+232:                         <div>
+233:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">NPK <span class="text-red-500">*</span></label>
+234:                             <input type="text" name="npk" value="{{ old('npk') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('npk') border-red-500 @enderror" placeholder="cth. 10231">
+235:                             @error('npk') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+236:                         </div>
+237: 
+238:                         <!-- Nama -->
+239:                         <div>
+240:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+241:                             <input type="text" name="nama" value="{{ old('nama') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('nama') border-red-500 @enderror" placeholder="cth. Ade Kurniawan">
+242:                             @error('nama') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+243:                         </div>
+244: 
+245:                         <!-- Tanggal Lahir -->
+246:                         <div>
+247:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Lahir <span class="text-red-500">*</span></label>
+248:                             <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tanggal_lahir') border-red-500 @enderror">
+249:                             @error('tanggal_lahir') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+250:                         </div>
+251: 
+252:                         <!-- Lama Bekerja -->
+253:                         <div>
+254:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Mulai Bekerja <span class="text-red-500">*</span></label>
+255:                             <input type="date" name="lama_bekerja" value="{{ old('lama_bekerja') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('lama_bekerja') border-red-500 @enderror">
+256:                             @error('lama_bekerja') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+257:                         </div>
+258: 
+259:                         <!-- Jabatan -->
+260:                         <div>
+261:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Posisi / Jabatan <span class="text-red-500">*</span></label>
+262:                             <select name="position_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('position_id') border-red-500 @enderror">
+263:                                 <option value="">Pilih Jabatan</option>
+264:                                 @foreach($positions as $pos)
+265:                                     <option value="{{ $pos->id }}" {{ old('position_id') == $pos->id ? 'selected' : '' }}>{{ $pos->nama_jabatan }}</option>
+266:                                 @endforeach
+267:                             </select>
+268:                             @error('position_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+269:                         </div>
+270:                         
+271:                         <!-- Readiness -->
+272:                         <div>
+273:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Kaderisasi <span class="text-red-500">*</span></label>
+274:                             <select name="readiness" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('readiness') border-red-500 @enderror">
+275:                                 <option value="">Pilih Status</option>
+276:                                 <option value="R1 ready" {{ old('readiness') == 'R1 ready' ? 'selected' : '' }}>R1 Ready</option>
+277:                                 <option value="R2 ready" {{ old('readiness') == 'R2 ready' ? 'selected' : '' }}>R2 Ready</option>
+278:                                 <option value="R3 ready" {{ old('readiness') == 'R3 ready' ? 'selected' : '' }}>R3 Ready</option>
+279:                                 <option value="R4 ready" {{ old('readiness') == 'R4 ready' ? 'selected' : '' }}>R4 Ready</option>
+280:                                 <option value="R5 ready" {{ old('readiness') == 'R5 ready' ? 'selected' : '' }}>R5 Ready</option>
+281:                                 <option value="not_ready" {{ old('readiness') == 'not_ready' ? 'selected' : '' }}>Not Ready</option>
+282:                             </select>
+283:                             @error('readiness') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+284:                         </div>
+285: 
+286:                         <!-- Foto -->
+287:                         <div>
+288:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Unggah Foto</label>
+289:                             <input type="file" name="foto" accept="image/png, image/jpeg, image/jpg, image/webp" class="w-full rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 text-sm py-1.5 px-4 transition-all file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#0ea5e9]/10 file:text-[#0ea5e9] hover:file:bg-[#0ea5e9]/20 @error('foto') border-red-500 @enderror">
+290:                             @error('foto') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+291:                         </div>
+292: 
+293:                         <!-- Pendidikan -->
+294:                         <div>
+295:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pendidikan <span class="text-red-500">*</span></label>
+296:                             <input type="text" name="pendidikan" value="{{ old('pendidikan') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('pendidikan') border-red-500 @enderror" placeholder="cth. S1 Sistem Informasi">
+297:                             @error('pendidikan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+298:                         </div>
+299: 
+300:                         <!-- Kontak -->
+301:                         <div>
+302:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kontak (No HP) <span class="text-red-500">*</span></label>
+303:                             <input type="text" name="kontak" value="{{ old('kontak') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('kontak') border-red-500 @enderror" placeholder="cth. 08123456789">
+304:                             @error('kontak') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+305:                         </div>
+306: 
+307:                         <!-- Email -->
+308:                         <div>
+309:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+310:                             <input type="email" name="email" value="{{ old('email') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('email') border-red-500 @enderror" placeholder="cth. email@company.com">
+311:                             @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+312:                         </div>
+313: 
+314:                         <!-- Departemen -->
+315:                         <div>
+316:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen <span class="text-red-500">*</span></label>
+317:                             <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
+318:                                 <option value="">Pilih Departemen</option>
+319:                                 @foreach($departments as $dept)
+320:                                     <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
+321:                                         {{ $dept->nama_departemen }}
+322:                                     </option>
+323:                                 @endforeach
+324:                             </select>
+325:                             @error('department_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+326:                         </div>
+327: 
+328:                         <!-- Grade -->
+329:                         <div>
+330:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Grade <span class="text-red-500">*</span></label>
+331:                             <input type="text" name="grade" value="{{ old('grade') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('grade') border-red-500 @enderror" placeholder="cth. Grade A">
+332:                             @error('grade') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+333:                         </div>
+334: 
+335:                         <!-- IQ -->
+336:                         <div>
+337:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Skor IQ <span class="text-red-500">*</span></label>
+338:                             <input type="number" name="iq" value="{{ old('iq') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('iq') border-red-500 @enderror" placeholder="cth. 120">
+339:                             @error('iq') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+340:                         </div>
+341: 
+342:                         <!-- DISC -->
+343:                         <div>
+344:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">DISC <span class="text-red-500">*</span></label>
+345:                             <input type="text" name="disc" value="{{ old('disc') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('disc') border-red-500 @enderror" placeholder="cth. D/I/S/C">
+346:                             @error('disc') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+347:                         </div>
+348: 
+349:                         <!-- HAV -->
+350:                         <div>
+351:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">HAV <span class="text-red-500">*</span></label>
+352:                             <select name="hav" required class="drop-up w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('hav') border-red-500 @enderror">
+353:                                 <option value="">Pilih HAV</option>
+354:                                 <option value="star" {{ old('hav') == 'star' ? 'selected' : '' }}>Star</option>
+355:                                 <option value="high potential" {{ old('hav') == 'high potential' ? 'selected' : '' }}>High potential</option>
+356:                                 <option value="potential" {{ old('hav') == 'potential' ? 'selected' : '' }}>Potential</option>
+357:                                 <option value="excellent career person" {{ old('hav') == 'excellent career person' ? 'selected' : '' }}>Excellent career person</option>
+358:                                 <option value="career person" {{ old('hav') == 'career person' ? 'selected' : '' }}>Career person</option>
+359:                                 <option value="problem employee" {{ old('hav') == 'problem employee' ? 'selected' : '' }}>Problem employee</option>
+360:                                 <option value="deadwood" {{ old('hav') == 'deadwood' ? 'selected' : '' }}>Deadwood</option>
+361:                             </select>
+362:                             @error('hav') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+363:                         </div>
+364:                     </div>
+365:                 </div>
+366:                 <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-end gap-3 sm:px-8">
+367:                     <button type="button" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">
+368:                         Batal
+369:                     </button>
+370:                     <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md shadow-sky-500/30 px-6 py-2 bg-[#0ea5e9] text-sm font-medium text-white hover:bg-[#0284c7] focus:outline-none transition-all sm:w-auto flex items-center gap-2">
+371:                         <i class="fas fa-save"></i> Simpan Data
+372:                     </button>
+373:                 </div>
+374:             </form>
+375:         </div>
+376:     </div>
+377: </div>
+378: @endpush
+379: 
+380: @push('modals')
+381: @foreach($employees as $emp)
+382: <!-- Modal Edit Karyawan -->
+383: <div id="editEmployeeModal-{{ $emp->id }}" class="{{ ($errors->any() && old('_method') == 'PUT' && old('npk') == $emp->npk) ? '' : 'hidden' }} fixed inset-0 z-[100] overflow-hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+384:     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
+385:         <!-- Background overlay -->
+386:         <div class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" onclick="document.getElementById('editEmployeeModal-{{ $emp->id }}').classList.add('hidden')"></div>
+387: 
+388:         <!-- Modal panel -->
+389:         <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl w-full max-w-2xl border border-gray-100">
+390:             <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-5 border-b border-gray-100 flex justify-between items-center">
+391:                 <div>
+392:                     <h3 class="text-xl font-bold text-gray-900">Edit Karyawan</h3>
+393:                     <p class="text-sm text-gray-500 mt-1">Ubah informasi detail karyawan di dalam sistem.</p>
+394:                 </div>
+395:                 <button type="button" onclick="document.getElementById('editEmployeeModal-{{ $emp->id }}').classList.add('hidden')" class="bg-gray-50 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none transition-all">
+396:                     <span class="sr-only">Close</span>
+397:                     <i class="fas fa-times text-lg"></i>
+398:                 </button>
+399:             </div>
+400:             <form action="{{ route('employee.update', $emp->id) }}" method="POST" enctype="multipart/form-data" novalidate hx-encoding="multipart/form-data">
+401:                 @csrf
+402:                 @method('PUT')
+403:                 <div class="bg-white px-6 py-4 sm:px-8 max-h-[65vh] overflow-y-auto custom-scrollbar">
+404:                     <!-- 2 column grid -->
+405:                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+406:                         <!-- NPK -->
+407:                         <div>
+408:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">NPK <span class="text-red-500">*</span></label>
+409:                             <input type="text" name="npk" value="{{ old('npk', $emp->npk) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('npk') border-red-500 @enderror" placeholder="cth. 10231">
+410:                             @error('npk') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+411:                         </div>
+412: 
+413:                         <!-- Nama -->
+414:                         <div>
+415:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+416:                             <input type="text" name="nama" value="{{ old('nama', $emp->nama) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('nama') border-red-500 @enderror" placeholder="cth. Ade Kurniawan">
+417:                             @error('nama') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+418:                         </div>
+419: 
+420:                         <!-- Tanggal Lahir -->
+421:                         <div>
+422:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Lahir <span class="text-red-500">*</span></label>
+423:                             <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $emp->tanggal_lahir) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tanggal_lahir') border-red-500 @enderror">
+424:                             @error('tanggal_lahir') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+425:                         </div>
+426: 
+427:                         <!-- Lama Bekerja -->
+428:                         <div>
+429:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Mulai Bekerja <span class="text-red-500">*</span></label>
+430:                             <input type="date" name="lama_bekerja" value="{{ old('lama_bekerja', $emp->masuk_kerja) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('lama_bekerja') border-red-500 @enderror">
+431:                             @error('lama_bekerja') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+432:                         </div>
+433: 
+434:                         <!-- Jabatan -->
+435:                         <div>
+436:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Posisi / Jabatan <span class="text-red-500">*</span></label>
+437:                             <select name="position_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('position_id') border-red-500 @enderror">
+438:                                 <option value="">Pilih Jabatan</option>
+439:                                 @foreach($positions as $pos)
+440:                                     <option value="{{ $pos->id }}" {{ old('position_id', $emp->position_id) == $pos->id ? 'selected' : '' }}>{{ $pos->nama_jabatan }}</option>
+441:                                 @endforeach
+442:                             </select>
+443:                             @error('position_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+444:                         </div>
+445:                         
+446:                         <!-- Readiness -->
+447:                         <div>
+448:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Kaderisasi <span class="text-red-500">*</span></label>
+449:                             <select name="readiness" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('readiness') border-red-500 @enderror">
+450:                                 <option value="">Pilih Status</option>
+451:                                 <option value="R1 ready" {{ old('readiness', $emp->readiness) == 'R1 ready' ? 'selected' : '' }}>R1 Ready</option>
+452:                                 <option value="R2 ready" {{ old('readiness', $emp->readiness) == 'R2 ready' ? 'selected' : '' }}>R2 Ready</option>
+453:                                 <option value="R3 ready" {{ old('readiness', $emp->readiness) == 'R3 ready' ? 'selected' : '' }}>R3 Ready</option>
+454:                                 <option value="R4 ready" {{ old('readiness', $emp->readiness) == 'R4 ready' ? 'selected' : '' }}>R4 Ready</option>
+455:                                 <option value="R5 ready" {{ old('readiness', $emp->readiness) == 'R5 ready' ? 'selected' : '' }}>R5 Ready</option>
+456:                                 <option value="not_ready" {{ old('readiness', $emp->readiness) == 'not_ready' ? 'selected' : '' }}>Not Ready</option>
+457:                             </select>
+458:                             @error('readiness') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+459:                         </div>
+460: 
+461:                         <!-- Foto -->
+462:                         <div>
+463:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Unggah Foto</label>
+464:                             <input type="file" name="foto" accept="image/png, image/jpeg, image/jpg, image/webp" class="w-full rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 text-sm py-1.5 px-4 transition-all file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#0ea5e9]/10 file:text-[#0ea5e9] hover:file:bg-[#0ea5e9]/20 @error('foto') border-red-500 @enderror">
+465:                             @if($emp->foto)
+466:                                 <p class="text-xs text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah foto.</p>
+467:                             @endif
+468:                             @error('foto') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+469:                         </div>
+470: 
+471:                         <!-- Pendidikan -->
+472:                         <div>
+473:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pendidikan <span class="text-red-500">*</span></label>
+474:                             <input type="text" name="pendidikan" value="{{ old('pendidikan', $emp->pendidikan) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('pendidikan') border-red-500 @enderror" placeholder="cth. S1 Sistem Informasi">
+475:                             @error('pendidikan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+476:                         </div>
+477: 
+478:                         <!-- Kontak -->
+479:                         <div>
+480:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kontak (No HP) <span class="text-red-500">*</span></label>
+481:                             <input type="text" name="kontak" value="{{ old('kontak', $emp->kontak) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('kontak') border-red-500 @enderror" placeholder="cth. 08123456789">
+482:                             @error('kontak') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+483:                         </div>
+484: 
+485:                         <!-- Email -->
+486:                         <div>
+487:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+488:                             <input type="email" name="email" value="{{ old('email', $emp->email) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('email') border-red-500 @enderror" placeholder="cth. email@company.com">
+489:                             @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+490:                         </div>
+491: 
+492:                         <!-- Departemen -->
+493:                         <div>
+494:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen <span class="text-red-500">*</span></label>
+495:                             <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
+496:                                 <option value="">Pilih Departemen</option>
+497:                                 @foreach($departments as $dept)
+498:                                     <option value="{{ $dept->id }}" {{ old('department_id', $emp->department_id) == $dept->id ? 'selected' : '' }}>
+499:                                         {{ $dept->nama_departemen }}
+500:                                     </option>
+501:                                 @endforeach
+502:                             </select>
+503:                             @error('department_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+504:                         </div>
+505: 
+506:                         <!-- Grade -->
+507:                         <div>
+508:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Grade <span class="text-red-500">*</span></label>
+509:                             <input type="text" name="grade" value="{{ old('grade', $emp->grade) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('grade') border-red-500 @enderror" placeholder="cth. Grade A">
+510:                             @error('grade') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+511:                         </div>
+512: 
+513:                         <!-- IQ -->
+514:                         <div>
+515:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Skor IQ <span class="text-red-500">*</span></label>
+516:                             <input type="number" name="iq" value="{{ old('iq', $emp->iq) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('iq') border-red-500 @enderror" placeholder="cth. 120">
+517:                             @error('iq') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+518:                         </div>
+519: 
+520:                         <!-- DISC -->
+521:                         <div>
+522:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">DISC <span class="text-red-500">*</span></label>
+523:                             <input type="text" name="disc" value="{{ old('disc', $emp->disc) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('disc') border-red-500 @enderror" placeholder="cth. D/I/S/C">
+524:                             @error('disc') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+525:                         </div>
+526: 
+527:                         <!-- HAV -->
+528:                         <div>
+529:                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">HAV <span class="text-red-500">*</span></label>
+530:                             <select name="hav" required class="drop-up w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('hav') border-red-500 @enderror">
+531:                                 <option value="">Pilih HAV</option>
+532:                                 <option value="star" {{ old('hav', $emp->hav) == 'star' ? 'selected' : '' }}>Star</option>
+533:                                 <option value="high potential" {{ old('hav', $emp->hav) == 'high potential' ? 'selected' : '' }}>High potential</option>
+534:                                 <option value="potential" {{ old('hav', $emp->hav) == 'potential' ? 'selected' : '' }}>Potential</option>
+535:                                 <option value="excellent career person" {{ old('hav', $emp->hav) == 'excellent career person' ? 'selected' : '' }}>Excellent career person</option>
+536:                                 <option value="career person" {{ old('hav', $emp->hav) == 'career person' ? 'selected' : '' }}>Career person</option>
+537:                                 <option value="problem employee" {{ old('hav', $emp->hav) == 'problem employee' ? 'selected' : '' }}>Problem employee</option>
+538:                                 <option value="deadwood" {{ old('hav', $emp->hav) == 'deadwood' ? 'selected' : '' }}>Deadwood</option>
+539:                             </select>
+540:                             @error('hav') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+541:                         </div>
+542:                     </div>
+543:                 </div>
+544:                 <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-end gap-3 sm:px-8">
+545:                     <button type="button" onclick="document.getElementById('editEmployeeModal-{{ $emp->id }}').classList.add('hidden')" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">
+546:                         Batal
+547:                     </button>
+548:                     <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md shadow-sky-500/30 px-6 py-2 bg-[#0ea5e9] text-sm font-medium text-white hover:bg-[#0284c7] focus:outline-none transition-all sm:w-auto flex items-center gap-2">
+549:                         <i class="fas fa-save"></i> Simpan Data
+550:                     </button>
+551:                 </div>
+552:             </form>
+553:         </div>
+554:     </div>
+555: </div>
+556: @endforeach
+557: 
+558: <!-- Modal Import Karyawan -->
+559: <div id="importEmployeeModal" class="hidden fixed inset-0 z-[100] overflow-hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true
+<truncated 259 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.

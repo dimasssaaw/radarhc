@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+:root {
+    --ink: #17211f;
+    --muted: #72807b;
+    --line: #dce6e0;
+    --mint: #c8f0d9;
+    --forest: #17483d;
+    --paper: #f5f8f3;
+}
+
+body.login-page {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Instrument Sans', ui-sans-serif, sans-serif;
+}
+
+.login-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+    min-height: 100vh;
+}
+
+.login-intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(2rem, 6vw, 6rem);
+    background: var(--forest);
+    color: #f2f8ef;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-intro::after {
+    content: '';
+    position: absolute;
+    width: 24rem;
+    height: 24rem;
+    right: -9rem;
+    bottom: -8rem;
+    border: 1px solid rgba(200, 240, 217, 0.24);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3rem rgba(200, 240, 217, 0.07), 0 0 0 7rem rgba(200, 240, 217, 0.05);
+}
+
+.brand-mark {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(242, 248, 239, 0.55);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.brand-mark span { color: var(--mint); }
+.eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; }
+.login-intro .eyebrow { margin-top: auto; margin-bottom: 1.25rem; color: var(--mint); }
+.login-intro h1 { max-width: 34rem; margin: 0; font-size: clamp(2.5rem, 4.4vw, 5rem); line-height: 0.98; letter-spacing: -0.04em; }
+.intro-copy { max-width: 28rem; margin: 1.75rem 0 0; color: #bdd2c6; font-size: 1rem; line-height: 1.7; }
+.intro-footer { display: flex; align-items: center; gap: 0.65rem; color: #bdd2c6; font-size: 0.8rem; }
+.status-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0.3rem rgba(200, 240, 217, 0.12); }
+
+.login-panel { display: flex; flex-direction: column; justify-content: center; width: min(100%, 31rem); padding: 3rem clamp(2rem, 7vw, 7rem); background: #fff; }
+.login-heading .eyebrow { margin: 0 0 0.9rem; color: #3e8068; }
+.login-heading h2 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; letter-spacing: -0.04em; }
+.login-heading p:last-child { margin: 0.9rem 0 0; color: var(--muted); line-height: 1.5; }
+.login-form { display: grid; gap: 0.65rem; margin-top: 2.25rem; }
+.login-form label { margin-top: 0.45rem; font-size: 0.8rem; font-weight: 700; }
+.login-form input:not([type='checkbox']), .login-form select { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 0.35rem; background: #fbfdfb; padding: 0.9rem 1rem; color: var(--ink); font: inherit; outline: none; }
+.login-form input:not([type='checkbox']):focus, .login-form select:focus { border-color: #4e997a; box-shadow: 0 0 0 3px rgba(78, 153, 122, 0.14); }
+.remember-row { display: flex; align-items: center; gap: 0.6rem; color: var(--muted); font-weight: 400 !important; }
+.remember-row input { accent-color: var(--forest); }
+.login-form button { margin-top: 1rem; border: 0; border-radius: 0.35rem; background: var(--forest); color: #fff; padding: 1rem; font: inherit; font-weight: 700; cursor: pointer; transition: background 160ms ease, transform 160ms ease; }
+.login-form button:hover { background: #246655; transform: translateY(-1px); }
+.login-form button span { margin-left: 0.5rem; font-size: 1.1rem; }
+.alert-error { margin-top: 1.5rem; border-left: 3px solid #bb4b46; background: #fff1ef; padding: 0.8rem 1rem; color: #8b302d; font-size: 0.85rem; }
+.login-note { margin: 2rem 0 0; color: #95a19c; font-size: 0.75rem; }
+
+@media (max-width: 760px) {
+    .login-shell { display: block; }
+    .login-intro { min-height: 18rem; padding: 2rem; }
+    .login-intro h1 { font-size: 2.6rem; max-width: 23rem; }
+    .login-intro .eyebrow { margin-top: 2.5rem; }
+    .login-panel { width: auto; padding: 3rem 2rem; }
+}
