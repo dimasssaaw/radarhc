@@ -79,7 +79,7 @@
                     <td class="px-5 py-4">
                         <div class="flex items-center gap-3">
                             <?php if($emp->foto): ?>
-                                <img src="<?php echo e(asset('storage/' . $emp->foto)); ?>" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
+                                <img src="<?php echo e($emp->foto); ?>" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             <?php else: ?>
                                 <img src="https://ui-avatars.com/api/?name=<?php echo e(urlencode($emp->nama)); ?>&background=random" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             <?php endif; ?>

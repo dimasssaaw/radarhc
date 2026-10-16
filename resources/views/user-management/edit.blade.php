@@ -49,16 +49,76 @@
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm">
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <div class="space-y-1.5" x-data="{ 
+                        password: '', 
+                        showPassword: false, 
+                        copied: false,
+                        generatePassword() {
+                            const lower = 'abcdefghjkmnpqrstuvwxyz';
+                            const upper = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+                            const num = '23456789';
+                            const special = '!@#$%&*';
+                            let pass = '';
+                            pass += lower[Math.floor(Math.random() * lower.length)];
+                            pass += upper[Math.floor(Math.random() * upper.length)];
+                            pass += num[Math.floor(Math.random() * num.length)];
+                            pass += special[Math.floor(Math.random() * special.length)];
+                            const all = lower + upper + num + special;
+                            for (let i = 0; i < 6; i++) {
+                                pass += all[Math.floor(Math.random() * all.length)];
+                            }
+                            this.password = pass.split('').sort(() => 0.5 - Math.random()).join('');
+                            this.showPassword = true;
+                        },
+                        copyPassword() {
+                            if (!this.password) return;
+                            navigator.clipboard.writeText(this.password);
+                            this.copied = true;
+                            setTimeout(() => this.copied = false, 2500);
+                        }
+                    }">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-gray-700">Password Baru</label>
+                            <button type="button" 
+                                    @click="generatePassword()" 
+                                    class="text-xs text-[#06b6d4] hover:text-cyan-700 font-semibold flex items-center gap-1 transition-colors px-2 py-0.5 rounded hover:bg-cyan-50">
+                                <i class="fas fa-dice"></i> Generate Acak
+                            </button>
+                        </div>
                         <div class="relative">
-                            <input type="password" name="password" minlength="8" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm" placeholder="Kosongkan jika tidak diubah">
+                            <input :type="showPassword ? 'text' : 'password'" 
+                                   name="password" 
+                                   x-model="password"
+                                   minlength="8" 
+                                   :class="password ? 'font-mono' : ''"
+                                   placeholder="Kosongkan jika tidak diubah" 
+                                   class="w-full bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm"
+                                   style="padding: 8px 75px 8px 12px;">
+                            
+                            <div class="absolute inset-y-0 right-0 flex items-center gap-1 text-gray-400" style="position: absolute; right: 8px; top: 0; bottom: 0; display: flex; align-items: center;">
+                                <button type="button" 
+                                        @click="copyPassword()" 
+                                        x-show="password && password.length > 0"
+                                        class="p-1.5 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all text-xs" 
+                                        title="Salin Password">
+                                    <i :class="copied ? 'fas fa-check text-emerald-500' : 'far fa-copy'"></i>
+                                </button>
+                                <button type="button" 
+                                        @click="showPassword = !showPassword" 
+                                        class="p-1.5 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all text-xs" 
+                                        title="Lihat / Sembunyikan">
+                                    <i :class="showPassword ? 'far fa-eye-slash text-[#06b6d4]' : 'far fa-eye'"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div x-show="copied" x-transition class="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                            <i class="fas fa-check-circle"></i> Password berhasil disalin ke clipboard!
                         </div>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-gray-700">Role <span class="text-red-500">*</span></label>
-                        <select name="role" required class="drop-up w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm">
+                        <select name="role" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm">
                             <option value="">-- Pilih Role --</option>
                             @foreach($dbRoles as $r)
                                 <option value="{{ $r->name }}" {{ old('role', $user->role) == $r->name ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
@@ -68,7 +128,7 @@
 
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
-                        <select name="status" required class="drop-up w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm">
+                        <select name="status" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all text-sm">
                             <option value="aktif" {{ old('status', $user->status) == 'aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="nonaktif" {{ old('status', $user->status) == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                         </select>
