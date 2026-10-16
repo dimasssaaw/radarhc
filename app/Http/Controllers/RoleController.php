@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
-
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 

@@ -80,7 +80,7 @@
                     <td class="px-5 py-4">
                         <div class="flex items-center gap-3">
                             @if($emp->foto)
-                                <img src="{{ asset('storage/' . $emp->foto) }}" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
+                                <img src="{{ $emp->foto }}" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             @else
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($emp->nama) }}&background=random" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             @endif

@@ -20,6 +20,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
             new Middleware('can:hapus_assessment', only: ['destroy']),
         ];
     }
+
     public function index(Request $request)
     {
         $query = Karyawan::with(['department', 'assessmentReports'])->orderBy('nama', 'asc');

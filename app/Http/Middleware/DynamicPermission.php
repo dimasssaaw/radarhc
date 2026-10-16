@@ -10,15 +10,13 @@ class DynamicPermission
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @param  string  $module
      * @return mixed
      */
     public function handle(Request $request, Closure $next, $module)
     {
         // Jika belum login, abaikan (biarkan auth middleware yang menangani)
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return $next($request);
         }
 
@@ -27,17 +25,17 @@ class DynamicPermission
 
         // Peta/Kamus (Map) untuk mengubah nama fungsi menjadi kata kerja permission
         $map = [
-            'index'   => 'lihat',
-            'show'    => 'lihat',
-            
-            'create'  => 'tambah',
-            'store'   => 'tambah',
-            'template'=> 'tambah', // Khusus fungsi download template data
-            'import'  => 'tambah', // Khusus fungsi import data
-            
-            'edit'    => 'edit',
-            'update'  => 'edit',
-            
+            'index' => 'lihat',
+            'show' => 'lihat',
+
+            'create' => 'tambah',
+            'store' => 'tambah',
+            'template' => 'tambah', // Khusus fungsi download template data
+            'import' => 'tambah', // Khusus fungsi import data
+
+            'edit' => 'edit',
+            'update' => 'edit',
+
             'destroy' => 'hapus',
         ];
 
@@ -46,10 +44,10 @@ class DynamicPermission
 
         if ($action) {
             // Merakit nama permission, misal: 'lihat' + '_' + 'karyawan' = 'lihat_karyawan'
-            $permissionName = $action . '_' . $module;
-            
+            $permissionName = $action.'_'.$module;
+
             // Cek apakah user punya permission tersebut
-            if (!auth()->user()->can($permissionName)) {
+            if (! auth()->user()->can($permissionName)) {
                 abort(403, "Akses Ditolak. Anda tidak memiliki izin ($permissionName).");
             }
         }

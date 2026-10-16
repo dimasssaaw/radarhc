@@ -20,12 +20,13 @@ class MentoringController extends Controller implements HasMiddleware
             new Middleware('can:hapus_mentoring', only: ['destroy']),
         ];
     }
+
     public function index(Request $request)
     {
         $query = Karyawan::with(['department', 'mentorings'])->orderBy('nama', 'asc');
 
         if (auth()->user()->role !== 'admin') {
-            $employee = \App\Models\Karyawan::where('npk', auth()->user()->npk)->first();
+            $employee = Karyawan::where('npk', auth()->user()->npk)->first();
             if ($employee && $employee->department_id) {
                 $query->where('department_id', $employee->department_id);
             }
@@ -125,6 +126,7 @@ class MentoringController extends Controller implements HasMiddleware
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Mentoring berhasil ditambahkan.');
         }
+
         return redirect()->route('mentoring.index')->with('success', 'Data Mentoring berhasil ditambahkan.');
     }
 
@@ -213,6 +215,7 @@ class MentoringController extends Controller implements HasMiddleware
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Mentoring berhasil diperbarui.');
         }
+
         return redirect()->route('mentoring.index')->with('success', 'Data Mentoring berhasil diperbarui.');
     }
 
@@ -224,6 +227,7 @@ class MentoringController extends Controller implements HasMiddleware
         if (request()->has('redirect_to')) {
             return redirect(request()->redirect_to)->with('success', 'Data Mentoring berhasil dihapus.');
         }
+
         return redirect()->route('mentoring.index')->with('success', 'Data Mentoring berhasil dihapus.');
     }
 

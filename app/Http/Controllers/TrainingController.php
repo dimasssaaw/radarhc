@@ -9,6 +9,8 @@ use App\Models\Training;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TrainingController extends Controller implements HasMiddleware
 {
@@ -21,12 +23,13 @@ class TrainingController extends Controller implements HasMiddleware
             new Middleware('can:hapus_training', only: ['destroyHistory']),
         ];
     }
+
     public function index(Request $request)
     {
         $query = Karyawan::with(['department', 'trainings'])->orderBy('nama', 'asc');
 
         if (auth()->user()->role !== 'admin') {
-            $employee = \App\Models\Karyawan::where('npk', auth()->user()->npk)->first();
+            $employee = Karyawan::where('npk', auth()->user()->npk)->first();
             if ($employee && $employee->department_id) {
                 $query->where('department_id', $employee->department_id);
             }
@@ -124,6 +127,7 @@ class TrainingController extends Controller implements HasMiddleware
         if (request()->has('redirect_to')) {
             return redirect(request('redirect_to'))->with('success', 'Target Training berhasil diperbarui');
         }
+
         return redirect()->back()->with('success', 'Target Training berhasil diperbarui');
     }
 
@@ -158,8 +162,8 @@ class TrainingController extends Controller implements HasMiddleware
             'eva3_status' => $request->eva3_status,
         ]);
 
-        $karyawan = \App\Models\Karyawan::findOrFail($employee_id);
-        $folderPath = 'training/' . $karyawan->npk . '_' . \Illuminate\Support\Str::slug($karyawan->nama);
+        $karyawan = Karyawan::findOrFail($employee_id);
+        $folderPath = 'training/'.$karyawan->npk.'_'.Str::slug($karyawan->nama);
 
         if ($request->hasFile('eva1_file')) {
             $file = $request->file('eva1_file');
@@ -205,12 +209,12 @@ class TrainingController extends Controller implements HasMiddleware
         $riwayat->eva2_status = $request->eva2_status;
         $riwayat->eva3_status = $request->eva3_status;
 
-        $karyawan = \App\Models\Karyawan::findOrFail($riwayat->id_karyawan);
-        $folderPath = 'training/' . $karyawan->npk . '_' . \Illuminate\Support\Str::slug($karyawan->nama);
+        $karyawan = Karyawan::findOrFail($riwayat->id_karyawan);
+        $folderPath = 'training/'.$karyawan->npk.'_'.Str::slug($karyawan->nama);
 
         if ($request->hasFile('eva1_file')) {
             if ($riwayat->eva1_lampiran) {
-                \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->eva1_lampiran);
+                Storage::disk('hrg')->delete($riwayat->eva1_lampiran);
             }
             $file = $request->file('eva1_file');
             $filename = uniqid().'_'.str_replace(' ', '_', $file->getClientOriginalName());
@@ -218,7 +222,7 @@ class TrainingController extends Controller implements HasMiddleware
         }
         if ($request->hasFile('eva2_file')) {
             if ($riwayat->eva2_lampiran) {
-                \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->eva2_lampiran);
+                Storage::disk('hrg')->delete($riwayat->eva2_lampiran);
             }
             $file = $request->file('eva2_file');
             $filename = uniqid().'_'.str_replace(' ', '_', $file->getClientOriginalName());
@@ -226,7 +230,7 @@ class TrainingController extends Controller implements HasMiddleware
         }
         if ($request->hasFile('eva3_file')) {
             if ($riwayat->eva3_lampiran) {
-                \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->eva3_lampiran);
+                Storage::disk('hrg')->delete($riwayat->eva3_lampiran);
             }
             $file = $request->file('eva3_file');
             $filename = uniqid().'_'.str_replace(' ', '_', $file->getClientOriginalName());
@@ -270,15 +274,15 @@ class TrainingController extends Controller implements HasMiddleware
     public function destroyHistory($id)
     {
         $riwayat = RiwayatTraining::findOrFail($id);
-        
+
         if ($riwayat->eva1_lampiran) {
-            \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->eva1_lampiran);
+            Storage::disk('hrg')->delete($riwayat->eva1_lampiran);
         }
         if ($riwayat->eva2_lampiran) {
-            \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->eva2_lampiran);
+            Storage::disk('hrg')->delete($riwayat->eva2_lampiran);
         }
         if ($riwayat->eva3_lampiran) {
-            \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->eva3_lampiran);
+            Storage::disk('hrg')->delete($riwayat->eva3_lampiran);
         }
 
         $riwayat->delete();
@@ -296,13 +300,13 @@ class TrainingController extends Controller implements HasMiddleware
         $riwayat = RiwayatTraining::findOrFail($id);
 
         $eva = $request->eva;
-        
+
         if ($riwayat->{$eva.'_lampiran'}) {
-            \Illuminate\Support\Facades\Storage::disk('hrg')->delete($riwayat->{$eva.'_lampiran'});
+            Storage::disk('hrg')->delete($riwayat->{$eva.'_lampiran'});
         }
 
-        $karyawan = \App\Models\Karyawan::findOrFail($riwayat->id_karyawan);
-        $folderPath = 'training/' . $karyawan->npk . '_' . \Illuminate\Support\Str::slug($karyawan->nama);
+        $karyawan = Karyawan::findOrFail($riwayat->id_karyawan);
+        $folderPath = 'training/'.$karyawan->npk.'_'.Str::slug($karyawan->nama);
 
         $file = $request->file('file');
         $filename = uniqid().'_'.str_replace(' ', '_', $file->getClientOriginalName());

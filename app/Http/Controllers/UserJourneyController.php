@@ -78,4 +78,32 @@ class UserJourneyController extends Controller
 
         return view('user.journey.show', compact('karyawan', 'activeReport', 'trainings', 'perjalananKarirs', 'departments'));
     }
+
+    public function exportPdf($id)
+    {
+        $karyawan = Karyawan::with([
+            'department',
+            'position',
+            'perjalananKarirs',
+            'assessmentReports' => function ($q) {
+                $q->latest('tahun');
+            },
+            'idps' => function ($q) {
+                $q->latest();
+            },
+            'trainings',
+            'certifications',
+            'scarf',
+            'viaCharacters',
+            'strengths',
+            'mentorings',
+        ])->findOrFail($id);
+
+        $activeReport = $karyawan->assessmentReports->first();
+        $trainings = $karyawan->trainings;
+        $perjalananKarirs = $karyawan->perjalananKarirs->sortBy('tahun_karir');
+        $departments = Department::orderBy('nama_departemen', 'asc')->get();
+
+        return view('journey.pdf', compact('karyawan', 'activeReport', 'trainings', 'perjalananKarirs', 'departments'));
+    }
 }

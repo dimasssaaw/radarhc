@@ -8,10 +8,9 @@ use App\Models\Department;
 use App\Models\Karyawan;
 use App\Models\Position;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller implements HasMiddleware
 {

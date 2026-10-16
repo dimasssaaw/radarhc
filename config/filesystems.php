@@ -49,7 +49,7 @@ return [
 
         'hrg' => [
             'driver' => 'local',
-            'root' => 'C:\Users\HP\Pictures\HRG',
+            'root' => storage_path('app/public/HRG'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/HRG',
             'visibility' => 'public',
             'throw' => false,
@@ -84,7 +84,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
-        public_path('HRG') => 'C:\Users\HP\Pictures\HRG',
+        public_path('HRG') => storage_path('app/public/HRG'),
     ],
 
 ];

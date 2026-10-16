@@ -40,7 +40,7 @@ class UserCertificationController extends Controller
 
         if ($request->filled('jabatan')) {
             $jabatan = $request->jabatan;
-            $query->whereHas('position', function($q) use ($jabatan) {
+            $query->whereHas('position', function ($q) use ($jabatan) {
                 $q->where('nama_jabatan', 'like', "%{$jabatan}%");
             });
         }
@@ -54,7 +54,7 @@ class UserCertificationController extends Controller
     public function show($id)
     {
         $employee = Karyawan::with('department')->findOrFail($id);
-        
+
         $certifications = $employee->certifications()->latest()->get();
 
         return view('user.certification.show', compact('employee', 'certifications'));

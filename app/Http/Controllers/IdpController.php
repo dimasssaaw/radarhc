@@ -21,12 +21,13 @@ class IdpController extends Controller implements HasMiddleware
             new Middleware('can:hapus_idp', only: ['destroy']),
         ];
     }
+
     public function index(Request $request)
     {
         $query = Karyawan::with(['department', 'idps'])->orderBy('nama', 'asc');
 
         if (auth()->user()->role !== 'admin') {
-            $employee = \App\Models\Karyawan::where('npk', auth()->user()->npk)->first();
+            $employee = Karyawan::where('npk', auth()->user()->npk)->first();
             if ($employee && $employee->department_id) {
                 $query->where('department_id', $employee->department_id);
             }
@@ -163,6 +164,7 @@ class IdpController extends Controller implements HasMiddleware
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Idp berhasil ditambahkan.');
         }
+
         return redirect()->route('idp.index')->with('success', 'Data Idp berhasil ditambahkan.');
     }
 
@@ -270,6 +272,7 @@ class IdpController extends Controller implements HasMiddleware
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Idp berhasil diperbarui.');
         }
+
         return redirect()->route('idp.index')->with('success', 'Data Idp berhasil diperbarui.');
     }
 
@@ -281,6 +284,7 @@ class IdpController extends Controller implements HasMiddleware
         if (request()->has('redirect_to')) {
             return redirect(request()->redirect_to)->with('success', 'Data Idp berhasil dihapus.');
         }
+
         return redirect()->route('idp.index')->with('success', 'Data Idp berhasil dihapus.');
     }
 

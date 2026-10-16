@@ -6,7 +6,6 @@ use App\Models\Department;
 use App\Models\Karyawan;
 use App\Models\PerjalananKarir;
 use Illuminate\Http\Request;
-
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -15,7 +14,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            (new Middleware('dynamic.permission:journey'))->except(['index', 'show']),
+            (new Middleware('dynamic.permission:journey'))->except(['index', 'show', 'exportPdf']),
         ];
     }
 
@@ -88,6 +87,34 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
         $departments = Department::orderBy('nama_departemen', 'asc')->get();
 
         return view('journey.show', compact('karyawan', 'activeReport', 'trainings', 'perjalananKarirs', 'departments'));
+    }
+
+    public function exportPdf($id)
+    {
+        $karyawan = Karyawan::with([
+            'department',
+            'position',
+            'perjalananKarirs',
+            'assessmentReports' => function ($q) {
+                $q->latest('tahun');
+            },
+            'idps' => function ($q) {
+                $q->latest();
+            },
+            'trainings',
+            'certifications',
+            'scarf',
+            'viaCharacters',
+            'strengths',
+            'mentorings',
+        ])->findOrFail($id);
+
+        $activeReport = $karyawan->assessmentReports->first();
+        $trainings = $karyawan->trainings;
+        $perjalananKarirs = $karyawan->perjalananKarirs->sortBy('tahun_karir');
+        $departments = Department::orderBy('nama_departemen', 'asc')->get();
+
+        return view('journey.pdf', compact('karyawan', 'activeReport', 'trainings', 'perjalananKarirs', 'departments'));
     }
 
     public function store(Request $request)

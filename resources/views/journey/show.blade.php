@@ -12,8 +12,11 @@
         </div>
     </div>
     <div class="flex items-center gap-3">
+        <a href="{{ route('employee-journey.pdf', $karyawan->id) }}" target="_blank" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-[#0ea5e9] text-white rounded-lg shadow-sm hover:-translate-y-0.5 hover:bg-[#0284c7] hover:shadow-[0_4px_10px_rgb(14,165,233,0.3)] transition-all duration-300">
+            <i class="fas fa-print"></i> Print to PDF
+        </a> 
         <a href="{{ route('employee-journey.index') }}" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] transition-all duration-300">
-            <i class="fas fa-arrow-left text-gray-400"></i> Kembali
+            <i class="fas fa-arrow-left text-gray-400"></i> Back
         </a>
     </div>
 </div>
@@ -30,7 +33,7 @@
         </div>
         @can('tambah_journey')
         <button type="button" onclick="document.getElementById('modalTambahKarier').classList.remove('hidden')" class="bg-[#0ea5e9] text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:bg-[#0284c7] transition-all flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5">
-            <i class="fas fa-plus"></i> Tambah
+            <i class="fas fa-plus"></i> Add  
         </button>
         @endcan
     </div>
@@ -441,25 +444,9 @@
         </div>
     </div>
 
-    <!-- Training Progress -->
-   <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 flex flex-col h-full">
-        
-        <!-- Efek Background Hiasan -->
-        <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-50 rounded-full opacity-60 blur-3xl pointer-events-none"></div>
+    <!-- Training Evaluation -->
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 flex flex-col h-full">
 
-        <!-- Header Card -->
-        <div class="flex justify-between items-start mb-6 relative z-10 border-b border-gray-50 pb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50 shrink-0">
-                    <i class="fas fa-graduation-cap text-lg"></i>
-                </div>
-                <div>
-                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Progress Pelatihan</h2>
-                    <p class="text-[11px] text-gray-500 font-medium">Pemenuhan target pelatihan</p>
-                </div>
-            </div>
-        </div>
-        
         @php
             $training = $trainings->first();
             $riwayat = \App\Models\RiwayatTraining::where('id_karyawan', $karyawan->id)->get();
@@ -473,62 +460,150 @@
                 return $r->eva1_status == 'completed' && $r->eva2_status == 'completed' && $r->eva3_status == 'completed';
             })->count();
 
-            $achieveMandatory = ($training && $training->target_mandatory > 0) ? min(100, round(($c_mandatory / $training->target_mandatory) * 100)) : 0;
-            $achieveSkill = ($training && $training->target_skill > 0) ? min(100, round(($c_skill / $training->target_skill) * 100)) : 0;
-            $achieveManagerial = ($training && $training->target_managerial > 0) ? min(100, round(($c_managerial / $training->target_managerial) * 100)) : 0;
+            $target_mandatory = $training->target_mandatory ?? 0;
+            $target_skill = $training->target_skill ?? 0;
+            $target_managerial = $training->target_managerial ?? 0;
+
+            $achieveMandatory = ($target_mandatory > 0) ? min(100, round(($c_mandatory / $target_mandatory) * 100)) : 0;
+            $achieveSkill = ($target_skill > 0) ? min(100, round(($c_skill / $target_skill) * 100)) : 0;
+            $achieveManagerial = ($target_managerial > 0) ? min(100, round(($c_managerial / $target_managerial) * 100)) : 0;
+
+            $totalTarget = $target_mandatory + $target_skill + $target_managerial;
+            $totalCompleted = $c_mandatory + $c_skill + $c_managerial;
+            $overallAchieve = ($totalTarget > 0) ? min(100, round(($totalCompleted / $totalTarget) * 100)) : 0;
         @endphp
 
-        <!-- Area Konten Progress (mb-auto agar rata atas jika tidak ada elemen lain di bawahnya) -->
-        <div class="space-y-4 flex-grow relative z-10 mb-auto">
-            
-            <!-- Mandatory -->
-            <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 transition-colors hover:bg-emerald-50/50 hover:border-emerald-200">
-                <div class="flex justify-between items-end mb-2.5">
-                    <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Mandatory
-                    </span>
-                    <span class="text-sm font-black text-gray-900">{{ $achieveMandatory }}<span class="text-[10px] text-gray-500 font-bold ml-0.5">%</span></span>
+        <!-- Header Card -->
+        <div class="flex justify-between items-start mb-4 relative z-10 border-b border-gray-50 pb-3.5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100/60 shrink-0">
+                    <i class="fas fa-graduation-cap text-lg"></i>
                 </div>
-                <div class="w-full bg-gray-200/60 rounded-full h-2.5 overflow-hidden shadow-inner">
-                    <div class="bg-[#22c55e] h-full rounded-full transition-all duration-1000 shadow-sm relative" 
-                         style="width: {{ $achieveMandatory }}%">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Training Evaluation</h2>
+                    <p class="text-[11px] text-gray-500 font-medium">Target & realisasi evaluasi pelatihan</p>
+                </div>
+            </div>
+
+            <!-- Overall Badge -->
+            <span class="bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1.5 mt-0.5 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {{ $overallAchieve }}% Completed
+            </span>
+        </div>
+
+        <!-- 3 KPI Mini Stat Boxes (Compact & Spaced) -->
+        <div class="grid grid-cols-3 gap-2.5 mb-5 relative z-10">
+            <!-- Box 1: Total Target -->
+            <div class="rounded-xl py-1.5 px-2 text-center transition-all duration-200" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #64748b;">Total Target</span>
+                <div class="flex items-baseline justify-center gap-1 mt-0.5">
+                    <span class="text-sm font-black" style="color: #0f172a;">{{ $totalTarget }}</span>
+                    <span class="text-[9px] font-semibold" style="color: #94a3b8;">Modul</span>
+                </div>
+            </div>
+
+            <!-- Box 2: Total Selesai -->
+            <div class="rounded-xl py-1.5 px-2 text-center transition-all duration-200" style="background-color: #f0fdf4; border: 1px solid #bbf7d0;">
+                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #16a34a;">Selesai Eva</span>
+                <div class="flex items-baseline justify-center gap-1 mt-0.5">
+                    <span class="text-sm font-black" style="color: #15803d;">{{ $totalCompleted }}</span>
+                    <span class="text-[9px] font-semibold" style="color: #4ade80;">Modul</span>
+                </div>
+            </div>
+
+            <!-- Box 3: Total Pencapaian -->
+            <div class="rounded-xl py-1.5 px-2 text-center transition-all duration-200" style="background-color: #f5f3ff; border: 1px solid #ddd6fe;">
+                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #7c3aed;">Pencapaian</span>
+                <div class="flex items-baseline justify-center gap-1 mt-0.5">
+                    <span class="text-sm font-black" style="color: #6d28d9;">{{ $overallAchieve }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Interactive Category Rows -->
+        <div class="space-y-2.5 flex-grow relative z-10">
+            <!-- Mandatory -->
+            <div class="bg-gray-50/60 hover:bg-white p-3 rounded-xl border border-gray-100 hover:border-emerald-200 transition-all duration-200 hover:shadow-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #22c55e;"></span>
+                        <span class="text-xs font-bold text-gray-800 uppercase tracking-wide">Mandatory</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-md border border-gray-200/80 shadow-xs">
+                            Selesai: <strong class="text-gray-900">{{ $c_mandatory }}</strong> / {{ $target_mandatory }}
+                        </span>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-md" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d;">
+                            {{ $achieveMandatory }}%
+                        </span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden shadow-inner">
+                    <div class="h-full rounded-full transition-all duration-1000 shadow-xs relative" 
+                         style="background-color: #22c55e; width: {{ $achieveMandatory }}%">
                         <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/40"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Skill -->
-            <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 transition-colors hover:bg-sky-50/50 hover:border-sky-200">
-                <div class="flex justify-between items-end mb-2.5">
-                    <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-sky-500"></span> Skill
-                    </span>
-                    <span class="text-sm font-black text-gray-900">{{ $achieveSkill }}<span class="text-[10px] text-gray-500 font-bold ml-0.5">%</span></span>
+            <div class="bg-gray-50/60 hover:bg-white p-3 rounded-xl border border-gray-100 hover:border-sky-200 transition-all duration-200 hover:shadow-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #0ea5e9;"></span>
+                        <span class="text-xs font-bold text-gray-800 uppercase tracking-wide">Skill</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-md border border-gray-200/80 shadow-xs">
+                            Selesai: <strong class="text-gray-900">{{ $c_skill }}</strong> / {{ $target_skill }}
+                        </span>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-md" style="background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;">
+                            {{ $achieveSkill }}%
+                        </span>
+                    </div>
                 </div>
-                <div class="w-full bg-gray-200/60 rounded-full h-2.5 overflow-hidden shadow-inner">
-                    <div class="bg-[#0ea5e9] h-full rounded-full transition-all duration-1000 shadow-sm relative"
-                         style="width: {{ $achieveSkill }}%">
+                <div class="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden shadow-inner">
+                    <div class="h-full rounded-full transition-all duration-1000 shadow-xs relative" 
+                         style="background-color: #0ea5e9; width: {{ $achieveSkill }}%">
                         <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/40"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Managerial -->
-            <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 transition-colors hover:bg-rose-50/50 hover:border-rose-200">
-                <div class="flex justify-between items-end mb-2.5">
-                    <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> Managerial
-                    </span>
-                    <span class="text-sm font-black text-gray-900">{{ $achieveManagerial }}<span class="text-[10px] text-gray-500 font-bold ml-0.5">%</span></span>
+            <div class="bg-gray-50/60 hover:bg-white p-3 rounded-xl border border-gray-100 hover:border-rose-200 transition-all duration-200 hover:shadow-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #f43f5e;"></span>
+                        <span class="text-xs font-bold text-gray-800 uppercase tracking-wide">Managerial</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-md border border-gray-200/80 shadow-xs">
+                            Selesai: <strong class="text-gray-900">{{ $c_managerial }}</strong> / {{ $target_managerial }}
+                        </span>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-md" style="background-color: #fff1f2; border: 1px solid #fecdd3; color: #be123c;">
+                            {{ $achieveManagerial }}%
+                        </span>
+                    </div>
                 </div>
-                <div class="w-full bg-gray-200/60 rounded-full h-2.5 overflow-hidden shadow-inner">
-                    <div class="bg-[#f43f5e] h-full rounded-full transition-all duration-1000 shadow-sm relative"
-                         style="width: {{ $achieveManagerial }}%">
+                <div class="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden shadow-inner">
+                    <div class="h-full rounded-full transition-all duration-1000 shadow-xs relative" 
+                         style="background-color: #f43f5e; width: {{ $achieveManagerial }}%">
                         <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/40"></div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- Bottom Sub-info / Footer -->
+        <div class="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500 relative z-10">
+            <span class="flex items-center gap-1.5">
+                <i class="fas fa-check-double text-emerald-500"></i>
+                Status: Eva 1, Eva 2, & Eva 3 Selesai
+            </span>
+            <a href="{{ route('training.show', $karyawan->id) }}" class="text-emerald-600 hover:text-emerald-700 font-bold hover:underline flex items-center gap-1">
+                Detail Pelatihan <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
         </div>
     </div>
 </div>
@@ -635,149 +710,267 @@
 
 </div>
 
-<div class="grid grid-cols-1 gap-6 mb-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- Via Character -->
-    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Via Character</h2>
-            @can('tambah_journey')
-            <button onclick="document.getElementById('addViaCharacterModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
-                <i class="fas fa-plus"></i> Tambah Data
-            </button>
-            @endcan
-        </div>
-        <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#0c7c85]">
-                        <th class="px-6 py-3 w-1/2 text-center border-b border-[#0c7c85]">Overuse Strength</th>
-                        <th class="px-6 py-3 bg-[#9e2a2b] w-1/2 text-center border-b border-[#9e2a2b]">Underuse Strength</th>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <th class="px-6 py-3 bg-gray-100 text-gray-600 w-[20%] text-center border-b border-gray-200">Actions</th>
-                        @endcanany
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($karyawan->viaCharacters ?? [] as $via)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#eef8f8] text-center">{{ $via->overuse_strength }}</td>
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#fcedea] text-center">{{ $via->underuse_strength }}</td>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <td class="px-6 py-4 text-center bg-white">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                        @endcanany
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Via Character</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Via Character</h2>
+                @can('tambah_journey')
+                <button onclick="document.getElementById('addViaCharacterModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
+                    <i class="fas fa-plus"></i> Add Data
+                </button>
+                @endcan
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#0c7c85]">
+                            <th class="px-4 py-3 w-[42%] text-center border-b border-[#0c7c85]">Overuse Strength</th>
+                            <th class="px-4 py-3 bg-[#9e2a2b] w-[42%] text-center border-b border-[#9e2a2b]">Underuse Strength</th>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <th class="px-3 py-3 bg-gray-100 text-gray-600 w-[16%] text-center border-b border-gray-200">Actions</th>
+                            @endcanany
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($karyawan->viaCharacters ?? [] as $via)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#eef8f8] text-center">{{ $via->overuse_strength }}</td>
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#fcedea] text-center">{{ $via->underuse_strength }}</td>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <td class="px-3 py-3.5 text-center bg-white">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
+                                    <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                            @endcanany
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Via Character</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- Strength & Weakness -->
-    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Strength & Weakness</h2>
-            @can('tambah_journey')
-            <button onclick="document.getElementById('addStrengthModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
-                <i class="fas fa-plus"></i> Tambah Data
-            </button>
-            @endcan
-        </div>
-        <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#2563eb]">
-                        <th class="px-6 py-3 w-1/2 text-center border-b border-[#2563eb]">Strength</th>
-                        <th class="px-6 py-3 bg-[#b45309] w-1/2 text-center border-b border-[#b45309]">Weakness</th>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <th class="px-6 py-3 bg-gray-100 text-gray-600 w-[20%] text-center border-b border-gray-200">Actions</th>
-                        @endcanany
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($karyawan->strengths ?? [] as $sw)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#eff6ff] text-center">{{ $sw->strength }}</td>
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#fffbeb] text-center">{{ $sw->weakness }}</td>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <td class="px-6 py-4 text-center bg-white">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="document.getElementById('editStrengthModal{{ $sw->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                        @endcanany
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Strength & Weakness</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Strength & Weakness</h2>
+                @can('tambah_journey')
+                <button onclick="document.getElementById('addStrengthModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
+                    <i class="fas fa-plus"></i> Add Data
+                </button>
+                @endcan
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#2563eb]">
+                            <th class="px-4 py-3 w-[42%] text-center border-b border-[#2563eb]">Strength</th>
+                            <th class="px-4 py-3 bg-[#b45309] w-[42%] text-center border-b border-[#b45309]">Weakness</th>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <th class="px-3 py-3 bg-gray-100 text-gray-600 w-[16%] text-center border-b border-gray-200">Actions</th>
+                            @endcanany
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($karyawan->strengths ?? [] as $sw)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#eff6ff] text-center">{{ $sw->strength }}</td>
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#fffbeb] text-center">{{ $sw->weakness }}</td>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <td class="px-3 py-3.5 text-center bg-white">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button type="button" onclick="document.getElementById('editStrengthModal{{ $sw->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
+                                    <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                            @endcanany
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Strength & Weakness</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Mentoring & Coaching Matrix -->
-<div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 mb-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
-    <h2 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Mentoring & Coaching Matrix</h2>
+<!-- Mentoring & Coaching Section (Matrix & GROW Model) -->
+@php
+    $latestMentoring = \App\Models\Mentoring::where('id_karyawan', $karyawan->id)->latest()->first();
+    $comp = $latestMentoring->competency ?? null;
+    $comm = $latestMentoring->commitment ?? null;
     
-    @php
-        $latestMentoring = \App\Models\Mentoring::where('id_karyawan', $karyawan->id)->latest()->first();
-        $comp = $latestMentoring->competency ?? null;
-        $comm = $latestMentoring->commitment ?? null;
-        
-        $activeBox = null;
-        if ($comp === 'Rendah' && $comm === 'Tinggi') $activeBox = 'TL';
-        if ($comp === 'Rendah' && $comm === 'Rendah') $activeBox = 'TR';
-        if ($comp === 'Tinggi' && $comm === 'Tinggi') $activeBox = 'BL';
-        if ($comp === 'Tinggi' && $comm === 'Rendah') $activeBox = 'BR';
-    @endphp
-    
-    <div class="w-full rounded-xl overflow-hidden grid grid-cols-2 shadow-sm border border-gray-100 font-bold text-[10px] tracking-wide text-white h-64">
-        <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
-        <div class="bg-[#facd42] flex flex-col justify-center items-center text-center p-4 text-[#8a6800] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - MODERAT</div>
-            <div>COACHING - MODERAT</div>
+    $activeBox = null;
+    if ($comp === 'Rendah' && $comm === 'Tinggi') $activeBox = 'TL';
+    if ($comp === 'Rendah' && $comm === 'Rendah') $activeBox = 'TR';
+    if ($comp === 'Tinggi' && $comm === 'Tinggi') $activeBox = 'BL';
+    if ($comp === 'Tinggi' && $comm === 'Rendah') $activeBox = 'BR';
+
+    $isTL = ($activeBox === 'TL');
+    $isTR = ($activeBox === 'TR');
+    $isBL = ($activeBox === 'BL');
+    $isBR = ($activeBox === 'BR');
+@endphp
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Mentoring & Coaching Matrix -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
+        <div class="flex-1 flex flex-col">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 sm:mb-5">Mentoring & Coaching Matrix</h2>
+            
+            <div class="w-full rounded-2xl overflow-hidden grid grid-cols-2 shadow-xs border border-gray-100 font-extrabold text-xs sm:text-[13px] tracking-wider text-white flex-1 min-h-[360px] sm:min-h-[400px] lg:min-h-[420px]">
+                <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isTL) ? 'opacity-30' : 'opacity-100' }} {{ $isTL ? 'z-10' : '' }}"
+                    style="{{ $isTL 
+                        ? 'background: linear-gradient(135deg, #fde065 0%, #facd42 60%, #f3c332 100%); box-shadow: 3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #7c5c00;' 
+                        : 'background-color: #facd42; color: #8a6800;' }}">
+                    @if($isTL)
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    @endif
+                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">DIRECTING - MODERAT</div>
+                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">MENTORING - MODERAT</div>
+                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">COACHING - MODERAT</div>
+                </div>
+                
+                <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 text-white space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isTR) ? 'opacity-30' : 'opacity-100' }} {{ $isTR ? 'z-10' : '' }}"
+                    style="{{ $isTR 
+                        ? 'background: linear-gradient(135deg, #5390f7 0%, #4485f5 60%, #397ceb 100%); box-shadow: -3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08);' 
+                        : 'background-color: #4485f5;' }}">
+                    @if($isTR)
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    @endif
+                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - RENDAH</div>
+                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - RENDAH</div>
+                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - RENDAH</div>
+                </div>
+                
+                <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isBL) ? 'opacity-30' : 'opacity-100' }} {{ $isBL ? 'z-10' : '' }}"
+                    style="{{ $isBL 
+                        ? 'background: linear-gradient(135deg, #87d38e 0%, #78c87f 60%, #6abd72 100%); box-shadow: 3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #144918;' 
+                        : 'background-color: #78c87f; color: #144918;' }}">
+                    @if($isBL)
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    @endif
+                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">DIRECTING - TINGGI</div>
+                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">MENTORING - TINGGI</div>
+                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">COACHING - TINGGI</div>
+                </div>
+                
+                <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 text-white space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isBR) ? 'opacity-30' : 'opacity-100' }} {{ $isBR ? 'z-10' : '' }}"
+                    style="{{ $isBR 
+                        ? 'background: linear-gradient(135deg, #f75d5e 0%, #f05051 60%, #e84546 100%); box-shadow: -3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08);' 
+                        : 'background-color: #f05051;' }}">
+                    @if($isBR)
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    @endif
+                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - MODERAT</div>
+                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - TINGGI</div>
+                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - MODERAT</div>
+                </div>
+            </div>
         </div>
-        
-        <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
-        <div class="bg-[#4485f5] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - RENDAH</div>
-            <div>MENTORING - RENDAH</div>
-            <div>COACHING - RENDAH</div>
+    </div>
+
+    <!-- GROW Model -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
+        <div class="flex-1 flex flex-col justify-between gap-3">
+            <!-- Top Yellow Header Bar -->
+            <div class="w-full bg-[#fbbf24] text-gray-900 font-extrabold text-sm sm:text-base py-3 sm:py-3.5 px-4 rounded-xl text-center tracking-wider shadow-xs uppercase flex items-center justify-center min-h-[48px] sm:min-h-[52px] select-none shrink-0">
+                GROW MODEL
+            </div>
+
+            @if($latestMentoring && ($latestMentoring->grow_goals || $latestMentoring->grow_realitas || $latestMentoring->grow_options || $latestMentoring->grow_wrap_up || $latestMentoring->grow_insight))
+                <!-- Goals -->
+                <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
+                    <div class="bg-[#059669] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
+                        GOALS
+                    </div>
+                    <div class="bg-[#d1fae5] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_goals ?: '' }}">
+                        <div class="my-auto w-full">{{ $latestMentoring->grow_goals ?: '-' }}</div>
+                    </div>
+                </div>
+
+                <!-- Realitas -->
+                <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
+                    <div class="bg-[#3b82f6] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
+                        REALITAS
+                    </div>
+                    <div class="bg-[#dbeafe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_realitas ?: '' }}">
+                        <div class="my-auto w-full">{{ $latestMentoring->grow_realitas ?: '-' }}</div>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
+                    <div class="bg-[#8b5cf6] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
+                        OPTIONS
+                    </div>
+                    <div class="bg-[#ede9fe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_options ?: '' }}">
+                        <div class="my-auto w-full">{{ $latestMentoring->grow_options ?: '-' }}</div>
+                    </div>
+                </div>
+
+                <!-- Wrap Up -->
+                <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
+                    <div class="bg-[#ef4444] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
+                        WRAP UP
+                    </div>
+                    <div class="bg-[#fee2e2] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_wrap_up ?: '' }}">
+                        <div class="my-auto w-full">{{ $latestMentoring->grow_wrap_up ?: '-' }}</div>
+                    </div>
+                </div>
+
+                <!-- Insight -->
+                <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
+                    <div class="bg-[#f97316] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
+                        INSIGHT
+                    </div>
+                    <div class="bg-[#ffedd5] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_insight ?: '' }}">
+                        <div class="my-auto w-full">{{ $latestMentoring->grow_insight ?: '-' }}</div>
+                    </div>
+                </div>
+            @else
+                <div class="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 text-center my-auto min-h-[280px]">
+                    <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl mb-2">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Belum ada data GROW Model</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Input sesi mentoring untuk mengisi Goals, Realitas, Options, Wrap Up, & Insight.</p>
+                    <a href="{{ route('mentoring.show-employee', $karyawan->id) }}" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg transition-colors shadow-sm">
+                        <i class="fas fa-plus text-[10px]"></i> Buka Sesi Mentoring
+                    </a>
+                </div>
+            @endif
         </div>
-        
-        <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
-        <div class="bg-[#78c87f] flex flex-col justify-center items-center text-center p-4 text-[#205724] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - TINGGI</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - TINGGI</div>
-        </div>
-        
-        <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
-        <div class="bg-[#f05051] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - MODERAT</div>
+
+        <div class="mt-6 pt-1 flex justify-end shrink-0">
+            <a href="{{ route('mentoring.show-employee', $karyawan->id) }}" class="text-xs font-bold text-[#0ea5e9] hover:text-[#0284c7] inline-flex items-center gap-1.5 transition-colors group">
+                <span>Detail Mentoring</span>
+                <i class="fas fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform"></i>
+            </a>
         </div>
     </div>
 </div>
@@ -823,21 +1016,13 @@
 
                     <!-- Departemen -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="far fa-building text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="department_id" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                <option value="" disabled selected>Pilih Departemen...</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
+                        <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
+                            <option value="" disabled selected>Pilih Departemen...</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <!-- Nama Posisi -->
@@ -853,22 +1038,14 @@
 
                     <!-- Tipe Milestone -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="fas fa-tags text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="tipe_milestone" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                <option value="aktif">Awal Bergabung</option>
-                                <option value="tetap">Tetap di Posisi</option>
-                                <option value="promosi">Promosi</option>
-                                <option value="rotasi">Rotasi</option>
-                                <option value="demosi">Demosi</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
+                        <select name="tipe_milestone" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tipe_milestone') border-red-500 @enderror">
+                            <option value="aktif">Awal Bergabung</option>
+                            <option value="tetap">Tetap di Posisi</option>
+                            <option value="promosi">Promosi</option>
+                            <option value="rotasi">Rotasi</option>
+                            <option value="demosi">Demosi</option>
+                        </select>
                     </div>
 
                     <!-- Status Pencapaian -->
@@ -924,10 +1101,10 @@
             <!-- Footer -->
             <div class="bg-gray-50/80 px-6 py-3.5 rounded-b-2xl border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
                 <button type="button" onclick="document.getElementById('modalTambahKarier').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    Batal
+                    Cancel
                 </button>
                 <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] shadow-sm flex items-center gap-1.5 transition-colors">
-                    <i class="fas fa-save"></i> Simpan Karier
+                    <i class="fas fa-save"></i> Save
                 </button>
             </div>
         </form>
@@ -970,20 +1147,12 @@
 
                     <!-- Departemen -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="far fa-building text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="department_id" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}" {{ $pk->department_id == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
+                        <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}" {{ $pk->department_id == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <!-- Nama Posisi -->
@@ -999,22 +1168,14 @@
 
                     <!-- Tipe Milestone -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="fas fa-tags text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="tipe_milestone" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                <option value="aktif" {{ $pk->tipe_milestone == 'aktif' ? 'selected' : '' }}>Awal Bergabung</option>
-                                <option value="tetap" {{ $pk->tipe_milestone == 'tetap' ? 'selected' : '' }}>Tetap di Posisi</option>
-                                <option value="promosi" {{ $pk->tipe_milestone == 'promosi' ? 'selected' : '' }}>Promosi</option>
-                                <option value="rotasi" {{ $pk->tipe_milestone == 'rotasi' ? 'selected' : '' }}>Rotasi</option>
-                                <option value="demosi" {{ $pk->tipe_milestone == 'demosi' ? 'selected' : '' }}>Demosi</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
+                        <select name="tipe_milestone" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tipe_milestone') border-red-500 @enderror">
+                            <option value="aktif" {{ $pk->tipe_milestone == 'aktif' ? 'selected' : '' }}>Awal Bergabung</option>
+                            <option value="tetap" {{ $pk->tipe_milestone == 'tetap' ? 'selected' : '' }}>Tetap di Posisi</option>
+                            <option value="promosi" {{ $pk->tipe_milestone == 'promosi' ? 'selected' : '' }}>Promosi</option>
+                            <option value="rotasi" {{ $pk->tipe_milestone == 'rotasi' ? 'selected' : '' }}>Rotasi</option>
+                            <option value="demosi" {{ $pk->tipe_milestone == 'demosi' ? 'selected' : '' }}>Demosi</option>
+                        </select>
                     </div>
 
                     <!-- Status Pencapaian -->
@@ -1064,8 +1225,8 @@
                 </div>
             </div>
             <div class="bg-gray-50/80 px-6 py-3.5 rounded-b-2xl border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
-                <button type="button" onclick="document.getElementById('modalEditKarier_{{ $pk->id }}').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Batal</button>
-                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] shadow-sm flex items-center gap-1.5 transition-colors"><i class="fas fa-save"></i> Perbarui</button>
+                <button type="button" onclick="document.getElementById('modalEditKarier_{{ $pk->id }}').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] shadow-sm flex items-center gap-1.5 transition-colors"><i class="fas fa-save"></i> Update</button>
             </div>
         </form>
     </div>
@@ -1114,8 +1275,8 @@
 
             <!-- Footer tombol dibuat lebih ringkas -->
             <div class="flex justify-end gap-2.5 pt-4 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('editScarfModal').classList.add('hidden')" class="px-4 py-1.5 text-[13px] font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Batal</button>
-                <button type="submit" class="px-4 py-1.5 text-[13px] font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Simpan</button>
+                <button type="button" onclick="document.getElementById('editScarfModal').classList.add('hidden')" class="px-4 py-1.5 text-[13px] font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
+                <button type="submit" class="px-4 py-1.5 text-[13px] font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>
@@ -1144,8 +1305,8 @@
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('addViaCharacterModal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Batal</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Simpan</button>
+                <button type="button" onclick="document.getElementById('addViaCharacterModal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Save</button>
             </div>
         </form>
     </div>
@@ -1176,8 +1337,8 @@
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Batal</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Simpan</button>
+                <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>
@@ -1207,8 +1368,8 @@
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('addStrengthModal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Batal</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Simpan</button>
+                <button type="button" onclick="document.getElementById('addStrengthModal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Save</button>
             </div>
         </form>
     </div>
@@ -1239,8 +1400,8 @@
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('editStrengthModal{{ $st->id }}').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Batal</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Perbarui</button>
+                <button type="button" onclick="document.getElementById('editStrengthModal{{ $st->id }}').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>

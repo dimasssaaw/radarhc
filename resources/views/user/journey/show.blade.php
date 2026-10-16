@@ -12,8 +12,11 @@
         </div>
     </div>
     <div class="flex items-center gap-3">
+        <a href="{{ route('user-journey.pdf', $karyawan->id) }}" target="_blank" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-[#0ea5e9] text-white rounded-lg shadow-sm hover:-translate-y-0.5 hover:bg-[#0284c7] hover:shadow-[0_4px_10px_rgb(14,165,233,0.3)] transition-all duration-300">
+            <i class="fas fa-print"></i> Print to PDF
+        </a>
         <a href="{{ route('user-journey.index') }}" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] transition-all duration-300">
-            <i class="fas fa-arrow-left text-gray-400"></i> Kembali
+            <i class="fas fa-arrow-left text-gray-400"></i> Back
         </a>
     </div>
 </div>
@@ -30,7 +33,7 @@
         </div>
         @can('tambah_journey')
         <button type="button" onclick="document.getElementById('modalTambahKarier').classList.remove('hidden')" class="bg-[#0ea5e9] text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:bg-[#0284c7] transition-all flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5">
-            <i class="fas fa-plus"></i> Tambah
+            <i class="fas fa-plus"></i> Add
         </button>
         @endcan
     </div>
@@ -635,102 +638,106 @@
 
 </div>
 
-<div class="grid grid-cols-1 gap-6 mb-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- Via Character -->
-    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Via Character</h2>
-            @can('tambah_journey')
-            <button onclick="document.getElementById('addViaCharacterModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
-                <i class="fas fa-plus"></i> Tambah Data
-            </button>
-            @endcan
-        </div>
-        <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#0c7c85]">
-                        <th class="px-6 py-3 w-1/2 text-center border-b border-[#0c7c85]">Overuse Strength</th>
-                        <th class="px-6 py-3 bg-[#9e2a2b] w-1/2 text-center border-b border-[#9e2a2b]">Underuse Strength</th>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <th class="px-6 py-3 bg-gray-100 text-gray-600 w-[20%] text-center border-b border-gray-200">Actions</th>
-                        @endcanany
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($karyawan->viaCharacters ?? [] as $via)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#eef8f8] text-center">{{ $via->overuse_strength }}</td>
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#fcedea] text-center">{{ $via->underuse_strength }}</td>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <td class="px-6 py-4 text-center bg-white">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                        @endcanany
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Via Character</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Via Character</h2>
+                @can('tambah_journey')
+                <button onclick="document.getElementById('addViaCharacterModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
+                    <i class="fas fa-plus"></i> Tambah Data
+                </button>
+                @endcan
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#0c7c85]">
+                            <th class="px-4 py-3 w-[42%] text-center border-b border-[#0c7c85]">Overuse Strength</th>
+                            <th class="px-4 py-3 bg-[#9e2a2b] w-[42%] text-center border-b border-[#9e2a2b]">Underuse Strength</th>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <th class="px-3 py-3 bg-gray-100 text-gray-600 w-[16%] text-center border-b border-gray-200">Actions</th>
+                            @endcanany
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($karyawan->viaCharacters ?? [] as $via)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#eef8f8] text-center">{{ $via->overuse_strength }}</td>
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#fcedea] text-center">{{ $via->underuse_strength }}</td>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <td class="px-3 py-3.5 text-center bg-white">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
+                                    <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                            @endcanany
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Via Character</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- Strength & Weakness -->
-    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Strength & Weakness</h2>
-            @can('tambah_journey')
-            <button onclick="document.getElementById('addStrengthModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
-                <i class="fas fa-plus"></i> Tambah Data
-            </button>
-            @endcan
-        </div>
-        <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#2563eb]">
-                        <th class="px-6 py-3 w-1/2 text-center border-b border-[#2563eb]">Strength</th>
-                        <th class="px-6 py-3 bg-[#b45309] w-1/2 text-center border-b border-[#b45309]">Weakness</th>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <th class="px-6 py-3 bg-gray-100 text-gray-600 w-[20%] text-center border-b border-gray-200">Actions</th>
-                        @endcanany
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($karyawan->strengths ?? [] as $sw)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#eff6ff] text-center">{{ $sw->strength }}</td>
-                        <td class="px-6 py-4 font-medium text-gray-800 bg-[#fffbeb] text-center">{{ $sw->weakness }}</td>
-                        @canany(['edit_journey', 'hapus_journey'])
-                        <td class="px-6 py-4 text-center bg-white">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="document.getElementById('editStrengthModal{{ $sw->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                        @endcanany
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Strength & Weakness</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Strength & Weakness</h2>
+                @can('tambah_journey')
+                <button onclick="document.getElementById('addStrengthModal').classList.remove('hidden')" class="btn-3d bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2 transition-all hover:-translate-y-0.5">
+                    <i class="fas fa-plus"></i> Tambah Data
+                </button>
+                @endcan
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-[10px] font-bold text-white uppercase tracking-wider bg-[#2563eb]">
+                            <th class="px-4 py-3 w-[42%] text-center border-b border-[#2563eb]">Strength</th>
+                            <th class="px-4 py-3 bg-[#b45309] w-[42%] text-center border-b border-[#b45309]">Weakness</th>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <th class="px-3 py-3 bg-gray-100 text-gray-600 w-[16%] text-center border-b border-gray-200">Actions</th>
+                            @endcanany
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($karyawan->strengths ?? [] as $sw)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#eff6ff] text-center">{{ $sw->strength }}</td>
+                            <td class="px-4 py-3.5 font-medium text-gray-800 bg-[#fffbeb] text-center">{{ $sw->weakness }}</td>
+                            @canany(['edit_journey', 'hapus_journey'])
+                            <td class="px-3 py-3.5 text-center bg-white">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button type="button" onclick="document.getElementById('editStrengthModal{{ $sw->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
+                                    <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                            @endcanany
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Strength & Weakness</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -749,35 +756,63 @@
         if ($comp === 'Rendah' && $comm === 'Rendah') $activeBox = 'TR';
         if ($comp === 'Tinggi' && $comm === 'Tinggi') $activeBox = 'BL';
         if ($comp === 'Tinggi' && $comm === 'Rendah') $activeBox = 'BR';
+        $isTL = ($activeBox === 'TL');
+        $isTR = ($activeBox === 'TR');
+        $isBL = ($activeBox === 'BL');
+        $isBR = ($activeBox === 'BR');
     @endphp
     
-    <div class="w-full rounded-xl overflow-hidden grid grid-cols-2 shadow-sm border border-gray-100 font-bold text-[10px] tracking-wide text-white h-64">
+    <div class="w-full rounded-2xl overflow-hidden grid grid-cols-2 shadow-xs border border-gray-100 font-extrabold text-xs sm:text-[13px] tracking-wider text-white h-64 sm:h-72">
         <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
-        <div class="bg-[#facd42] flex flex-col justify-center items-center text-center p-4 text-[#8a6800] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - MODERAT</div>
-            <div>COACHING - MODERAT</div>
+        <div class="relative flex flex-col justify-center items-center text-center p-4 space-y-1.5 transition-all duration-300 {{ ($activeBox && !$isTL) ? 'opacity-30' : 'opacity-100' }} {{ $isTL ? 'z-10' : '' }}"
+            style="{{ $isTL 
+                ? 'background: linear-gradient(135deg, #fde065 0%, #facd42 60%, #f3c332 100%); box-shadow: 3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #7c5c00;' 
+                : 'background-color: #facd42; color: #8a6800;' }}">
+            @if($isTL)
+                <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+            @endif
+            <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">DIRECTING - MODERAT</div>
+            <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">MENTORING - MODERAT</div>
+            <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">COACHING - MODERAT</div>
         </div>
         
         <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
-        <div class="bg-[#4485f5] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - RENDAH</div>
-            <div>MENTORING - RENDAH</div>
-            <div>COACHING - RENDAH</div>
+        <div class="relative flex flex-col justify-center items-center text-center p-4 text-white space-y-1.5 transition-all duration-300 {{ ($activeBox && !$isTR) ? 'opacity-30' : 'opacity-100' }} {{ $isTR ? 'z-10' : '' }}"
+            style="{{ $isTR 
+                ? 'background: linear-gradient(135deg, #5390f7 0%, #4485f5 60%, #397ceb 100%); box-shadow: -3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08);' 
+                : 'background-color: #4485f5;' }}">
+            @if($isTR)
+                <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+            @endif
+            <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - RENDAH</div>
+            <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - RENDAH</div>
+            <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - RENDAH</div>
         </div>
         
         <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
-        <div class="bg-[#78c87f] flex flex-col justify-center items-center text-center p-4 text-[#205724] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - TINGGI</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - TINGGI</div>
+        <div class="relative flex flex-col justify-center items-center text-center p-4 space-y-1.5 transition-all duration-300 {{ ($activeBox && !$isBL) ? 'opacity-30' : 'opacity-100' }} {{ $isBL ? 'z-10' : '' }}"
+            style="{{ $isBL 
+                ? 'background: linear-gradient(135deg, #87d38e 0%, #78c87f 60%, #6abd72 100%); box-shadow: 3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #144918;' 
+                : 'background-color: #78c87f; color: #144918;' }}">
+            @if($isBL)
+                <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+            @endif
+            <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">DIRECTING - TINGGI</div>
+            <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">MENTORING - TINGGI</div>
+            <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">COACHING - TINGGI</div>
         </div>
         
         <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
-        <div class="bg-[#f05051] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - MODERAT</div>
+        <div class="relative flex flex-col justify-center items-center text-center p-4 text-white space-y-1.5 transition-all duration-300 {{ ($activeBox && !$isBR) ? 'opacity-30' : 'opacity-100' }} {{ $isBR ? 'z-10' : '' }}"
+            style="{{ $isBR 
+                ? 'background: linear-gradient(135deg, #f75d5e 0%, #f05051 60%, #e84546 100%); box-shadow: -3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08);' 
+                : 'background-color: #f05051;' }}">
+            @if($isBR)
+                <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+            @endif
+            <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - MODERAT</div>
+            <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - TINGGI</div>
+            <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - MODERAT</div>
         </div>
     </div>
 </div>
@@ -823,21 +858,13 @@
 
                     <!-- Departemen -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="far fa-building text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="department_id" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                <option value="" disabled selected>Pilih Departemen...</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
+                        <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
+                            <option value="" disabled selected>Pilih Departemen...</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <!-- Nama Posisi -->
@@ -853,22 +880,14 @@
 
                     <!-- Tipe Milestone -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="fas fa-tags text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="tipe_milestone" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                <option value="aktif">Awal Bergabung</option>
-                                <option value="tetap">Tetap di Posisi</option>
-                                <option value="promosi">Promosi</option>
-                                <option value="rotasi">Rotasi</option>
-                                <option value="demosi">Demosi</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
+                        <select name="tipe_milestone" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tipe_milestone') border-red-500 @enderror">
+                            <option value="aktif">Awal Bergabung</option>
+                            <option value="tetap">Tetap di Posisi</option>
+                            <option value="promosi">Promosi</option>
+                            <option value="rotasi">Rotasi</option>
+                            <option value="demosi">Demosi</option>
+                        </select>
                     </div>
 
                     <!-- Status Pencapaian -->
@@ -970,20 +989,12 @@
 
                     <!-- Departemen -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="far fa-building text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="department_id" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}" {{ $pk->department_id == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
+                        <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}" {{ $pk->department_id == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <!-- Nama Posisi -->
@@ -999,22 +1010,14 @@
 
                     <!-- Tipe Milestone -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i class="fas fa-tags text-gray-400 text-xs"></i>
-                            </div>
-                            <select name="tipe_milestone" required class="native-select w-full pl-8 pr-8 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors appearance-none bg-white text-gray-700 font-medium">
-                                <option value="aktif" {{ $pk->tipe_milestone == 'aktif' ? 'selected' : '' }}>Awal Bergabung</option>
-                                <option value="tetap" {{ $pk->tipe_milestone == 'tetap' ? 'selected' : '' }}>Tetap di Posisi</option>
-                                <option value="promosi" {{ $pk->tipe_milestone == 'promosi' ? 'selected' : '' }}>Promosi</option>
-                                <option value="rotasi" {{ $pk->tipe_milestone == 'rotasi' ? 'selected' : '' }}>Rotasi</option>
-                                <option value="demosi" {{ $pk->tipe_milestone == 'demosi' ? 'selected' : '' }}>Demosi</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
+                        <select name="tipe_milestone" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tipe_milestone') border-red-500 @enderror">
+                            <option value="aktif" {{ $pk->tipe_milestone == 'aktif' ? 'selected' : '' }}>Awal Bergabung</option>
+                            <option value="tetap" {{ $pk->tipe_milestone == 'tetap' ? 'selected' : '' }}>Tetap di Posisi</option>
+                            <option value="promosi" {{ $pk->tipe_milestone == 'promosi' ? 'selected' : '' }}>Promosi</option>
+                            <option value="rotasi" {{ $pk->tipe_milestone == 'rotasi' ? 'selected' : '' }}>Rotasi</option>
+                            <option value="demosi" {{ $pk->tipe_milestone == 'demosi' ? 'selected' : '' }}>Demosi</option>
+                        </select>
                     </div>
 
                     <!-- Status Pencapaian -->

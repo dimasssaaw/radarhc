@@ -1,5 +1,6 @@
 <?php
-$file = __DIR__ . '/resources/views/user/journey/show.blade.php';
+
+$file = __DIR__.'/resources/views/user/journey/show.blade.php';
 $content = file_get_contents($file);
 
 // 1. Change back route

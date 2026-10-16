@@ -7,10 +7,10 @@ use App\Mail\UserPasswordReset;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Mail;
+use Spatie\Permission\Models\Permission;
 
 class UserManagementController extends Controller implements HasMiddleware
 {
@@ -67,7 +67,7 @@ class UserManagementController extends Controller implements HasMiddleware
             ->paginate(10);
 
         $dbRoles = Role::orderBy('name')->get();
-        $permissions = \Spatie\Permission\Models\Permission::all();
+        $permissions = Permission::all();
 
         return view('user-management.create', compact('users', 'search', 'role', 'status', 'dbRoles', 'permissions'));
     }
@@ -141,7 +141,7 @@ class UserManagementController extends Controller implements HasMiddleware
             'role' => $role,
             'status' => $status,
             'dbRoles' => Role::orderBy('name')->get(),
-            'permissions' => \Spatie\Permission\Models\Permission::all(),
+            'permissions' => Permission::all(),
         ]);
     }
 

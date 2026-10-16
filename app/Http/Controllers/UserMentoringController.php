@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Karyawan;
+use App\Models\Mentoring;
 use Illuminate\Http\Request;
 
 class UserMentoringController extends Controller
@@ -68,7 +69,7 @@ class UserMentoringController extends Controller
     public function showEmployee($employee_id)
     {
         $karyawan = Karyawan::findOrFail($employee_id);
-        $mentoring = \App\Models\Mentoring::where('id_karyawan', $employee_id)->latest()->first() ?? new \App\Models\Mentoring;
+        $mentoring = Mentoring::where('id_karyawan', $employee_id)->latest()->first() ?? new Mentoring;
         $mentoring->karyawan = $karyawan;
 
         return view('user.mentoring.show', compact('mentoring', 'karyawan'));
