@@ -104,9 +104,15 @@
                     </div>
                 </div>
 
+                @if(strtolower(auth()->user()->role ?? '') === 'admin')
                 <a href="{{ route('employee-journey.index') }}" class="menu-3d flex items-center font-medium text-sm {{ request()->is('employee-journey*') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600' }}" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
                     <i class="far fa-compass w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Employee Journey</span>
                 </a>
+                @else
+                <a href="{{ route('user-journey.index') }}" class="menu-3d flex items-center font-medium text-sm {{ request()->is('user-journey*') || request()->is('employee-journey*') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600' }}" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
+                    <i class="far fa-compass w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Employee Journey</span>
+                </a>
+                @endif
                 
 
 

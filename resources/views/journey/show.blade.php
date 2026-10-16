@@ -28,8 +28,8 @@
 <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 mb-6 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5">
     <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
         <div>
-            <h2 class="text-lg font-bold text-gray-900">Perjalanan Karier</h2>
-            <p class="text-sm text-gray-500">Rekam jejak posisi dan pencapaian karyawan</p>
+            <h2 class="text-lg font-bold text-gray-900">Employee Journey</h2>
+            <p class="text-sm text-gray-500">Employee position and achievement records</p>
         </div>
         @can('tambah_journey')
         <button type="button" onclick="document.getElementById('modalTambahKarier').classList.remove('hidden')" class="bg-[#0ea5e9] text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:bg-[#0284c7] transition-all flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5">
@@ -120,7 +120,16 @@
                                 @elseif($pk->status_pencapaian == 'proyeksi/target') bg-sky-50 text-sky-600 border-sky-200
                                 @else bg-emerald-50 text-emerald-600 border-emerald-200
                                 @endif">
-                                {{ $pk->tipe_milestone == 'aktif' ? 'Awal Bergabung' : ($pk->tipe_milestone == 'tetap' ? 'Tetap di Posisi' : $pk->tipe_milestone) }}
+                                @php
+                                    $milestoneLabels = [
+                                        'aktif' => 'Initial Join',
+                                        'tetap' => 'Current Role',
+                                        'promosi' => 'Promotion',
+                                        'rotasi' => 'Rotation',
+                                        'demosi' => 'Demotion',
+                                    ];
+                                @endphp
+                                {{ $milestoneLabels[$pk->tipe_milestone] ?? ucwords($pk->tipe_milestone) }}
                             </span>
 
                             <p class="font-bold text-[15px] px-2 transition-colors duration-300 flex items-center justify-center gap-1.5" 
@@ -139,11 +148,11 @@
                             <!-- Subtext -->
                             <div class="transition-all duration-300" :class="activeTimeline == {{ $pk->id }} ? 'opacity-100 transform translate-y-0' : 'opacity-70'">
                                 @if($pk->status_pencapaian == 'aktif/tercapai')
-                                    <p class="text-[11px] font-bold text-amber-500 mt-1 uppercase tracking-widest">Posisi Saat Ini</p>
+                                    <p class="text-[11px] font-bold text-amber-500 mt-1 uppercase tracking-widest">Current Position</p>
                                 @elseif($pk->status_pencapaian == 'proyeksi/target')
-                                    <p class="text-[11px] font-medium text-sky-500 mt-1">Proyeksi Target</p>
+                                    <p class="text-[11px] font-medium text-sky-500 mt-1">Target Projection</p>
                                 @else
-                                    <p class="text-[11px] text-gray-500 mt-1 line-clamp-1 max-w-[120px]">{{ $pk->catatan_detail ?? 'Selesai' }}</p>
+                                    <p class="text-[11px] text-gray-500 mt-1 line-clamp-1 max-w-[120px]">{{ $pk->catatan_detail ?? 'Completed' }}</p>
                                 @endif
                             </div>
                         </div>
@@ -151,7 +160,7 @@
                     @empty
                         <div class="w-full text-center py-8 text-sm text-gray-500 flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 text-2xl mb-3"><i class="fas fa-route"></i></div>
-                            Belum ada data perjalanan karir.
+                            No career journey data available.
                         </div>
                     @endforelse
                 </div>
@@ -175,8 +184,8 @@
                                 <i class="far fa-calendar-alt text-xl"></i>
                             </div>
                             <div>
-                                <h3 class="font-extrabold text-gray-900 text-lg">Detail Karier Tahun {{ $pk->tahun_karir }}</h3>
-                                <p class="text-[11px] text-sky-500 font-bold uppercase tracking-widest mt-1">Informasi Jabatan & Penghargaan</p>
+                                <h3 class="font-extrabold text-gray-900 text-lg">Career Details - Year {{ $pk->tahun_karir }}</h3>
+                                <p class="text-[11px] text-sky-500 font-bold uppercase tracking-widest mt-1">Position & Award Information</p>
                             </div>
                         </div>
                         
@@ -187,11 +196,11 @@
                             </button>
                             @endcan
                             @can('hapus_journey')
-                            <form action="{{ route('employee-journey.destroy', $pk->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus perjalanan karir ini?');">
+                            <form action="{{ route('employee-journey.destroy', $pk->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this career journey?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="px-4 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-lg transition-all flex items-center gap-1.5">
-                                    <i class="fas fa-trash"></i> Hapus
+                                    <i class="fas fa-trash"></i> Delete
                                 </button>
                             </form>
                             @endcan
@@ -204,7 +213,7 @@
                             <div class="flex items-start gap-4">
                                 <div class="mt-0.5 w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0 border border-indigo-100/50"><i class="fas fa-briefcase text-lg"></i></div>
                                 <div class="w-full">
-                                    <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5">Posisi / Jabatan</p>
+                                    <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5">Position / Title</p>
                                     <p class="font-bold text-gray-800 text-base mb-2">{{ $pk->nama_posisi }}</p>
                                     
                                     <span class="text-[11px] font-bold text-indigo-600 inline-flex items-center gap-1.5 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 mb-4">
@@ -212,7 +221,7 @@
                                     </span>
                                     
                                     <div class="border-l-2 border-indigo-200 pl-3">
-                                        <p class="text-xs text-gray-500 leading-relaxed">{{ $pk->catatan_detail ?? 'Tidak ada catatan detail yang direkam pada tahun ini.' }}</p>
+                                        <p class="text-xs text-gray-500 leading-relaxed">{{ $pk->catatan_detail ?? 'No detailed notes recorded for this year.' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -222,17 +231,17 @@
                             <div class="flex items-start gap-4">
                                 <div class="mt-0.5 w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100/50"><i class="fas fa-trophy text-lg"></i></div>
                                 <div class="w-full">
-                                    <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">Pencapaian Spesial</p>
+                                    <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">Special Achievement</p>
                                     
                                     @if($pk->operational_award)
                                         <p class="font-bold text-gray-800 text-base mb-4">{{ $pk->operational_award }}</p>
                                         <div class="border-l-2 border-amber-200 pl-3">
-                                            <p class="text-xs text-gray-500 leading-relaxed">Penghargaan tercatat pada tahun ini.</p>
+                                            <p class="text-xs text-gray-500 leading-relaxed">Award recorded for this year.</p>
                                         </div>
                                     @else
-                                        <p class="font-bold text-gray-400 text-sm mb-4 italic">Belum Ada Penghargaan</p>
+                                        <p class="font-bold text-gray-400 text-sm mb-4 italic">No Awards Yet</p>
                                         <div class="border-l-2 border-amber-100 pl-3">
-                                            <p class="text-xs text-gray-400 leading-relaxed italic">Tidak ada penghargaan tercatat pada tahun ini.</p>
+                                            <p class="text-xs text-gray-400 leading-relaxed italic">No awards recorded for this year.</p>
                                         </div>
                                     @endif
                                 </div>
@@ -255,8 +264,8 @@
                 <i class="fas fa-clipboard-check text-lg"></i>
             </div>
             <div>
-                <h2 class="text-sm font-bold text-gray-900">Kesimpulan & Rekomendasi</h2>
-                <p class="text-[11px] text-gray-500 font-medium">Evaluasi kualitatif assessor</p>
+                <h2 class="text-sm font-bold text-gray-900">Summary & Recommendation</h2>
+                <p class="text-[11px] text-gray-500 font-medium">Assessor qualitative evaluation</p>
             </div>
         </div>
 
@@ -268,9 +277,9 @@
             
             <div class="space-y-4 flex-grow">
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-2">Keputusan Assessor</label>
-                    <select name="keputusan" class="native-select w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" {{ auth()->user()->can('edit_journey') ? '' : 'disabled' }}>
-                        <option value="">-- Pilih Keputusan --</option>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Assessor Decision <span class="text-red-500">*</span></label>
+                    <select name="keputusan" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('keputusan') border-red-500 @enderror" {{ auth()->user()->can('edit_journey') ? '' : 'disabled' }}>
+                        <option value="">Select Decision</option>
                         <option value="Promote to Next Grade" {{ ($activePk && $activePk->keputusan == 'Promote to Next Grade') ? 'selected' : '' }}>Promote to Next Grade</option>
                         <option value="Ready for Promotion" {{ ($activePk && $activePk->keputusan == 'Ready for Promotion') ? 'selected' : '' }}>Ready for Promotion</option>
                         <option value="Fit for Current Role" {{ ($activePk && $activePk->keputusan == 'Fit for Current Role') ? 'selected' : '' }}>Fit for Current Role</option>
@@ -283,15 +292,15 @@
                 </div>
                 
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-2">Catatan Kualitatif</label>
-                    <textarea name="catatan_rekomendasi_atasan" rows="4" class="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-3 px-3 text-sm font-medium text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all resize-none placeholder-gray-400" placeholder="Tuliskan catatan evaluasi keseluruhan di sini..." {{ auth()->user()->can('edit_journey') ? '' : 'readonly' }}>{{ $activePk ? $activePk->catatan_rekomendasi_atasan : '' }}</textarea>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Qualitative Notes</label>
+                    <textarea name="catatan_rekomendasi_atasan" rows="4" class="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-3 px-3 text-sm font-medium text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all resize-none placeholder-gray-400" placeholder="Write overall evaluation notes here..." {{ auth()->user()->can('edit_journey') ? '' : 'readonly' }}>{{ $activePk ? $activePk->catatan_rekomendasi_atasan : '' }}</textarea>
                 </div>
             </div>
 
             @can('edit_journey')
             <div class="pt-5 mt-auto">
                 <button type="submit" class="w-full bg-slate-800 text-white rounded-xl py-3 text-[13px] font-bold shadow-sm hover:bg-slate-900 hover:shadow-md transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-save"></i> Simpan Evaluasi
+                    <i class="fas fa-save"></i> Save Evaluation
                 </button>
             </div>
             @endcan
@@ -310,7 +319,7 @@
                 <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">
                     Assessment Summary {{ $activeReport ? '('.$activeReport->tahun.')' : '' }}
                 </h2>
-                <p class="text-[11px] text-gray-500 font-medium">Ringkasan skor performa karyawan</p>
+                <p class="text-[11px] text-gray-500 font-medium">Employee performance score summary</p>
             </div>
         </div>
 
@@ -354,7 +363,7 @@
                 <!-- Indikator 1 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Kecerdasan Umum</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">General Intelligence</span>
                         <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->kb_kecerdasan_umum ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -365,7 +374,7 @@
                 <!-- Indikator 2 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Sistematika Kerja</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Work Systematics</span>
                         <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->sk_sistematika_kerja ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -376,7 +385,7 @@
                 <!-- Indikator 3 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Integritas</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Integrity</span>
                         <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->kp_integritas ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -387,7 +396,7 @@
                 <!-- Indikator 4 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Kepemimpinan</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Leadership</span>
                         <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->kp_kepemimpinan ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -419,7 +428,7 @@
                 </div>
                 <div>
                     <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">IDP Summary</h2>
-                    <p class="text-[11px] text-gray-500 font-medium">Progress & Pemetaan Kompetensi</p>
+                    <p class="text-[11px] text-gray-500 font-medium">Progress & Competency Mapping</p>
                 </div>
             </div>
             
@@ -480,8 +489,8 @@
                     <i class="fas fa-graduation-cap text-lg"></i>
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Training Evaluation</h2>
-                    <p class="text-[11px] text-gray-500 font-medium">Target & realisasi evaluasi pelatihan</p>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Training Progress</h2>
+                    <p class="text-[11px] text-gray-500 font-medium">Training target fulfillment</p>
                 </div>
             </div>
 
@@ -498,22 +507,22 @@
                 <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #64748b;">Total Target</span>
                 <div class="flex items-baseline justify-center gap-1 mt-0.5">
                     <span class="text-sm font-black" style="color: #0f172a;">{{ $totalTarget }}</span>
-                    <span class="text-[9px] font-semibold" style="color: #94a3b8;">Modul</span>
+                    <span class="text-[9px] font-semibold" style="color: #94a3b8;">Modules</span>
                 </div>
             </div>
 
             <!-- Box 2: Total Selesai -->
             <div class="rounded-xl py-1.5 px-2 text-center transition-all duration-200" style="background-color: #f0fdf4; border: 1px solid #bbf7d0;">
-                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #16a34a;">Selesai Eva</span>
+                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #16a34a;">Eva Completed</span>
                 <div class="flex items-baseline justify-center gap-1 mt-0.5">
                     <span class="text-sm font-black" style="color: #15803d;">{{ $totalCompleted }}</span>
-                    <span class="text-[9px] font-semibold" style="color: #4ade80;">Modul</span>
+                    <span class="text-[9px] font-semibold" style="color: #4ade80;">Modules</span>
                 </div>
             </div>
 
             <!-- Box 3: Total Pencapaian -->
             <div class="rounded-xl py-1.5 px-2 text-center transition-all duration-200" style="background-color: #f5f3ff; border: 1px solid #ddd6fe;">
-                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #7c3aed;">Pencapaian</span>
+                <span class="text-[9px] font-bold uppercase tracking-wider block" style="color: #7c3aed;">Achievement</span>
                 <div class="flex items-baseline justify-center gap-1 mt-0.5">
                     <span class="text-sm font-black" style="color: #6d28d9;">{{ $overallAchieve }}%</span>
                 </div>
@@ -531,7 +540,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-md border border-gray-200/80 shadow-xs">
-                            Selesai: <strong class="text-gray-900">{{ $c_mandatory }}</strong> / {{ $target_mandatory }}
+                            Completed: <strong class="text-gray-900">{{ $c_mandatory }}</strong> / {{ $target_mandatory }}
                         </span>
                         <span class="text-xs font-black px-2 py-0.5 rounded-md" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d;">
                             {{ $achieveMandatory }}%
@@ -540,7 +549,7 @@
                 </div>
                 <div class="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden shadow-inner">
                     <div class="h-full rounded-full transition-all duration-1000 shadow-xs relative" 
-                         style="background-color: #22c55e; width: {{ $achieveMandatory }}%">
+                          style="background-color: #22c55e; width: {{ $achieveMandatory }}%">
                         <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/40"></div>
                     </div>
                 </div>
@@ -555,7 +564,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-md border border-gray-200/80 shadow-xs">
-                            Selesai: <strong class="text-gray-900">{{ $c_skill }}</strong> / {{ $target_skill }}
+                            Completed: <strong class="text-gray-900">{{ $c_skill }}</strong> / {{ $target_skill }}
                         </span>
                         <span class="text-xs font-black px-2 py-0.5 rounded-md" style="background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;">
                             {{ $achieveSkill }}%
@@ -564,7 +573,7 @@
                 </div>
                 <div class="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden shadow-inner">
                     <div class="h-full rounded-full transition-all duration-1000 shadow-xs relative" 
-                         style="background-color: #0ea5e9; width: {{ $achieveSkill }}%">
+                          style="background-color: #0ea5e9; width: {{ $achieveSkill }}%">
                         <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/40"></div>
                     </div>
                 </div>
@@ -579,7 +588,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-md border border-gray-200/80 shadow-xs">
-                            Selesai: <strong class="text-gray-900">{{ $c_managerial }}</strong> / {{ $target_managerial }}
+                            Completed: <strong class="text-gray-900">{{ $c_managerial }}</strong> / {{ $target_managerial }}
                         </span>
                         <span class="text-xs font-black px-2 py-0.5 rounded-md" style="background-color: #fff1f2; border: 1px solid #fecdd3; color: #be123c;">
                             {{ $achieveManagerial }}%
@@ -588,7 +597,7 @@
                 </div>
                 <div class="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden shadow-inner">
                     <div class="h-full rounded-full transition-all duration-1000 shadow-xs relative" 
-                         style="background-color: #f43f5e; width: {{ $achieveManagerial }}%">
+                          style="background-color: #f43f5e; width: {{ $achieveManagerial }}%">
                         <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/40"></div>
                     </div>
                 </div>
@@ -599,10 +608,10 @@
         <div class="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500 relative z-10">
             <span class="flex items-center gap-1.5">
                 <i class="fas fa-check-double text-emerald-500"></i>
-                Status: Eva 1, Eva 2, & Eva 3 Selesai
+                Status: Eva 1, Eva 2, & Eva 3 Completed
             </span>
-            <a href="{{ route('training.show', $karyawan->id) }}" class="text-emerald-600 hover:text-emerald-700 font-bold hover:underline flex items-center gap-1">
-                Detail Pelatihan <i class="fas fa-arrow-right text-[10px]"></i>
+            <a href="{{ auth()->check() && strtolower((string) auth()->user()->role) === 'admin' ? route('training.show', $karyawan->id) : route('user-training.show', $karyawan->id) }}" class="text-emerald-600 hover:text-emerald-700 font-bold hover:underline flex items-center gap-1">
+                Training Details <i class="fas fa-arrow-right text-[10px]"></i>
             </a>
         </div>
     </div>
@@ -640,7 +649,7 @@
                 </div>
             @empty
                 <p class="text-sm text-gray-400 text-center py-6 italic bg-gray-50/50 rounded-xl border border-dashed border-gray-200 flex-1 flex items-center justify-center">
-                    Belum ada data sertifikasi.
+                    No certification data available.
                 </p>
             @endforelse
         </div>
@@ -742,10 +751,10 @@
                             <td class="px-3 py-3.5 text-center bg-white">
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                    <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                    <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -753,7 +762,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Via Character</td>
+                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">No Via Character data available</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -793,10 +802,10 @@
                             <td class="px-3 py-3.5 text-center bg-white">
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button" onclick="document.getElementById('editStrengthModal{{ $sw->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                    <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                    <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -804,7 +813,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">Belum ada data Strength & Weakness</td>
+                            <td colspan="{{ (auth()->user()->can('edit_journey') || auth()->user()->can('hapus_journey')) ? 3 : 2 }}" class="px-6 py-8 text-center text-gray-400 text-xs italic bg-gray-50/50">No Strength & Weakness data available</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -847,9 +856,9 @@
                     @if($isTL)
                         <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
                     @endif
-                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">DIRECTING - MODERAT</div>
-                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">MENTORING - MODERAT</div>
-                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">COACHING - MODERAT</div>
+                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">DIRECTING - MODERATE</div>
+                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">MENTORING - MODERATE</div>
+                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">COACHING - MODERATE</div>
                 </div>
                 
                 <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
@@ -860,9 +869,9 @@
                     @if($isTR)
                         <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
                     @endif
-                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - RENDAH</div>
-                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - RENDAH</div>
-                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - RENDAH</div>
+                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - LOW</div>
+                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - LOW</div>
+                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - LOW</div>
                 </div>
                 
                 <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
@@ -873,9 +882,9 @@
                     @if($isBL)
                         <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
                     @endif
-                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">DIRECTING - TINGGI</div>
-                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">MENTORING - TINGGI</div>
-                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">COACHING - TINGGI</div>
+                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">DIRECTING - HIGH</div>
+                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">MENTORING - HIGH</div>
+                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">COACHING - HIGH</div>
                 </div>
                 
                 <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
@@ -886,9 +895,9 @@
                     @if($isBR)
                         <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
                     @endif
-                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - MODERAT</div>
-                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - TINGGI</div>
-                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - MODERAT</div>
+                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - MODERATE</div>
+                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - HIGH</div>
+                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - MODERATE</div>
                 </div>
             </div>
         </div>
@@ -913,10 +922,10 @@
                     </div>
                 </div>
 
-                <!-- Realitas -->
+                <!-- Reality -->
                 <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
                     <div class="bg-[#3b82f6] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
-                        REALITAS
+                        REALITY
                     </div>
                     <div class="bg-[#dbeafe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_realitas ?: '' }}">
                         <div class="my-auto w-full">{{ $latestMentoring->grow_realitas ?: '-' }}</div>
@@ -957,18 +966,18 @@
                     <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl mb-2">
                         <i class="fas fa-seedling"></i>
                     </div>
-                    <p class="text-xs font-semibold text-gray-700">Belum ada data GROW Model</p>
-                    <p class="text-[11px] text-gray-400 mt-0.5">Input sesi mentoring untuk mengisi Goals, Realitas, Options, Wrap Up, & Insight.</p>
-                    <a href="{{ route('mentoring.show-employee', $karyawan->id) }}" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg transition-colors shadow-sm">
-                        <i class="fas fa-plus text-[10px]"></i> Buka Sesi Mentoring
+                    <p class="text-xs font-semibold text-gray-700">No GROW Model data available</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Enter mentoring session to fill Goals, Reality, Options, Wrap Up, & Insight.</p>
+                    <a href="{{ auth()->check() && strtolower((string) auth()->user()->role) === 'admin' ? route('mentoring.show-employee', $karyawan->id) : route('user-mentoring.show-employee', $karyawan->id) }}" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg transition-colors shadow-sm">
+                        <i class="fas fa-plus text-[10px]"></i> Open Mentoring Session
                     </a>
                 </div>
             @endif
         </div>
 
         <div class="mt-6 pt-1 flex justify-end shrink-0">
-            <a href="{{ route('mentoring.show-employee', $karyawan->id) }}" class="text-xs font-bold text-[#0ea5e9] hover:text-[#0284c7] inline-flex items-center gap-1.5 transition-colors group">
-                <span>Detail Mentoring</span>
+            <a href="{{ auth()->check() && strtolower((string) auth()->user()->role) === 'admin' ? route('mentoring.show-employee', $karyawan->id) : route('user-mentoring.show-employee', $karyawan->id) }}" class="text-xs font-bold text-[#0ea5e9] hover:text-[#0284c7] inline-flex items-center gap-1.5 transition-colors group">
+                <span>Mentoring Details</span>
                 <i class="fas fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform"></i>
             </a>
         </div>
@@ -989,7 +998,7 @@
                 <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                     <i class="fas fa-chart-line text-sm"></i>
                 </div>
-                <h3 class="text-base font-bold text-gray-900" id="modal-title">Tambah Perjalanan Karier</h3>
+                <h3 class="text-base font-bold text-gray-900" id="modal-title">Add Career Journey</h3>
             </div>
             <button type="button" onclick="document.getElementById('modalTambahKarier').classList.add('hidden')" class="text-gray-400 hover:text-gray-500 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
                 <i class="fas fa-times"></i>
@@ -1003,86 +1012,86 @@
             
             <div class="px-6 py-4 overflow-y-auto custom-scrollbar flex-1 max-h-[75vh]">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    <!-- Tahun Milestone -->
+                    <!-- Milestone Year -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tahun Milestone <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Milestone Year <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <i class="far fa-calendar-alt text-gray-400 text-xs"></i>
                             </div>
-                            <input type="number" name="tahun_karir" placeholder="Contoh: 2024" required class="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors">
+                            <input type="number" name="tahun_karir" placeholder="e.g. 2024" required class="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors">
                         </div>
                     </div>
 
-                    <!-- Departemen -->
+                    <!-- Department -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Department / Division <span class="text-red-500">*</span></label>
                         <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
-                            <option value="" disabled selected>Pilih Departemen...</option>
+                            <option value="" disabled selected>Select Department...</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Nama Posisi -->
+                    <!-- Position Name -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Nama Posisi / Jabatan <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Position / Title <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <i class="fas fa-user-tie text-gray-400 text-xs"></i>
                             </div>
-                            <input type="text" name="nama_posisi" placeholder="Contoh: Unit Head Operasional" required class="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors">
+                            <input type="text" name="nama_posisi" placeholder="e.g. Operational Unit Head" required class="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors">
                         </div>
                     </div>
 
-                    <!-- Tipe Milestone -->
+                    <!-- Milestone Type -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Milestone Type <span class="text-red-500">*</span></label>
                         <select name="tipe_milestone" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tipe_milestone') border-red-500 @enderror">
-                            <option value="aktif">Awal Bergabung</option>
-                            <option value="tetap">Tetap di Posisi</option>
-                            <option value="promosi">Promosi</option>
-                            <option value="rotasi">Rotasi</option>
-                            <option value="demosi">Demosi</option>
+                            <option value="aktif">Initial Join</option>
+                            <option value="tetap">Stay in Role</option>
+                            <option value="promosi">Promotion</option>
+                            <option value="rotasi">Rotation</option>
+                            <option value="demosi">Demotion</option>
                         </select>
                     </div>
 
-                    <!-- Status Pencapaian -->
+                    <!-- Achievement Status -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Status Pencapaian <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Achievement Status <span class="text-red-500">*</span></label>
                         <div class="flex flex-col sm:flex-row gap-2">
-                            <!-- Radio 1: Riwayat / Selesai -->
+                            <!-- Radio 1: History / Completed -->
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="status_pencapaian" value="riwayat/selesai" class="peer sr-only">
                                 <div class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-gray-600 bg-gray-50 flex items-center justify-center gap-1.5 text-xs font-medium transition-all peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-700 hover:bg-gray-100">
-                                    <i class="fas fa-check-circle text-[10px]"></i> Riwayat (Selesai)
+                                    <i class="fas fa-check-circle text-[10px]"></i> History (Completed)
                                 </div>
                             </label>
-                            <!-- Radio 2: Aktif / Tercapai -->
+                            <!-- Radio 2: Active / Current -->
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="status_pencapaian" value="aktif/tercapai" class="peer sr-only" checked>
                                 <div class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-gray-600 bg-gray-50 flex items-center justify-center gap-1.5 text-xs font-medium transition-all peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-700 hover:bg-gray-100">
-                                    <i class="fas fa-map-marker-alt text-[10px]"></i> Aktif (Saat Ini)
+                                    <i class="fas fa-map-marker-alt text-[10px]"></i> Active (Current)
                                 </div>
                             </label>
-                            <!-- Radio 3: Proyeksi / Target -->
+                            <!-- Radio 3: Projection / Target -->
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="status_pencapaian" value="proyeksi/target" class="peer sr-only">
                                 <div class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-gray-600 bg-gray-50 flex items-center justify-center gap-1.5 text-xs font-medium transition-all peer-checked:bg-sky-50 peer-checked:border-sky-500 peer-checked:text-sky-700 hover:bg-gray-100">
                                     <div class="w-2.5 h-2.5 rounded-full border-2 border-gray-300 peer-checked:border-sky-500 flex items-center justify-center">
                                         <div class="w-1 h-1 bg-transparent rounded-full peer-checked:bg-sky-500"></div>
                                     </div> 
-                                    Proyeksi (Target)
+                                    Projection (Target)
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <!-- Catatan Jabatan -->
+                    <!-- Position Notes -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Catatan / Detail Jabatan</label>
-                        <textarea name="catatan_detail" rows="2" placeholder="Uraian singkat peran..." class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors resize-none"></textarea>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Position Notes / Details</label>
+                        <textarea name="catatan_detail" rows="2" placeholder="Brief description of the role..." class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors resize-none"></textarea>
                     </div>
 
                     <!-- Award -->
@@ -1092,7 +1101,7 @@
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <i class="fas fa-graduation-cap text-gray-400 text-xs"></i>
                             </div>
-                            <input type="text" name="operational_award" placeholder="Contoh: ISO 9001 Auditor" class="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors">
+                            <input type="text" name="operational_award" placeholder="e.g. ISO 9001 Auditor" class="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors">
                         </div>
                     </div>
                 </div>
@@ -1104,7 +1113,7 @@
                     Cancel
                 </button>
                 <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] shadow-sm flex items-center gap-1.5 transition-colors">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> Save Career
                 </button>
             </div>
         </form>
@@ -1123,7 +1132,7 @@
                 <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
                     <i class="fas fa-pen text-sm"></i>
                 </div>
-                <h3 class="text-base font-bold text-gray-900">Edit Perjalanan Karier</h3>
+                <h3 class="text-base font-bold text-gray-900">Edit Career Journey</h3>
             </div>
             <button type="button" onclick="document.getElementById('modalEditKarier_{{ $pk->id }}').classList.add('hidden')" class="text-gray-400 hover:text-gray-500 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
                 <i class="fas fa-times"></i>
@@ -1134,9 +1143,9 @@
             @method('PUT')
             <div class="px-6 py-4 overflow-y-auto custom-scrollbar flex-1 max-h-[75vh]">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    <!-- Tahun Milestone -->
+                    <!-- Milestone Year -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tahun Milestone <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Milestone Year <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <i class="far fa-calendar-alt text-gray-400 text-xs"></i>
@@ -1145,9 +1154,9 @@
                         </div>
                     </div>
 
-                    <!-- Departemen -->
+                    <!-- Department -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen / Divisi <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Department / Division <span class="text-red-500">*</span></label>
                         <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->id }}" {{ $pk->department_id == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
@@ -1155,9 +1164,9 @@
                         </select>
                     </div>
 
-                    <!-- Nama Posisi -->
+                    <!-- Position Name -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Nama Posisi / Jabatan <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Position / Title <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <i class="fas fa-user-tie text-gray-400 text-xs"></i>
@@ -1166,32 +1175,32 @@
                         </div>
                     </div>
 
-                    <!-- Tipe Milestone -->
+                    <!-- Milestone Type -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Milestone <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Milestone Type <span class="text-red-500">*</span></label>
                         <select name="tipe_milestone" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tipe_milestone') border-red-500 @enderror">
-                            <option value="aktif" {{ $pk->tipe_milestone == 'aktif' ? 'selected' : '' }}>Awal Bergabung</option>
-                            <option value="tetap" {{ $pk->tipe_milestone == 'tetap' ? 'selected' : '' }}>Tetap di Posisi</option>
-                            <option value="promosi" {{ $pk->tipe_milestone == 'promosi' ? 'selected' : '' }}>Promosi</option>
-                            <option value="rotasi" {{ $pk->tipe_milestone == 'rotasi' ? 'selected' : '' }}>Rotasi</option>
-                            <option value="demosi" {{ $pk->tipe_milestone == 'demosi' ? 'selected' : '' }}>Demosi</option>
+                            <option value="aktif" {{ $pk->tipe_milestone == 'aktif' ? 'selected' : '' }}>Initial Join</option>
+                            <option value="tetap" {{ $pk->tipe_milestone == 'tetap' ? 'selected' : '' }}>Stay in Role</option>
+                            <option value="promosi" {{ $pk->tipe_milestone == 'promosi' ? 'selected' : '' }}>Promotion</option>
+                            <option value="rotasi" {{ $pk->tipe_milestone == 'rotasi' ? 'selected' : '' }}>Rotation</option>
+                            <option value="demosi" {{ $pk->tipe_milestone == 'demosi' ? 'selected' : '' }}>Demotion</option>
                         </select>
                     </div>
 
-                    <!-- Status Pencapaian -->
+                    <!-- Achievement Status -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Status Pencapaian <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Achievement Status <span class="text-red-500">*</span></label>
                         <div class="flex flex-col sm:flex-row gap-2">
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="status_pencapaian" value="riwayat/selesai" class="peer sr-only" {{ $pk->status_pencapaian == 'riwayat/selesai' ? 'checked' : '' }}>
                                 <div class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-gray-600 bg-gray-50 flex items-center justify-center gap-1.5 text-xs font-medium transition-all peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-700 hover:bg-gray-100">
-                                    <i class="fas fa-check-circle text-[10px]"></i> Riwayat (Selesai)
+                                    <i class="fas fa-check-circle text-[10px]"></i> History (Completed)
                                 </div>
                             </label>
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="status_pencapaian" value="aktif/tercapai" class="peer sr-only" {{ $pk->status_pencapaian == 'aktif/tercapai' ? 'checked' : '' }}>
                                 <div class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-gray-600 bg-gray-50 flex items-center justify-center gap-1.5 text-xs font-medium transition-all peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-700 hover:bg-gray-100">
-                                    <i class="fas fa-map-marker-alt text-[10px]"></i> Aktif (Saat Ini)
+                                    <i class="fas fa-map-marker-alt text-[10px]"></i> Active (Current)
                                 </div>
                             </label>
                             <label class="flex-1 cursor-pointer">
@@ -1200,15 +1209,15 @@
                                     <div class="w-2.5 h-2.5 rounded-full border-2 border-gray-300 peer-checked:border-sky-500 flex items-center justify-center">
                                         <div class="w-1 h-1 bg-transparent rounded-full peer-checked:bg-sky-500"></div>
                                     </div> 
-                                    Proyeksi (Target)
+                                    Projection (Target)
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <!-- Catatan Jabatan -->
+                    <!-- Position Notes -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Catatan / Detail Jabatan</label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Position Notes / Details</label>
                         <textarea name="catatan_detail" rows="2" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-sky-100 focus:border-[#0ea5e9] transition-colors resize-none">{{ $pk->catatan_detail }}</textarea>
                     </div>
 
@@ -1226,7 +1235,7 @@
             </div>
             <div class="bg-gray-50/80 px-6 py-3.5 rounded-b-2xl border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
                 <button type="button" onclick="document.getElementById('modalEditKarier_{{ $pk->id }}').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] shadow-sm flex items-center gap-1.5 transition-colors"><i class="fas fa-save"></i> Update</button>
+                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] shadow-sm flex items-center gap-1.5 transition-colors"><i class="fas fa-save"></i> Update Career</button>
             </div>
         </form>
     </div>
@@ -1276,7 +1285,7 @@
             <!-- Footer tombol dibuat lebih ringkas -->
             <div class="flex justify-end gap-2.5 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('editScarfModal').classList.add('hidden')" class="px-4 py-1.5 text-[13px] font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
-                <button type="submit" class="px-4 py-1.5 text-[13px] font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
+                <button type="submit" class="px-4 py-1.5 text-[13px] font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Save</button>
             </div>
         </form>
     </div>
@@ -1286,7 +1295,7 @@
 <div id="addViaCharacterModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 transition-opacity" style="background-color: rgba(0, 0, 0, 0.5);" onclick="if(event.target === this) this.classList.add('hidden')">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all relative z-[10000]">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h3 class="text-lg font-bold text-gray-900">Tambah Via Character</h3>
+            <h3 class="text-lg font-bold text-gray-900">Add Via Character</h3>
             <button type="button" onclick="document.getElementById('addViaCharacterModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -1349,7 +1358,7 @@
 <div id="addStrengthModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 transition-opacity" style="background-color: rgba(0, 0, 0, 0.5);" onclick="if(event.target === this) this.classList.add('hidden')">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all relative z-[10000]">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h3 class="text-lg font-bold text-gray-900">Tambah Strength & Weakness</h3>
+            <h3 class="text-lg font-bold text-gray-900">Add Strength & Weakness</h3>
             <button type="button" onclick="document.getElementById('addStrengthModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -1503,7 +1512,7 @@
                 data: {
                     labels: formattedLabels,
                     datasets: [{
-                        label: 'Skor Saat Ini',
+                        label: 'Current Score',
                         data: currentData,
                         fill: true,
                         backgroundColor: 'rgba(14, 165, 233, 0.2)', // Sky blue

@@ -26,17 +26,17 @@
                 </h3>
                 <div class="space-y-4">
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Pendidikan</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Education</p>
                         <p class="font-bold text-gray-800 text-sm">{{ $employee->pendidikan ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Tgl Lahir</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Birth Date</p>
                         <p class="font-bold text-gray-800 text-sm">
-                            {{ $employee->tanggal_lahir ? \Carbon\Carbon::parse($employee->tanggal_lahir)->format('d M Y') . ' (' . \Carbon\Carbon::parse($employee->tanggal_lahir)->age . ' Thn)' : '-' }}
+                            {{ $employee->tanggal_lahir ? \Carbon\Carbon::parse($employee->tanggal_lahir)->format('d M Y') . ' (' . \Carbon\Carbon::parse($employee->tanggal_lahir)->age . ' Yrs)' : '-' }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">No. HP</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Phone</p>
                         <p class="font-bold text-gray-800 text-sm">{{ $employee->kontak ?? '-' }}</p>
                     </div>
                     <div>
@@ -57,7 +57,7 @@
                         <p class="font-bold text-gray-800 text-sm">{{ $employee->npk ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Departemen</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Department</p>
                         <p class="font-bold text-gray-800 text-sm">{{ $employee->department->nama_departemen ?? '-' }}</p>
                     </div>
                     <div>
@@ -65,7 +65,7 @@
                         <p class="font-bold text-gray-800 text-sm">{{ $employee->grade ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Lama Bekerja</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Length of Service</p>
                         <p class="font-bold text-gray-800 text-sm">
                             @php
                                 $diffString = '-';
@@ -73,7 +73,7 @@
                                     try {
                                         $start = \Carbon\Carbon::parse($employee->masuk_kerja);
                                         $diff = $start->diff(\Carbon\Carbon::now());
-                                        $diffString = $diff->y . ' Thn ' . $diff->m . ' Bln';
+                                        $diffString = $diff->y . ' Yrs ' . $diff->m . ' Mos';
                                     } catch (\Exception $e) {
                                         $diffString = $employee->masuk_kerja; 
                                     }

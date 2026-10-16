@@ -183,7 +183,7 @@
             <div class="mt-3 flex justify-end gap-2 pt-3 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('modal-kb').classList.add('hidden')" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
                 <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                    <i class="fas fa-save text-[10px]"></i> Simpan
+                    <i class="fas fa-save text-[10px]"></i> Save
                 </button>
             </div>
         </form>
@@ -210,19 +210,19 @@
             
             <div class="grid grid-cols-2 gap-x-3 gap-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1 pb-1">
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Sistematika Kerja</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Work Systematics</label>
                     <input type="number" step="0.1" min="0" max="5" name="sk_sistematika_kerja" value="{{ $activeReport->sk_sistematika_kerja ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Daya Tahan Kerja</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Endurance Kerja</label>
                     <input type="number" step="0.1" min="0" max="5" name="sk_daya_tahan" value="{{ $activeReport->sk_daya_tahan ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Fleksibilitas Kerja</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Work Flexibility</label>
                     <input type="number" step="0.1" min="0" max="5" name="sk_fleksibilitas" value="{{ $activeReport->sk_fleksibilitas ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Perhatian terhadap Detail</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Attention to Detail</label>
                     <input type="number" step="0.1" min="0" max="5" name="sk_perhatian_detail" value="{{ $activeReport->sk_perhatian_detail ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
             </div>
@@ -230,7 +230,7 @@
             <div class="mt-3 flex justify-end gap-2 pt-3 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('modal-sk').classList.add('hidden')" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
                 <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                    <i class="fas fa-save text-[10px]"></i> Simpan
+                    <i class="fas fa-save text-[10px]"></i> Save
                 </button>
             </div>
         </form>
@@ -285,7 +285,7 @@
             <div class="mt-3 flex justify-end gap-2 pt-3 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('modal-kp').classList.add('hidden')" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
                 <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                    <i class="fas fa-save text-[10px]"></i> Simpan
+                    <i class="fas fa-save text-[10px]"></i> Save
                 </button>
             </div>
         </form>
@@ -352,7 +352,7 @@
             <div class="mt-3 flex justify-end gap-2 pt-3 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('modal-ms').classList.add('hidden')" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
                 <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                    <i class="fas fa-save text-[10px]"></i> Simpan
+                    <i class="fas fa-save text-[10px]"></i> Save
                 </button>
             </div>
         </form>
@@ -427,19 +427,19 @@
         </div>
         <div class="space-y-3 z-20 relative">
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Sistematika Kerja</span>
+                <span class="text-gray-600">Work Systematics</span>
                 <span class="font-bold text-[#b58514]">{{ $activeReport ? number_format((float)$activeReport->sk_sistematika_kerja, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Daya Tahan Kerja</span>
+                <span class="text-gray-600">Endurance Kerja</span>
                 <span class="font-bold text-[#b58514]">{{ $activeReport ? number_format((float)$activeReport->sk_daya_tahan, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Fleksibilitas Kerja</span>
+                <span class="text-gray-600">Work Flexibility</span>
                 <span class="font-bold text-[#b58514]">{{ $activeReport ? number_format((float)$activeReport->sk_fleksibilitas, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Perhatian terhadap Detail</span>
+                <span class="text-gray-600">Attention to Detail</span>
                 <span class="font-bold text-[#b58514]">{{ $activeReport ? number_format((float)$activeReport->sk_perhatian_detail, 1) : '0.0' }} / 5</span>
             </div>
         </div>
@@ -629,7 +629,7 @@
         new Chart(document.getElementById('chartSK').getContext('2d'), {
             type: 'radar',
             data: {
-                labels: ['Sistematika Kerja', 'Daya Tahan', 'Fleksibilitas Kerja', 'Perhatian thd Detail'],
+                labels: ['Work Systematics', 'Endurance', 'Work Flexibility', 'Attention to Detail'],
                 datasets: [{
                     data: [
                         {{ $activeReport?->sk_sistematika_kerja ?? 0 }},

@@ -9,7 +9,7 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">Tambah User</h2>
+                <h2 class="text-xl font-bold text-gray-900">Add User</h2>
                 <p class="text-sm text-gray-500 mt-1">Tambahkan akun pengguna baru ke dalam sistem</p>
             </div>
             <a href="{{ route('user-management.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">

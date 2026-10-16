@@ -10,7 +10,7 @@
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
                 <h2 class="text-xl font-bold text-gray-900">Edit User</h2>
-                <p class="text-sm text-gray-500 mt-1">Ubah data akun pengguna</p>
+                <p class="text-sm text-gray-500 mt-1">Modify user account data</p>
             </div>
             <a href="{{ route('user-management.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>

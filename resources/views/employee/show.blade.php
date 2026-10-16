@@ -51,10 +51,10 @@
                         @canany(['edit_karyawan', 'hapus_karyawan'])
                         <td class="px-6 py-4 text-center flex justify-center gap-2">
                             <button onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-emerald-500 hover:text-emerald-700 transition-colors p-1 rounded hover:bg-emerald-50" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                            <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                            <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
                             </form>
                         </td>
                         @endcanany
@@ -98,10 +98,10 @@
                         @canany(['edit_karyawan', 'hapus_karyawan'])
                         <td class="px-6 py-4 text-center flex justify-center gap-2">
                             <button onclick="document.getElementById('editStrengthModal{{ $st->id }}').classList.remove('hidden')" class="text-emerald-500 hover:text-emerald-700 transition-colors p-1 rounded hover:bg-emerald-50" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                            <form action="{{ route('employee-strength.destroy', $st->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                            <form action="{{ route('employee-strength.destroy', $st->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
                             </form>
                         </td>
                         @endcanany
@@ -198,40 +198,40 @@
     <div class="w-full rounded-xl overflow-hidden grid grid-cols-2 shadow-sm border border-gray-100 font-bold text-[10px] tracking-wide text-white">
         <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
         <div class="bg-[#facd42] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 text-[#8a6800] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - MODERAT</div>
-            <div>COACHING - MODERAT</div>
+            <div>DIRECTING - MODERATE</div>
+            <div>MENTORING - MODERATE</div>
+            <div>COACHING - MODERATE</div>
         </div>
         
         <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
         <div class="bg-[#4485f5] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - RENDAH</div>
-            <div>MENTORING - RENDAH</div>
-            <div>COACHING - RENDAH</div>
+            <div>DIRECTING - LOW</div>
+            <div>MENTORING - LOW</div>
+            <div>COACHING - LOW</div>
         </div>
         
         <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
         <div class="bg-[#78c87f] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 text-[#205724] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - TINGGI</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - TINGGI</div>
+            <div>DIRECTING - HIGH</div>
+            <div>MENTORING - HIGH</div>
+            <div>COACHING - HIGH</div>
         </div>
         
         <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
         <div class="bg-[#f05051] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - MODERAT</div>
+            <div>DIRECTING - MODERATE</div>
+            <div>MENTORING - HIGH</div>
+            <div>COACHING - MODERATE</div>
         </div>
     </div>
 </div>
 
 @push('modals')
-<!-- Modal Tambah Via Character -->
+<!-- Modal Add Via Character -->
 <div id="addViaCharacterModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 transition-opacity">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all relative z-[10000]">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h3 class="text-lg font-bold text-gray-900">Tambah Via Character</h3>
+            <h3 class="text-lg font-bold text-gray-900">Add Via Character</h3>
             <button type="button" onclick="document.getElementById('addViaCharacterModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -257,11 +257,11 @@
     </div>
 </div>
 
-<!-- Modal Tambah Strength & Weakness -->
+<!-- Modal Add Strength & Weakness -->
 <div id="addStrengthModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 transition-opacity">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all relative z-[10000]">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h3 class="text-lg font-bold text-gray-900">Tambah Strength & Weakness</h3>
+            <h3 class="text-lg font-bold text-gray-900">Add Strength & Weakness</h3>
             <button type="button" onclick="document.getElementById('addStrengthModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -313,7 +313,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Perbarui</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>
@@ -346,7 +346,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('editStrengthModal{{ $st->id }}').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Perbarui</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>

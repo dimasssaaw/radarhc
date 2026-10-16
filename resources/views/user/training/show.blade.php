@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Detail Training')
+@section('title', 'Training Details')
 @section('content')
     <div x-data="{
         showFormModal: {{ $errors->any() ? 'true' : 'false' }},
         showUploadModal: false,
         uploadEva: '',
         uploadId: null,
-        formTitle: 'Tambah Training',
+        formTitle: 'Add Training',
         formAction: '{{ route('training.store-history', $employee->id) }}',
         formMethod: 'POST',
         activeEvaTab: 'eva1',
@@ -45,10 +45,10 @@
                     const data = await response.json();
                     this.formErrors = data.errors;
                 } else {
-                    alert('Terjadi kesalahan di server.');
+                    alert('A server error occurred.');
                 }
             } catch (err) {
-                alert('Gagal terhubung ke server.');
+                alert('Failed to connect to the server.');
             } finally {
                 this.isSubmitting = false;
             }
@@ -98,7 +98,7 @@
                     <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
                         <a href="{{ route('user-training.index') }}" class="hover:text-gray-700 transition-colors">Training</a>
                         <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
-                        <span class="text-gray-900 font-medium">Detail Training</span>
+                        <span class="text-gray-900 font-medium">Training Details</span>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -148,7 +148,7 @@
                         <!-- Manajerial -->
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-700">Manajerial</span>
+                                <span class="text-sm font-medium text-gray-700">Managerial</span>
                                 <span class="text-sm font-bold text-[#f43f5e]">{{ $achieveManagerial }}%</span>
                             </div>
                             <div class="w-full bg-gray-100 rounded-full h-3">
@@ -173,7 +173,7 @@
                             :type="showEditTarget ? 'submit' : 'button'" form="training-target-form"
                             class="bg-[#06b6d4] hover:bg-[#0891b2] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
                             <i class="fas" :class="showEditTarget ? 'fa-save' : 'fa-edit'"></i>
-                            <span x-text="showEditTarget ? 'Simpan' : 'Edit Data'"></span>
+                            <span x-text="showEditTarget ? 'Save' : 'Edit Data'"></span>
                         </button>
 @endcan
                     </div>
@@ -220,7 +220,7 @@
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-[#f43f5e]"></div> Manajerial
+                                        <div class="w-2 h-2 rounded-full bg-[#f43f5e]"></div> Managerial
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         <span x-show="!showEditTarget">{{ $training->target_managerial }}</span>
@@ -263,7 +263,7 @@
                                     </div>
                                     <div class="mt-2 text-center sm:mt-0 sm:ml-3 sm:text-left w-full">
                                         <h3 class="text-base font-medium leading-6 text-gray-900" id="modal-title">Edit
-                                            Target Training</h3>
+                                            Training Target</h3>
                                         <div class="mt-3">
                                             <form action="{{ route('training.update-target', $employee->id) }}"
                                                 method="POST">
@@ -287,7 +287,7 @@
                                                     </div>
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-700 mb-1">Target
-                                                            Manajerial</label>
+                                                            Managerial</label>
                                                         <input type="number" name="target_managerial"
                                                             value="{{ $training->target_managerial }}"
                                                             class="w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
@@ -296,8 +296,7 @@
                                                 </div>
                                                 <div class="mt-4 sm:flex sm:flex-row-reverse">
                                                     <button type="submit"
-                                                        class="inline-flex justify-center w-full px-3 py-1.5 text-sm font-medium text-white bg-cyan-600 border border-transparent rounded-md shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:ml-3 sm:w-auto">Simpan
-                                                        Perubahan</button>
+                                                        class="inline-flex justify-center w-full px-3 py-1.5 text-sm font-medium text-white bg-cyan-600 border border-transparent rounded-md shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:ml-3 sm:w-auto">Save Changes</button>
                                                     <button type="button" @click="showEditTarget = false"
                                                         class="inline-flex justify-center w-full px-3 py-1.5 mt-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:mt-0 sm:w-auto">Cancel</button>
                                                 </div>
@@ -317,9 +316,9 @@
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-bold text-gray-900">Mandatory Training</h3>
                     @can('tambah_training')
-<button @click="openModal('Tambah Mandatory Training', 'mandatory')"
+<button @click="openModal('Add Mandatory Training', 'mandatory')"
                         class="bg-white border border-[#22c55e] text-[#22c55e] hover:bg-green-50 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                        <i class="fas fa-plus"></i> Tambah
+                        <i class="fas fa-plus"></i> Add
                     </button>
 @endcan
                 </div>
@@ -347,7 +346,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva1_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#22c55e] focus:border-[#22c55e] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rm->eva1_status) || $rm->eva1_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rm->eva1_status) || $rm->eva1_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rm->eva1_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rm->eva1_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rm->eva1_status === 'remedial')>Remedial</option>
@@ -366,7 +365,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva2_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#22c55e] focus:border-[#22c55e] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rm->eva2_status) || $rm->eva2_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rm->eva2_status) || $rm->eva2_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rm->eva2_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rm->eva2_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rm->eva2_status === 'remedial')>Remedial</option>
@@ -385,7 +384,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva3_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#22c55e] focus:border-[#22c55e] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rm->eva3_status) || $rm->eva3_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rm->eva3_status) || $rm->eva3_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rm->eva3_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rm->eva3_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rm->eva3_status === 'remedial')>Remedial</option>
@@ -416,36 +415,33 @@
                                             @if ($rm->eva1_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rm->eva1_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 1</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 1 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva1', {{ $rm->id }})"
-                                                    class="text-xs border border-[#22c55e] text-[#22c55e] px-2 py-1 rounded hover:bg-green-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#22c55e] text-[#22c55e] px-2 py-1 rounded hover:bg-green-50">+ Attachment</button>
                                             @endif
                                         </div>
                                         <div x-show="selectedEva === 'eva2'" style="display: none;">
                                             @if ($rm->eva2_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rm->eva2_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 2</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 2 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva2', {{ $rm->id }})"
-                                                    class="text-xs border border-[#22c55e] text-[#22c55e] px-2 py-1 rounded hover:bg-green-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#22c55e] text-[#22c55e] px-2 py-1 rounded hover:bg-green-50">+ Attachment</button>
                                             @endif
                                         </div>
                                         <div x-show="selectedEva === 'eva3'" style="display: none;">
                                             @if ($rm->eva3_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rm->eva3_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 3</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 3 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva3', {{ $rm->id }})"
-                                                    class="text-xs border border-[#22c55e] text-[#22c55e] px-2 py-1 rounded hover:bg-green-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#22c55e] text-[#22c55e] px-2 py-1 rounded hover:bg-green-50">+ Attachment</button>
                                             @endif
                                         </div>
                                     </td>
@@ -460,13 +456,13 @@
                                             @can('hapus_training')
 <form action="{{ route('training.destroy-history', $rm->id) }}"
                                                 method="POST" hx-boost="false"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat ini?');"
+                                                onsubmit="return confirm('Are you sure you want to delete this history?');"
                                                 class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                     class="text-gray-400 hover:text-red-500 transition-colors"
-                                                    title="Hapus training"><i class="fas fa-trash"></i></button>
+                                                    title="Delete training"><i class="fas fa-trash"></i></button>
                                             </form>
 @endcan
                                         </div>
@@ -489,9 +485,9 @@
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-bold text-gray-900">Skill Training</h3>
                     @can('tambah_training')
-<button @click="openModal('Tambah Skill Training', 'skill')"
+<button @click="openModal('Add Skill Training', 'skill')"
                         class="bg-white border border-[#0ea5e9] text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                        <i class="fas fa-plus"></i> Tambah
+                        <i class="fas fa-plus"></i> Add
                     </button>
 @endcan
                 </div>
@@ -520,7 +516,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva1_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#0ea5e9] focus:border-[#0ea5e9] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rs->eva1_status) || $rs->eva1_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rs->eva1_status) || $rs->eva1_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rs->eva1_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rs->eva1_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rs->eva1_status === 'remedial')>Remedial</option>
@@ -539,7 +535,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva2_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#0ea5e9] focus:border-[#0ea5e9] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rs->eva2_status) || $rs->eva2_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rs->eva2_status) || $rs->eva2_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rs->eva2_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rs->eva2_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rs->eva2_status === 'remedial')>Remedial</option>
@@ -558,7 +554,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva3_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#0ea5e9] focus:border-[#0ea5e9] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rs->eva3_status) || $rs->eva3_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rs->eva3_status) || $rs->eva3_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rs->eva3_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rs->eva3_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rs->eva3_status === 'remedial')>Remedial</option>
@@ -589,36 +585,33 @@
                                             @if ($rs->eva1_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rs->eva1_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 1</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 1 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva1', {{ $rs->id }})"
-                                                    class="text-xs border border-[#0ea5e9] text-[#0ea5e9] px-2 py-1 rounded hover:bg-sky-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#0ea5e9] text-[#0ea5e9] px-2 py-1 rounded hover:bg-sky-50">+ Attachment</button>
                                             @endif
                                         </div>
                                         <div x-show="selectedEva === 'eva2'" style="display: none;">
                                             @if ($rs->eva2_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rs->eva2_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 2</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 2 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva2', {{ $rs->id }})"
-                                                    class="text-xs border border-[#0ea5e9] text-[#0ea5e9] px-2 py-1 rounded hover:bg-sky-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#0ea5e9] text-[#0ea5e9] px-2 py-1 rounded hover:bg-sky-50">+ Attachment</button>
                                             @endif
                                         </div>
                                         <div x-show="selectedEva === 'eva3'" style="display: none;">
                                             @if ($rs->eva3_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rs->eva3_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 3</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 3 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva3', {{ $rs->id }})"
-                                                    class="text-xs border border-[#0ea5e9] text-[#0ea5e9] px-2 py-1 rounded hover:bg-sky-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#0ea5e9] text-[#0ea5e9] px-2 py-1 rounded hover:bg-sky-50">+ Attachment</button>
                                             @endif
                                         </div>
                                     </td>
@@ -633,13 +626,13 @@
                                             @can('hapus_training')
 <form action="{{ route('training.destroy-history', $rs->id) }}"
                                                 method="POST" hx-boost="false"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat ini?');"
+                                                onsubmit="return confirm('Are you sure you want to delete this history?');"
                                                 class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                     class="text-gray-400 hover:text-red-500 transition-colors"
-                                                    title="Hapus training"><i class="fas fa-trash"></i></button>
+                                                    title="Delete training"><i class="fas fa-trash"></i></button>
                                             </form>
 @endcan
                                         </div>
@@ -662,9 +655,9 @@
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-bold text-gray-900">Managerial Training</h3>
                     @can('tambah_training')
-<button @click="openModal('Tambah Managerial Training', 'managerial')"
+<button @click="openModal('Add Managerial Training', 'managerial')"
                         class="bg-white border border-[#f43f5e] text-[#f43f5e] hover:bg-rose-50 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                        <i class="fas fa-plus"></i> Tambah
+                        <i class="fas fa-plus"></i> Add
                     </button>
 @endcan
                 </div>
@@ -692,7 +685,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva1_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#f43f5e] focus:border-[#f43f5e] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rmn->eva1_status) || $rmn->eva1_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rmn->eva1_status) || $rmn->eva1_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rmn->eva1_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rmn->eva1_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rmn->eva1_status === 'remedial')>Remedial</option>
@@ -711,7 +704,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva2_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#f43f5e] focus:border-[#f43f5e] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rmn->eva2_status) || $rmn->eva2_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rmn->eva2_status) || $rmn->eva2_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rmn->eva2_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rmn->eva2_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rmn->eva2_status === 'remedial')>Remedial</option>
@@ -730,7 +723,7 @@
                                                 <div class="relative inline-block w-full min-w-[110px]">
                                                     <select name="eva3_status" @change="fetch($el.form.action, { method: 'POST', body: new FormData($el.form), headers: {'X-Requested-With': 'XMLHttpRequest'} }).then(r => r.text()).then(h => { let doc = new DOMParser().parseFromString(h, 'text/html'); let target = document.querySelector('.min-h-full'); target.innerHTML = doc.querySelector('.min-h-full').innerHTML; setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); })"
                                                         class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[#f43f5e] focus:border-[#f43f5e] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                        <option value="" disabled @selected(empty($rmn->eva3_status) || $rmn->eva3_status === 'pending')>-- Pilih Status --</option>
+                                                        <option value="" disabled @selected(empty($rmn->eva3_status) || $rmn->eva3_status === 'pending')>-- Select Status --</option>
                                                         <option value="completed" @selected($rmn->eva3_status === 'completed')>Completed</option>
                                                         <option value="in_progress" @selected($rmn->eva3_status === 'in_progress')>In Progress</option>
                                                         <option value="remedial" @selected($rmn->eva3_status === 'remedial')>Remedial</option>
@@ -761,36 +754,33 @@
                                             @if ($rmn->eva1_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rmn->eva1_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 1</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 1 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva1', {{ $rmn->id }})"
-                                                    class="text-xs border border-[#f43f5e] text-[#f43f5e] px-2 py-1 rounded hover:bg-rose-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#f43f5e] text-[#f43f5e] px-2 py-1 rounded hover:bg-rose-50">+ Attachment</button>
                                             @endif
                                         </div>
                                         <div x-show="selectedEva === 'eva2'" style="display: none;">
                                             @if ($rmn->eva2_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rmn->eva2_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 2</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 2 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva2', {{ $rmn->id }})"
-                                                    class="text-xs border border-[#f43f5e] text-[#f43f5e] px-2 py-1 rounded hover:bg-rose-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#f43f5e] text-[#f43f5e] px-2 py-1 rounded hover:bg-rose-50">+ Attachment</button>
                                             @endif
                                         </div>
                                         <div x-show="selectedEva === 'eva3'" style="display: none;">
                                             @if ($rmn->eva3_lampiran)
                                                 <a href="{{ Storage::disk('hrg')->url($rmn->eva3_lampiran) }}" target="_blank"
                                                     class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1"><i
-                                                        class="fas fa-file-pdf text-red-500"></i> Lampiran EVA 3</a>
+                                                        class="fas fa-file-pdf text-red-500"></i> EVA 3 Attachment</a>
                                             @else
                                                 <button type="button"
                                                     @click="openUploadModal('eva3', {{ $rmn->id }})"
-                                                    class="text-xs border border-[#f43f5e] text-[#f43f5e] px-2 py-1 rounded hover:bg-rose-50">+
-                                                    Lampiran</button>
+                                                    class="text-xs border border-[#f43f5e] text-[#f43f5e] px-2 py-1 rounded hover:bg-rose-50">+ Attachment</button>
                                             @endif
                                         </div>
                                     </td>
@@ -805,13 +795,13 @@
                                             @can('hapus_training')
 <form action="{{ route('training.destroy-history', $rmn->id) }}"
                                                 method="POST" hx-boost="false"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat ini?');"
+                                                onsubmit="return confirm('Are you sure you want to delete this history?');"
                                                 class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                     class="text-gray-400 hover:text-red-500 transition-colors"
-                                                    title="Hapus training"><i class="fas fa-trash"></i></button>
+                                                    title="Delete training"><i class="fas fa-trash"></i></button>
                                             </form>
 @endcan
                                         </div>
@@ -851,7 +841,7 @@
 
                             <!-- Header -->
                             <div class="px-5 py-2.5 flex justify-between items-center border-b border-gray-100 bg-white">
-                                <h2 class="text-[15px] font-bold text-gray-800" x-text="formTitle">Tambah Training</h2>
+                                <h2 class="text-[15px] font-bold text-gray-800" x-text="formTitle">Add Training</h2>
                                 <button @click="showFormModal = false" type="button"
                                     class="text-gray-400 hover:text-gray-600 p-1 transition-colors">
                                     <i class="fas fa-times text-lg"></i>
@@ -865,9 +855,9 @@
                                 <div class="space-y-3.5">
                                     <!-- Nama Training -->
                                     <div>
-                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Nama Training</label>
+                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Training Name</label>
                                         <input type="text" name="nama_training" x-model="formData.nama"
-                                            placeholder="cth. Advanced Negotiation Skills"
+                                            placeholder="e.g. Advanced Negotiation Skills"
                                             :class="formErrors.nama_training ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-200 focus:ring-sky-500 focus:border-sky-500'"
                                             class="w-full border rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 placeholder-gray-400 font-semibold bg-white">
                                         <p x-show="formErrors.nama_training" class="text-red-500 text-xs mt-1" x-text="formErrors.nama_training ? formErrors.nama_training[0] : ''" style="display: none;"></p>
@@ -875,7 +865,7 @@
 
                                     <!-- Tanggal -->
                                     <div>
-                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Tanggal</label>
+                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Date</label>
                                         <div class="relative">
                                             <input type="date" name="tanggal_training"
                                                 x-model="formData.tanggal"
@@ -890,7 +880,7 @@
 
                                 <!-- Evaluasi Cards -->
                                 <div>
-                                    <label class="block text-[13px] font-bold text-gray-800 mb-2.5">Evaluasi</label>
+                                    <label class="block text-[13px] font-bold text-gray-800 mb-2.5">Evaluation</label>
                                     <div class="grid grid-cols-3 gap-2">
                                         <button type="button" @click="activeEvaTab = 'eva1'"
                                             :class="activeEvaTab === 'eva1' ?
@@ -919,14 +909,14 @@
                                 <!-- Tab EVA 1 -->
                                 <div x-show="activeEvaTab === 'eva1'"
                                     class="bg-[#f7f9f8] border border-gray-100 rounded-xl p-4 mt-1">
-                                    <h3 class="text-[13px] font-bold text-gray-800 mb-2">Evaluasi EVA 1</h3>
+                                    <h3 class="text-[13px] font-bold text-gray-800 mb-2">EVA 1 Evaluation</h3>
                                     
                                     <div class="mb-4">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Status EVA 1</label>
+                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">EVA 1 Status</label>
                                         <select name="eva1_status" x-model="formData.eva1_status"
                                             :class="formErrors.eva1_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
                                             class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
-                                            <option value="" disabled>-- Pilih Status --</option>
+                                            <option value="" disabled>-- Select Status --</option>
                                             <option value="pending">Pending</option>
                                             <option value="not_started">Not Started</option>
                                             <option value="in_progress">In Progress</option>
@@ -937,7 +927,7 @@
                                     </div>
 
                                     <div x-data="{ newFile: null }">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Lampiran</label>
+                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
                                         <input id="eva1_file" type="file" name="eva1_file" accept="application/pdf" class="sr-only" @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                         
                                         <!-- View Mode -->
@@ -948,10 +938,10 @@
                                             </div>
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <a x-show="formData.eva1_lampiran && !newFile" :href="'{{ Storage::disk('hrg')->url('') }}' + formData.eva1_lampiran" target="_blank" class="px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                                                    Lihat PDF
+                                                    View PDF
                                                 </a>
                                                 <label for="eva1_file" class="px-3 py-1.5 text-xs font-semibold text-gray-800 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5">
-                                                    <i class="fas fa-sync-alt text-[10px]"></i> Ganti File
+                                                    <i class="fas fa-sync-alt text-[10px]"></i> Change File
                                                 </label>
                                             </div>
                                         </div>
@@ -961,8 +951,8 @@
                                             :class="formErrors.eva1_file ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'"
                                             class="border border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
                                             <i class="fas fa-file-alt text-gray-400 text-xl mb-1.5"></i>
-                                            <span class="text-sky-600 font-bold text-[12px] mb-0.5">Klik untuk upload file</span>
-                                            <span class="text-[10px] font-bold text-gray-400">PDF, maksimal 10 MB</span>
+                                            <span class="text-sky-600 font-bold text-[12px] mb-0.5">Click to upload file</span>
+                                            <span class="text-[10px] font-bold text-gray-400">PDF, maximum 10 MB</span>
                                         </label>
                                         <p x-show="formErrors.eva1_file" class="text-red-500 text-xs mt-1" x-text="formErrors.eva1_file ? formErrors.eva1_file[0] : ''" style="display: none;"></p>
                                     </div>
@@ -971,14 +961,14 @@
                                 <!-- Tab EVA 2 -->
                                 <div x-show="activeEvaTab === 'eva2'" style="display: none;"
                                     class="bg-[#f7f9f8] border border-gray-100 rounded-xl p-4 mt-1">
-                                    <h3 class="text-[13px] font-bold text-gray-800 mb-2">Evaluasi EVA 2</h3>
+                                    <h3 class="text-[13px] font-bold text-gray-800 mb-2">EVA 2 Evaluation</h3>
                                     
                                     <div class="mb-4">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Status EVA 2</label>
+                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">EVA 2 Status</label>
                                         <select name="eva2_status" x-model="formData.eva2_status"
                                             :class="formErrors.eva2_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
                                             class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
-                                            <option value="" disabled>-- Pilih Status --</option>
+                                            <option value="" disabled>-- Select Status --</option>
                                             <option value="pending">Pending</option>
                                             <option value="not_started">Not Started</option>
                                             <option value="in_progress">In Progress</option>
@@ -989,7 +979,7 @@
                                     </div>
 
                                     <div x-data="{ newFile: null }">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Lampiran</label>
+                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
                                         <input id="eva2_file" type="file" name="eva2_file" accept="application/pdf" class="sr-only" @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                         
                                         <!-- View Mode -->
@@ -1000,10 +990,10 @@
                                             </div>
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <a x-show="formData.eva2_lampiran && !newFile" :href="'{{ Storage::disk('hrg')->url('') }}' + formData.eva2_lampiran" target="_blank" class="px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                                                    Lihat PDF
+                                                    View PDF
                                                 </a>
                                                 <label for="eva2_file" class="px-3 py-1.5 text-xs font-semibold text-gray-800 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5">
-                                                    <i class="fas fa-sync-alt text-[10px]"></i> Ganti File
+                                                    <i class="fas fa-sync-alt text-[10px]"></i> Change File
                                                 </label>
                                             </div>
                                         </div>
@@ -1013,8 +1003,8 @@
                                             :class="formErrors.eva2_file ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'"
                                             class="border border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
                                             <i class="fas fa-file-alt text-gray-400 text-xl mb-1.5"></i>
-                                            <span class="text-sky-600 font-bold text-[12px] mb-0.5">Klik untuk upload file</span>
-                                            <span class="text-[10px] font-bold text-gray-400">PDF, maksimal 10 MB</span>
+                                            <span class="text-sky-600 font-bold text-[12px] mb-0.5">Click to upload file</span>
+                                            <span class="text-[10px] font-bold text-gray-400">PDF, maximum 10 MB</span>
                                         </label>
                                         <p x-show="formErrors.eva2_file" class="text-red-500 text-xs mt-1" x-text="formErrors.eva2_file ? formErrors.eva2_file[0] : ''" style="display: none;"></p>
                                     </div>
@@ -1023,14 +1013,14 @@
                                 <!-- Tab EVA 3 -->
                                 <div x-show="activeEvaTab === 'eva3'" style="display: none;"
                                     class="bg-[#f7f9f8] border border-gray-100 rounded-xl p-4 mt-1">
-                                    <h3 class="text-[13px] font-bold text-gray-800 mb-2">Evaluasi EVA 3</h3>
+                                    <h3 class="text-[13px] font-bold text-gray-800 mb-2">EVA 3 Evaluation</h3>
                                     
                                     <div class="mb-4">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Status EVA 3</label>
+                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">EVA 3 Status</label>
                                         <select name="eva3_status" x-model="formData.eva3_status"
                                             :class="formErrors.eva3_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
                                             class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
-                                            <option value="" disabled>-- Pilih Status --</option>
+                                            <option value="" disabled>-- Select Status --</option>
                                             <option value="pending">Pending</option>
                                             <option value="not_started">Not Started</option>
                                             <option value="in_progress">In Progress</option>
@@ -1041,7 +1031,7 @@
                                     </div>
 
                                     <div x-data="{ newFile: null }">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Lampiran</label>
+                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
                                         <input id="eva3_file" type="file" name="eva3_file" accept="application/pdf" class="sr-only" @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                         
                                         <!-- View Mode -->
@@ -1052,10 +1042,10 @@
                                             </div>
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <a x-show="formData.eva3_lampiran && !newFile" :href="'{{ Storage::disk('hrg')->url('') }}' + formData.eva3_lampiran" target="_blank" class="px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                                                    Lihat PDF
+                                                    View PDF
                                                 </a>
                                                 <label for="eva3_file" class="px-3 py-1.5 text-xs font-semibold text-gray-800 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5">
-                                                    <i class="fas fa-sync-alt text-[10px]"></i> Ganti File
+                                                    <i class="fas fa-sync-alt text-[10px]"></i> Change File
                                                 </label>
                                             </div>
                                         </div>
@@ -1065,8 +1055,8 @@
                                             :class="formErrors.eva3_file ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'"
                                             class="border border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
                                             <i class="fas fa-file-alt text-gray-400 text-xl mb-1.5"></i>
-                                            <span class="text-sky-600 font-bold text-[12px] mb-0.5">Klik untuk upload file</span>
-                                            <span class="text-[10px] font-bold text-gray-400">PDF, maksimal 10 MB</span>
+                                            <span class="text-sky-600 font-bold text-[12px] mb-0.5">Click to upload file</span>
+                                            <span class="text-[10px] font-bold text-gray-400">PDF, maximum 10 MB</span>
                                         </label>
                                         <p x-show="formErrors.eva3_file" class="text-red-500 text-xs mt-1" x-text="formErrors.eva3_file ? formErrors.eva3_file[0] : ''" style="display: none;"></p>
                                     </div>
@@ -1076,15 +1066,13 @@
                             <!-- Footer -->
                             <div class="px-5 py-2.5 border-t border-gray-100 flex justify-end gap-2.5 bg-gray-50/50">
                                 <button type="button" @click="showFormModal = false"
-                                    class="px-3.5 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-100 transition-colors">
-                                    Batal
-                                </button>
+                                    class="px-3.5 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-100 transition-colors">Cancel</button>
                                 <button type="submit"
                                     :disabled="isSubmitting"
                                     class="px-4 py-1.5 bg-[#0ea5e9] text-white rounded-lg text-[13px] font-bold hover:bg-[#0284c7] transition-all shadow-sm flex items-center justify-center gap-2"
                                     :class="{'opacity-70 cursor-wait': isSubmitting}">
-                                    <span x-show="!isSubmitting">Simpan Perubahan</span>
-                                    <span x-show="isSubmitting" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Menyimpan...</span>
+                                    <span x-show="!isSubmitting">Save Changes</span>
+                                    <span x-show="isSubmitting" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Saving...</span>
                                 </button>
                             </div>
                         </form>
@@ -1110,11 +1098,11 @@
                         class="relative bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden text-left w-full sm:max-w-md my-auto">
                         
                         <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100">
-                            <h3 class="text-lg font-bold text-gray-900">Upload Lampiran <span
+                            <h3 class="text-lg font-bold text-gray-900">Upload Attachment <span
                                     x-text="uploadEva.toUpperCase()"></span></h3>
                             <button type="button" @click="showUploadModal = false"
                                 class="text-gray-400 hover:text-gray-600 transition-colors"
-                                aria-label="Tutup modal">
+                                aria-label="Close modal">
                                 <i class="fas fa-times text-lg"></i>
                             </button>
                         </div>
@@ -1124,8 +1112,7 @@
                             @csrf
                             <input type="hidden" name="eva" :value="uploadEva">
                             <div class="p-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File PDF (Max
-                                    10MB)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Select PDF File (Max 10MB)</label>
                                 <input type="file" name="file" accept="application/pdf" required
                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-200 rounded p-2">
                             </div>
@@ -1136,7 +1123,7 @@
                                     class="px-5 py-2.5 bg-[#0ea5e9] text-white rounded-lg text-sm font-medium shadow-sm hover:bg-[#0284c7] transition-all flex items-center justify-center gap-2"
                                     :class="{'opacity-70 cursor-wait': isUploading}">
                                     <span x-show="!isUploading">Upload</span>
-                                    <span x-show="isUploading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Mengunggah...</span>
+                                    <span x-show="isUploading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Uploading...</span>
                                 </button>
                             </div>
                         </form>

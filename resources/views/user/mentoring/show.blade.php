@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Detail Mentoring')
+@section('title', 'Mentoring Details')
 @section('content')
 <!-- Header -->
 <div class="mb-6 flex justify-between items-end">
@@ -7,7 +7,7 @@
         <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
             <a href="{{ route('user-mentoring.index') }}" class="hover:text-gray-700 transition-colors">Mentoring</a>
             <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
-            <span class="text-gray-900 font-medium">Detail Mentoring</span>
+            <span class="text-gray-900 font-medium">Mentoring Details</span>
         </div>
     </div>
     <div class="flex gap-3">
@@ -65,7 +65,7 @@
                     <i class="fas fa-info-circle text-[#0ea5e9]"></i> Session Details
                 </h3>
                 @can('tambah_mentoring')
-                <button @click="$dispatch('open-session-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="{{ $mentoring->id ? 'Edit Session Details' : 'Tambah Session Details' }}">
+                <button @click="$dispatch('open-session-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="{{ $mentoring->id ? 'Edit Session Details' : 'Add Session Details' }}">
                     <i class="fas {{ $mentoring->id ? 'fa-pen' : 'fa-plus' }}"></i>
                 </button>
                 @endcan
@@ -164,21 +164,21 @@
                     <span class="text-sm font-semibold text-gray-800">Competency</span>
                     <span class="px-2.5 py-0.5 rounded text-xs font-semibold"
                         :class="competency === 'Tinggi' ? 'bg-emerald-100 text-emerald-800' : (competency === 'Rendah' ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-500')"
-                        x-text="competency || '-'"></span>
+                        x-text="competency === 'Tinggi' ? 'High' : (competency === 'Rendah' ? 'Low' : (competency || '-'))"></span>
                 </div>
                 <div class="flex rounded-lg bg-gray-50 border border-gray-200 p-1">
                     @can('edit_mentoring')
                     <button @click="updateMetric('competency', 'Rendah')"
                         class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
                         :class="competency === 'Rendah' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                        Rendah
+                        Low
                     </button>
                     @endcan
                     @can('edit_mentoring')
                     <button @click="updateMetric('competency', 'Tinggi')"
                         class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
                         :class="competency === 'Tinggi' ? 'bg-white shadow text-emerald-700' : 'text-gray-500 hover:text-gray-700'">
-                        Tinggi
+                        High
                     </button>
                     @endcan
                 </div>
@@ -190,21 +190,21 @@
                     <span class="text-sm font-semibold text-gray-800">Commitment</span>
                     <span class="px-2.5 py-0.5 rounded text-xs font-semibold"
                         :class="commitment === 'Tinggi' ? 'bg-amber-100 text-amber-800' : (commitment === 'Rendah' ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-500')"
-                        x-text="commitment || '-'"></span>
+                        x-text="commitment === 'Tinggi' ? 'High' : (commitment === 'Rendah' ? 'Low' : (commitment || '-'))"></span>
                 </div>
                 <div class="flex rounded-lg bg-gray-50 border border-gray-200 p-1">
                     @can('edit_mentoring')
                     <button @click="updateMetric('commitment', 'Rendah')"
                         class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
                         :class="commitment === 'Rendah' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                        Rendah
+                        Low
                     </button>
                     @endcan
                     @can('edit_mentoring')
                     <button @click="updateMetric('commitment', 'Tinggi')"
                         class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
                         :class="commitment === 'Tinggi' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                        Tinggi
+                        High
                     </button>
                     @endcan
                 </div>
@@ -222,7 +222,7 @@
                 <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                     <i class="fas fa-tasks text-emerald-500"></i> Progress Tracking
                 </h3>
-                <button @click="$dispatch('open-progress-modal')" class="text-emerald-500 hover:bg-emerald-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="{{ $mentoring->id ? 'Edit Progress Tracking' : 'Tambah Progress Tracking' }}">
+                <button @click="$dispatch('open-progress-modal')" class="text-emerald-500 hover:bg-emerald-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="{{ $mentoring->id ? 'Edit Progress Tracking' : 'Add Progress Tracking' }}">
                     <i class="fas {{ $mentoring->id ? 'fa-pen' : 'fa-plus' }}"></i>
                 </button>
             </div>
@@ -453,7 +453,7 @@
 
             <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-100 shrink-0">
                 <button type="button" @click="show = false" class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">Cancel</button>
-                <button type="submit" class="px-4 py-1.5 bg-[#fbbf24] hover:bg-[#f59e0b] text-gray-900 rounded-lg text-sm font-bold shadow-sm transition-colors">Simpan Perubahan</button>
+                <button type="submit" class="px-4 py-1.5 bg-[#fbbf24] hover:bg-[#f59e0b] text-gray-900 rounded-lg text-sm font-bold shadow-sm transition-colors">Save Changes</button>
             </div>
         </form>
     </div>
@@ -506,22 +506,22 @@
                     @csrf
                     
                     <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-                        <!-- Tahun -->
+                        <!-- Year -->
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Tahun</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Year</label>
                             <input type="number" name="tahun" value="{{ $mentoring->tahun ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
                         </div>
                         
-                        <!-- Periode -->
+                        <!-- Period -->
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Periode</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Period</label>
                             <input type="text" name="periode" value="{{ $mentoring->periode ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
                         </div>
                         
                         <!-- Project -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Project</label>
-                            <input type="text" name="project" value="{{ $mentoring->project ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border" placeholder="Nama Project">
+                            <input type="text" name="project" value="{{ $mentoring->project ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border" placeholder="Project Name">
                         </div>
                         
                         <!-- Status -->
@@ -549,7 +549,7 @@
                     
                     <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                         <button type="button" @click="open = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Simpan</button>
+                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
                     </div>
             </form>
         </div>
@@ -602,7 +602,7 @@
                 
                 <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                     <button type="button" @click="open = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Simpan</button>
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
                 </div>
             </form>
         </div>

@@ -118,10 +118,10 @@
                             
                             <!-- Delete -->
                             @can('hapus_certification')
-                            <form action="{{ route('certification.destroy', $cert->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus sertifikasi ini?');">
+                            <form action="{{ route('certification.destroy', $cert->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this certification?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-600 border border-gray-200 p-1.5 rounded-md hover:bg-red-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5" title="Hapus">
+                                <button type="submit" class="text-gray-400 hover:text-red-600 border border-gray-200 p-1.5 rounded-md hover:bg-red-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5" title="Delete">
                                     <i class="fas fa-trash-alt w-4 text-center"></i>
                                 </button>
                             </form>
@@ -136,7 +136,7 @@
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-certificate text-4xl text-gray-300 mb-3"></i>
                             <p class="font-medium text-gray-900">Belum ada sertifikasi</p>
-                            <p class="text-xs text-gray-500 mt-1">Tambahkan sertifikasi baru menggunakan tombol di atas.</p>
+                            <p class="text-xs text-gray-500 mt-1">Add a new certification using the button above.</p>
                         </div>
                     </td>
                 </tr>
@@ -158,8 +158,8 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h3 class="text-xl font-bold text-gray-900" id="modal-title">Tambah Sertifikasi</h3>
-                <p class="text-sm text-gray-500 mt-1">Tambahkan data sertifikasi baru</p>
+                <h3 class="text-xl font-bold text-gray-900" id="modal-title">Add Certification</h3>
+                <p class="text-sm text-gray-500 mt-1">Add new certification data</p>
             </div>
             <button type="button" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-colors" onclick="closeModal('addModal')">
                 <i class="fas fa-times text-lg text-center w-5 h-5 flex items-center justify-center"></i>
@@ -210,7 +210,7 @@
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <button type="button" class="bg-white py-2 px-5 border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" onclick="closeModal('addModal')">Cancel</button>
-                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Simpan Perubahan</button>
+                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Save Changes</button>
             </div>
         </form>
     </div>
@@ -280,7 +280,7 @@
                             <a id="current_file_link" href="#" target="_blank" class="absolute inset-0 z-10" title="Lihat File"></a>
                         </div>
                         <button type="button" onclick="document.getElementById('hapus_lampiran_input').value = '1'; this.closest('#current_file_container').classList.add('hidden');" class="border border-gray-200 text-gray-700 font-bold text-xs px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-                            Hapus File
+                            Delete File
                         </button>
                         <input type="hidden" name="hapus_lampiran" id="hapus_lampiran_input" value="0">
                     </div>
@@ -290,7 +290,7 @@
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <button type="button" class="bg-white py-2 px-5 border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" onclick="closeModal('editModal')">Cancel</button>
-                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Simpan Perubahan</button>
+                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Save Changes</button>
             </div>
         </form>
     </div>

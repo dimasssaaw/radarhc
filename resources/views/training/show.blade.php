@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Detail Training')
+@section('title', 'Training Details')
 
 @section('content')
     <div x-data="{
@@ -7,7 +7,7 @@
         showUploadModal: false,
         uploadEva: '',
         uploadId: null,
-        formTitle: 'Tambah Training',
+        formTitle: 'Add Training',
         formAction: '{{ route('training.store-history', $employee->id) }}',
         formMethod: 'POST',
         activeEvaTab: 'eva1',
@@ -52,10 +52,10 @@
                     const data = await response.json();
                     this.formErrors = data.errors;
                 } else {
-                    alert('Terjadi kesalahan di server.');
+                    alert('A server error occurred.');
                 }
             } catch (err) {
-                alert('Gagal terhubung ke server.');
+                alert('Failed to connect to the server.');
             } finally {
                 this.isSubmitting = false;
             }
@@ -108,7 +108,7 @@
                     <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
                         <a href="{{ route('training.index') }}" class="hover:text-gray-700 transition-colors">Training</a>
                         <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
-                        <span class="text-gray-900 font-medium">Detail Training</span>
+                        <span class="text-gray-900 font-medium">Training Details</span>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -153,10 +153,10 @@
                             </div>
                         </div>
 
-                        <!-- Manajerial -->
+                        <!-- Managerial -->
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-700">Manajerial</span>
+                                <span class="text-sm font-medium text-gray-700">Managerial</span>
                                 <span class="text-sm font-bold text-[#f43f5e]">{{ $achieveManagerial }}%</span>
                             </div>
                             <div class="w-full bg-gray-100 rounded-full h-3">
@@ -182,7 +182,7 @@
                                 :type="showEditTarget ? 'submit' : 'button'" form="training-target-form"
                                 class="bg-[#06b6d4] hover:bg-[#0891b2] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
                                 <i class="fas" :class="showEditTarget ? 'fa-save' : 'fa-edit'"></i>
-                                <span x-text="showEditTarget ? 'Simpan' : 'Edit Data'"></span>
+                                <span x-text="showEditTarget ? 'Save' : 'Edit Data'"></span>
                             </button>
                         @endcan
                     </div>
@@ -228,7 +228,7 @@
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-[#f43f5e]"></div> Manajerial
+                                        <div class="w-2 h-2 rounded-full bg-[#f43f5e]"></div> Managerial
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         <span x-show="!showEditTarget">{{ $training->target_managerial }}</span>
@@ -282,7 +282,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-sm font-bold text-gray-900">{{ $section['title'] }}</h3>
                         @can('tambah_training')
-                            <button @click="openModal('Tambah {{ $section['title'] }}', '{{ $section['kategori'] }}')"
+                            <button @click="openModal('Add {{ $section['title'] }}', '{{ $section['kategori'] }}')"
                                 class="bg-white border text-[{{ $section['color'] }}] border-[{{ $section['color'] }}] {{ $section['hover_bg'] }} px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
                                 <i class="fas fa-plus"></i> Add
                             </button>
@@ -330,7 +330,7 @@
                                                                     setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); 
                                                                 })"
                                                                 class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[{{ $section['color'] }}] focus:border-[{{ $section['color'] }}] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                                <option value="" disabled @selected(empty($item->$statusField) || $item->$statusField === 'pending')>-- Pilih Status --</option>
+                                                                <option value="" disabled @selected(empty($item->$statusField) || $item->$statusField === 'pending')>-- Select Status --</option>
                                                                 <option value="completed" @selected($item->$statusField === 'completed')>Completed</option>
                                                                 <option value="in_progress" @selected($item->$statusField === 'in_progress')>In Progress</option>
                                                                 <option value="remedial" @selected($item->$statusField === 'remedial')>Remedial</option>
@@ -370,13 +370,13 @@
                                                     @if ($item->$lampiranField)
                                                         <a href="{{ Storage::disk('hrg')->url($item->$lampiranField) }}" target="_blank"
                                                             class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1">
-                                                            <i class="fas fa-file-pdf text-red-500"></i> Lampiran {{ strtoupper($eva) }}
+                                                            <i class="fas fa-file-pdf text-red-500"></i> {{ strtoupper($eva) }} Attachment
                                                         </a>
                                                     @else
                                                         <button type="button"
                                                             @click="openUploadModal('{{ $eva }}', {{ $item->id }})"
                                                             class="text-xs border border-[{{ $section['color'] }}] text-[{{ $section['color'] }}] px-2 py-1 rounded {{ $section['hover_bg'] }}">
-                                                            + Lampiran
+                                                            + Attachment
                                                         </button>
                                                     @endif
                                                 </div>
@@ -398,13 +398,13 @@
                                                 @can('hapus_training')
                                                     <form action="{{ route('training.destroy-history', $item->id) }}"
                                                         method="POST" hx-boost="false"
-                                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat ini?');"
+                                                        onsubmit="return confirm('Are you sure you want to delete this history?');"
                                                         class="inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
                                                             class="text-gray-400 hover:text-red-500 transition-colors"
-                                                            title="Hapus training">
+                                                            title="Delete training">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
@@ -449,7 +449,7 @@
 
                             <!-- Modal Header -->
                             <div class="px-5 py-2.5 flex justify-between items-center border-b border-gray-100">
-                                <h2 class="text-[15px] font-bold text-gray-800" x-text="formTitle">Tambah Training</h2>
+                                <h2 class="text-[15px] font-bold text-gray-800" x-text="formTitle">Add Training</h2>
                                 <button @click="showFormModal = false" type="button"
                                     class="text-gray-400 hover:text-gray-600 p-1 transition-colors">
                                     <i class="fas fa-times text-lg"></i>
@@ -460,20 +460,20 @@
                             <div class="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
                                 <!-- Form Training Input -->
                                 <div class="space-y-3.5">
-                                    <!-- Nama Training -->
+                                    <!-- Training Name -->
                                     <div>
-                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Nama Training</label>
+                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Training Name</label>
                                         <input type="text" name="nama_training" x-model="formData.nama"
-                                            placeholder="cth. Advanced Negotiation Skills"
+                                            placeholder="e.g. Advanced Negotiation Skills"
                                             :class="formErrors.nama_training ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-200 focus:ring-sky-500 focus:border-sky-500'"
                                             class="w-full border rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 placeholder-gray-400 font-semibold">
                                         <p x-show="formErrors.nama_training" class="text-red-500 text-xs mt-1" 
                                             x-text="formErrors.nama_training ? formErrors.nama_training[0] : ''" style="display: none;"></p>
                                     </div>
 
-                                    <!-- Tanggal -->
+                                    <!-- Date -->
                                     <div>
-                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Tanggal</label>
+                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Date</label>
                                         <div class="relative">
                                             <input type="date" name="tanggal_training"
                                                 x-model="formData.tanggal"
@@ -487,9 +487,9 @@
 
                                 <hr class="border-gray-100">
 
-                                <!-- Evaluasi Tabs -->
+                                <!-- Evaluation Tabs -->
                                 <div>
-                                    <label class="block text-[13px] font-bold text-gray-800 mb-2.5">Evaluasi</label>
+                                    <label class="block text-[13px] font-bold text-gray-800 mb-2.5">Evaluation</label>
                                     <div class="grid grid-cols-3 gap-2">
                                         @foreach (['eva1' => 'EVA 1', 'eva2' => 'EVA 2', 'eva3' => 'EVA 3'] as $tabKey => $tabLabel)
                                             <button type="button" @click="activeEvaTab = '{{ $tabKey }}'"
@@ -507,14 +507,14 @@
                                 @foreach (['eva1', 'eva2', 'eva3'] as $tab)
                                     <div x-show="activeEvaTab === '{{ $tab }}'" @if(!$loop->first) style="display: none;" @endif
                                         class="bg-[#f7f9f8] border border-gray-100 rounded-xl p-4 mt-1">
-                                        <h3 class="text-[13px] font-bold text-gray-800 mb-2">Evaluasi {{ strtoupper($tab) }}</h3>
+                                        <h3 class="text-[13px] font-bold text-gray-800 mb-2">{{ strtoupper($tab) }} Evaluation</h3>
                                         
                                         <div class="mb-4">
-                                            <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Status {{ strtoupper($tab) }}</label>
+                                            <label class="block text-[12px] font-bold text-gray-500 mb-1.5">{{ strtoupper($tab) }} Status</label>
                                             <select name="{{ $tab }}_status" x-model="formData.{{ $tab }}_status"
                                                 :class="formErrors.{{ $tab }}_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
                                                 class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
-                                                <option value="" disabled>-- Pilih Status --</option>
+                                                <option value="" disabled>-- Select Status --</option>
                                                 <option value="pending">Pending</option>
                                                 <option value="not_started">Not Started</option>
                                                 <option value="in_progress">In Progress</option>
@@ -526,7 +526,7 @@
                                         </div>
 
                                         <div x-data="{ newFile: null }">
-                                            <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Lampiran</label>
+                                            <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
                                             <input id="{{ $tab }}_file" type="file" name="{{ $tab }}_file" accept="application/pdf" class="sr-only" 
                                                 @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                             
@@ -543,11 +543,11 @@
                                                         :href="'{{ Storage::disk('hrg')->url('') }}' + formData.{{ $tab }}_lampiran" 
                                                         target="_blank" 
                                                         class="px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                                                        Lihat PDF
+                                                        View PDF
                                                     </a>
                                                     <label for="{{ $tab }}_file" 
                                                         class="px-3 py-1.5 text-xs font-semibold text-gray-800 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5">
-                                                        <i class="fas fa-sync-alt text-[10px]"></i> Ganti File
+                                                        <i class="fas fa-sync-alt text-[10px]"></i> Change File
                                                     </label>
                                                 </div>
                                             </div>
@@ -557,8 +557,8 @@
                                                 :class="formErrors.{{ $tab }}_file ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'"
                                                 class="border border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
                                                 <i class="fas fa-file-alt text-gray-400 text-xl mb-1.5"></i>
-                                                <span class="text-sky-600 font-bold text-[12px] mb-0.5">Klik untuk upload file</span>
-                                                <span class="text-[10px] font-bold text-gray-400">PDF, maksimal 10 MB</span>
+                                                <span class="text-sky-600 font-bold text-[12px] mb-0.5">Click to upload file</span>
+                                                <span class="text-[10px] font-bold text-gray-400">PDF, maximum 10 MB</span>
                                             </label>
                                             <p x-show="formErrors.{{ $tab }}_file" class="text-red-500 text-xs mt-1" 
                                                 x-text="formErrors.{{ $tab }}_file ? formErrors.{{ $tab }}_file[0] : ''" style="display: none;"></p>
@@ -571,15 +571,15 @@
                             <div class="px-5 py-2.5 border-t border-gray-100 flex justify-end gap-2.5 bg-gray-50/50">
                                 <button type="button" @click="showFormModal = false"
                                     class="px-3.5 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-100 transition-colors">
-                                    Batal
+                                    Cancel
                                 </button>
                                 <button type="submit"
                                     :disabled="isSubmitting"
                                     class="px-4 py-1.5 bg-[#0ea5e9] text-white rounded-lg text-[13px] font-bold hover:bg-[#0284c7] transition-all shadow-sm flex items-center justify-center gap-2"
                                     :class="{'opacity-70 cursor-wait': isSubmitting}">
-                                    <span x-show="!isSubmitting">Simpan Perubahan</span>
+                                    <span x-show="!isSubmitting">Save Changes</span>
                                     <span x-show="isSubmitting" style="display: none;">
-                                        <i class="fas fa-spinner fa-spin"></i> Menyimpan...
+                                        <i class="fas fa-spinner fa-spin"></i> Saving...
                                     </span>
                                 </button>
                             </div>
@@ -607,11 +607,11 @@
                         
                         <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100">
                             <h3 class="text-lg font-bold text-gray-900">
-                                Upload Lampiran <span x-text="uploadEva.toUpperCase()"></span>
+                                Upload Attachment <span x-text="uploadEva.toUpperCase()"></span>
                             </h3>
                             <button type="button" @click="showUploadModal = false"
                                 class="text-gray-400 hover:text-gray-600 transition-colors"
-                                aria-label="Tutup modal">
+                                aria-label="Close modal">
                                 <i class="fas fa-times text-lg"></i>
                             </button>
                         </div>
@@ -624,7 +624,7 @@
 
                             <div class="p-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Pilih File PDF (Max 10MB)
+                                    Select PDF File (Max 10MB)
                                 </label>
                                 <input type="file" name="file" accept="application/pdf" required
                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-200 rounded p-2">
@@ -640,7 +640,7 @@
                                     :class="{'opacity-70 cursor-wait': isUploading}">
                                     <span x-show="!isUploading">Upload</span>
                                     <span x-show="isUploading" style="display: none;">
-                                        <i class="fas fa-spinner fa-spin"></i> Mengunggah...
+                                        <i class="fas fa-spinner fa-spin"></i> Uploading...
                                     </span>
                                 </button>
                             </div>

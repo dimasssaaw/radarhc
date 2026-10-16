@@ -7,7 +7,7 @@
         <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
             <a href="{{ route('user-idp.index') }}" class="hover:text-gray-700 transition-colors">IDP</a>
             <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
-            <span class="text-gray-900 font-medium">Detail Individual Development Plan</span>
+            <span class="text-gray-900 font-medium">Individual Development Plan Details</span>
         </div>
     </div>
     <div class="flex gap-3">
@@ -50,7 +50,7 @@
                             <i class="fas fa-pen"></i>
                         </button>
                     @else
-                        <button type="button" x-data @click="$dispatch('open-idp-info-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Tambah IDP">
+                        <button type="button" x-data @click="$dispatch('open-idp-info-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Add IDP">
                             <i class="fas fa-plus"></i>
                         </button>
                     @endif
@@ -132,7 +132,7 @@
                             <i class="fas fa-pen"></i>
                         </button>
                     @else
-                        <button type="button" x-data @click="$dispatch('open-jadwal-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Tambah Jadwal">
+                        <button type="button" x-data @click="$dispatch('open-jadwal-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Add Schedule">
                             <i class="fas fa-plus"></i>
                         </button>
                     @endif
@@ -208,7 +208,7 @@
                         @if($Idp->penilaian)
                             <i class="fas fa-edit"></i> Edit
                         @else
-                            <i class="fas fa-plus"></i> Tambah
+                            <i class="fas fa-plus"></i> Add
                         @endif
                     </span>
                 </button>
@@ -551,11 +551,9 @@
                     </div>
                     
                     <div class="bg-gray-50 px-4 py-3 border-t border-gray-100 flex justify-end gap-2">
-                        <button type="button" @click="showModal = false" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                            Batal
-                        </button>
+                        <button type="button" @click="showModal = false" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
                         <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                            <i class="fas fa-save text-[10px]"></i> Simpan
+                            <i class="fas fa-save text-[10px]"></i> Save
                         </button>
                     </div>
                 </form>
@@ -613,7 +611,7 @@
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
                             <select name="status_idp" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border">
-                                <option value="" {{ empty($Idp->status_idp) ? 'selected' : '' }}>-- Pilih Status --</option>
+                                <option value="" {{ empty($Idp->status_idp) ? 'selected' : '' }}>-- Select Status --</option>
                                 <option value="in_progress" {{ ($Idp->status_idp ?? '') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
                                 <option value="completed" {{ ($Idp->status_idp ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
                             </select>
@@ -630,7 +628,7 @@
                     
                     <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                         <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-teal-500 text-sm font-medium text-white hover:bg-teal-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Simpan</button>
+                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-teal-500 text-sm font-medium text-white hover:bg-teal-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
                     </div>
                 </form>
             </div>
@@ -674,7 +672,7 @@
                     
                     <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                         <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Simpan</button>
+                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
                     </div>
                 </form>
             </div>
