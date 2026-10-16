@@ -90,9 +90,9 @@ class DashboardController extends Controller
 
         // Define db jabatan lookup
         $jabatanLookup = [
-            'head' => ['head', 'department head', 'section head'],
-            'staff' => ['staff'],
-            'unit_head_group_head' => ['unit head', 'group head'],
+            'head' => ['head', 'Head', 'department head', 'Department Head', 'section head', 'Section Head'],
+            'staff' => ['staff', 'Staff'],
+            'unit_head_group_head' => ['unit head', 'Unit Head', 'group head', 'Group Head'],
         ];
 
         $IDP_LEVEL_COMPETENCY = [];
@@ -101,12 +101,17 @@ class DashboardController extends Controller
         foreach ($compMaps as $level => $map) {
             $dbJabatan = $jabatanLookup[$level];
 
-            // Get all idp penilaian for this level
-            $penilaianRecords = IdpPenilain::whereHas('idp.karyawan', function ($q) use ($dbJabatan) {
+            // Get all idp penilaian for this level, latest first
+            $rawRecords = IdpPenilain::whereHas('idp.karyawan', function ($q) use ($dbJabatan) {
                 $q->whereHas('position', function ($qPos) use ($dbJabatan) {
                     $qPos->whereIn('nama_jabatan', $dbJabatan);
                 });
-            })->with('idp.karyawan.department')->get();
+            })->with('idp.karyawan.department')->orderBy('id', 'desc')->get();
+
+            // Unique latest record per employee
+            $penilaianRecords = $rawRecords->unique(function ($item) {
+                return $item->idp ? $item->idp->id_karyawan : $item->id;
+            });
 
             $totalEmployees = $penilaianRecords->count();
 
@@ -162,30 +167,55 @@ class DashboardController extends Controller
                     $empSum += $numVal;
 
                     if ($val !== null && $val > 0) {
-                        $empScoresArray[] = ['label' => $label, 'score' => $val];
+                        $empScoresArray[] = ['label' => $label, 'score' => (float) $val];
                     }
                 }
 
                 if (empty($empScoresArray)) {
-                    $weakestLabel = 'Belum Lengkap/Dinilai';
+                    $weakestLabel = 'Not Evaluated';
                     $weakestVal = 0;
+                    $allWeaknessesStr = 'Not Evaluated';
                 } else {
                     usort($empScoresArray, function ($a, $b) {
                         return $a['score'] <=> $b['score'];
                     });
 
+                    // Threshold <= 3.0 (di bawah / butuh pengembangan)
                     $weaknesses = array_filter($empScoresArray, function ($item) {
-                        return $item['score'] <= 2;
+                        return $item['score'] <= 3.0;
                     });
 
                     if (empty($weaknesses)) {
-                        $weakestLabel = 'Tidak Ada';
+                        $weakestLabel = 'None';
                         $weakestVal = 0;
+                        $allWeaknessesStr = 'All competencies meet standard (> 3.0)';
+                        $weaknessItems = [];
                     } else {
-                        $weakestLabels = array_column($weaknesses, 'label');
-                        $weakestLabel = implode(', ', $weakestLabels);
-                        // Ambil skor terendah dari weakness tersebut (karena sudah di-sort, elemen pertama pasti terendah)
-                        $weakestVal = reset($weaknesses)['score'];
+                        $minScore = reset($weaknesses)['score'];
+                        $minItems = array_filter($weaknesses, function ($item) use ($minScore) {
+                            return $item['score'] == $minScore;
+                        });
+                        $minLabels = array_column($minItems, 'label');
+
+                        if (count($minLabels) > 2) {
+                            $weakestLabel = $minLabels[0].', '.$minLabels[1].' (+'.(count($minLabels) - 2).')';
+                        } else {
+                            $weakestLabel = implode(', ', $minLabels);
+                        }
+                        $weakestVal = $minScore;
+
+                        $allWeaknessList = [];
+                        foreach ($weaknesses as $w) {
+                            $allWeaknessList[] = $w['label'].' ('.round($w['score'], 1).')';
+                        }
+                        $allWeaknessesStr = implode(', ', $allWeaknessList);
+
+                        $weaknessItems = array_values(array_map(function ($w) {
+                            return [
+                                'label' => $w['label'],
+                                'score' => round($w['score'], 1),
+                            ];
+                        }, $weaknesses));
                     }
                 }
 
@@ -199,6 +229,8 @@ class DashboardController extends Controller
                     'average_score' => round($empAvg, 2),
                     'weakest_competency' => $weakestLabel,
                     'weakest_score' => round($weakestVal, 2),
+                    'all_weaknesses' => $allWeaknessesStr,
+                    'weakness_items' => $weaknessItems,
                 ];
             }
 
