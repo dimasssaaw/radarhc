@@ -15,7 +15,7 @@
         </div>
         <div class="flex flex-col justify-center">
             <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ $totalKaryawan }}</h3>
-            <p class="text-[11px] text-gray-500 font-medium mt-1.5 uppercase tracking-wide">Total Karyawan</p>
+            <p class="text-[11px] text-gray-500 font-medium mt-1.5 uppercase tracking-wide">Total Employee</p>
         </div>
     </div>
 
@@ -57,13 +57,13 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
     <!-- Doughnut Chart -->
     <div class="card-3d p-6">
-        <h3 class="font-bold text-gray-900">Demografi Generasi Karyawan</h3>
-        <p class="text-xs text-gray-500 mb-6">Distribusi berdasarkan kelompok generasi</p>
+        <h3 class="font-bold text-gray-900">Employee Generation Demographics</h3>
+        <p class="text-xs text-gray-500 mb-6">Distribution by generational group</p>
         <div class="relative h-48 w-full flex justify-center">
             <canvas id="genChart"></canvas>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
                 <span class="text-2xl font-bold text-gray-900">{{ $totalKaryawan }}</span>
-                <span class="text-[10px] text-gray-500 uppercase font-semibold">Total Karyawan</span>
+                <span class="text-[10px] text-gray-500 uppercase font-semibold">Total Employee</span>
             </div>
         </div>
         <div class="flex justify-center gap-6 mt-6 text-xs text-gray-600">
@@ -75,8 +75,8 @@
 
     <!-- Bar Chart -->
     <div class="card-3d p-6">
-        <h3 class="font-bold text-gray-900">Distribusi Penilaian HAV</h3>
-        <p class="text-xs text-gray-500 mb-6">Jumlah karyawan per kategori penilaian HAV</p>
+        <h3 class="font-bold text-gray-900">HAV Assessment Distribution</h3>
+        <p class="text-xs text-gray-500 mb-6">Number of employees per HAV assessment category</p>
         <div class="h-56 w-full">
             <canvas id="havChart"></canvas>
         </div>
@@ -85,8 +85,8 @@
 
 <!-- Competency Assessment Keseluruhan -->
 <div class="mb-4 mt-8">
-    <h2 class="text-lg font-bold text-gray-900">Competency Assessment Keseluruhan</h2>
-    <p class="text-xs text-gray-500 mt-1">Rata-rata penilaian kompetensi seluruh karyawan per level jabatan &mdash; Head, Staff, Unit Head/Group Head</p>
+    <h2 class="text-lg font-bold text-gray-900">Competency Assessment Overall</h2>
+    <p class="text-xs text-gray-500 mt-1">Average competency assessment of all employees per job level &mdash; Head, Staff, Unit Head/Group Head</p>
 </div>
 
 <!-- Alpine JS Wrapper -->
@@ -109,13 +109,13 @@
                     <h3 class="font-bold text-gray-900 text-sm">{{ $data['title'] }}</h3>
                     <p class="text-[10px] text-gray-400">{{ $data['total_employees'] }} employee • rata-rata {{ $data['overall_average'] }} / 5.0</p>
                 </div>
-                <button @click="levelDetail = '{{ $level }}'" class="btn-3d text-[10px] font-bold px-3 py-1.5 uppercase tracking-wide">Lihat Detail</button>
+                <button @click="levelDetail = '{{ $level }}'" class="btn-3d text-[10px] font-bold px-3 py-1.5 uppercase tracking-wide">View Details</button>
             </div>
             <div class="h-48 w-full mt-4 flex justify-center">
                 <canvas id="radar-{{ $level }}"></canvas>
             </div>
             <div class="mt-6 flex-1 flex flex-col justify-end">
-                <p class="text-[9px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Area Perlu Ditingkatkan</p>
+                <p class="text-[9px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Area to Improve</p>
                 <div class="card-3d-inner p-3 rounded-xl" id="gap-{{ $level }}">
                     <!-- JS Injected Gaps -->
                 </div>
@@ -138,7 +138,7 @@
                 <!-- Header -->
                 <div class="px-6 py-5 flex justify-between items-start bg-white">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Detail Evaluasi Kompetensi</h2>
+                        <h2 class="text-lg font-bold text-gray-900">Competency Assessment Detail</h2>
                         <p class="text-xs text-gray-500 mt-1">Level: <span class="capitalize" x-text="levelDetail === 'unit_head_group_head' ? 'Unit Head / Group Head' : (levelDetail === 'head' ? 'Department Head' : (levelDetail ? levelDetail.replace(/_/g, ' ') : ''))"></span></p>
                     </div>
                     <button @click="levelDetail = null" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors mt-1">
@@ -147,15 +147,15 @@
                 </div>
                 
                 <!-- Body -->
-                <div class="p-6 overflow-y-auto bg-white flex-1 pt-0">
-                    <div class="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
+                <div class="p-6 overflow-y-auto bg-white flex-1 pt-4">
+                    <div class="bg-gray-50/50 border border-gray-100 rounded-xl">
                         <table class="w-full text-left text-xs whitespace-nowrap">
                             <thead class="text-gray-500 text-[10px] font-bold tracking-wider uppercase border-b border-gray-100">
                                 <tr>
-                                <th class="px-6 py-4">Karyawan</th>
-                                <th class="px-6 py-4">Departemen</th>
-                                <th class="px-6 py-4">Rata-Rata Individu</th>
-                                <th class="px-6 py-4 text-[#ef4444]">Kelemahan Terbesar</th>
+                                <th class="px-6 py-4 rounded-tl-xl">Employee</th>
+                                <th class="px-6 py-4">Department</th>
+                                <th class="px-6 py-4">Individual Average</th>
+                                <th class="px-6 py-4 rounded-tr-xl text-[#ef4444]">Biggest Weakness</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white">
@@ -187,17 +187,19 @@
                                             <span class="font-bold text-xs truncate max-w-[120px] sm:max-w-[160px] cursor-pointer" :class="{'font-normal': emp.weakest_score == 0}" x-text="emp.weakest_competency"></span>
                                             <span class="text-[10px] font-semibold text-red-400 shrink-0" x-show="emp.weakest_score > 0" x-text="`(${emp.weakest_score})`"></span>
                                             
-                                            <!-- Custom Tailwind Tooltip -->
-                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 shadow-md z-50">
-                                                <span x-text="emp.weakest_competency"></span>
-                                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-800 rotate-45"></div>
+                                            <!-- Custom Tailwind Tooltip (Sleek original dark pill style with clean multiline wrap) -->
+                                            <div class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-800 text-white text-xs font-medium rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 shadow-xl border border-gray-700/60 z-50 pointer-events-none"
+                                                 style="width: 260px; max-width: 280px; white-space: normal !important; word-break: break-word !important; line-height: 1.5; text-align: left;">
+                                                <div style="font-size: 11px; line-height: 1.5; color: #f1f5f9; white-space: normal !important;" x-text="emp.all_weaknesses || emp.weakest_competency"></div>
+                                                <!-- Caret pointing down into the middle of the badge -->
+                                                <div class="absolute top-full -mt-1 w-2 h-2 bg-gray-800 rotate-45 border-r border-b border-gray-700/60" style="right: 45px;"></div>
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
                             </template>
                             <tr x-show="currentEmployees.length === 0">
-                                <td colspan="4" class="px-6 py-8 text-center text-gray-500 italic bg-white">Belum ada data evaluasi.</td>
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-500 italic bg-white">No evaluation data yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -210,8 +212,8 @@
 
 <!-- Peringatan Stagnasi -->
 <div class="card-3d p-6 mb-10">
-    <h2 class="text-lg font-bold text-gray-900">Peringatan Stagnasi Kaderisasi</h2>
-    <p class="text-xs text-gray-500 mt-1 mb-4">Karyawan yang sudah 2 tahun atau lebih berada di status kesiapan yang sama meski telah mengikuti program pengembangan</p>
+    <h2 class="text-lg font-bold text-gray-900">Stagnation Warning</h2>
+    <p class="text-xs text-gray-500 mt-1 mb-4">Employees who have been in the same readiness status for 2 years or more despite participating in development programs</p>
     
     <div class="flex flex-col gap-3">
         @forelse($stagnasiWarnings ?? [] as $karyawan)
@@ -231,7 +233,7 @@
             </div>
         @empty
             <div class="card-3d-inner rounded-xl p-6 text-center text-sm text-gray-500">
-                Belum ada data peringatan stagnasi.
+                No stagnation warnings yet.
             </div>
         @endforelse
     </div>

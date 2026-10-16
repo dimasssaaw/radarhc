@@ -855,22 +855,22 @@
                                 <div class="space-y-3.5">
                                     <!-- Nama Training -->
                                     <div>
-                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Training Name</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Training Name <span class="text-red-500">*</span></label>
                                         <input type="text" name="nama_training" x-model="formData.nama"
                                             placeholder="e.g. Advanced Negotiation Skills"
-                                            :class="formErrors.nama_training ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-200 focus:ring-sky-500 focus:border-sky-500'"
-                                            class="w-full border rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 placeholder-gray-400 font-semibold bg-white">
+                                            :class="formErrors.nama_training ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white placeholder-gray-400 font-semibold">
                                         <p x-show="formErrors.nama_training" class="text-red-500 text-xs mt-1" x-text="formErrors.nama_training ? formErrors.nama_training[0] : ''" style="display: none;"></p>
                                     </div>
 
                                     <!-- Tanggal -->
                                     <div>
-                                        <label class="block text-[12.5px] font-bold text-gray-600 mb-1">Date</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Date</label>
                                         <div class="relative">
                                             <input type="date" name="tanggal_training"
                                                 x-model="formData.tanggal"
-                                                :class="formErrors.tanggal_training ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
-                                                class="w-full border rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-1 bg-white">
+                                                :class="formErrors.tanggal_training ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
+                                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white font-semibold">
                                         </div>
                                         <p x-show="formErrors.tanggal_training" class="text-red-500 text-xs mt-1" x-text="formErrors.tanggal_training ? formErrors.tanggal_training[0] : ''" style="display: none;"></p>
                                     </div>
@@ -880,7 +880,7 @@
 
                                 <!-- Evaluasi Cards -->
                                 <div>
-                                    <label class="block text-[13px] font-bold text-gray-800 mb-2.5">Evaluation</label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Evaluation</label>
                                     <div class="grid grid-cols-3 gap-2">
                                         <button type="button" @click="activeEvaTab = 'eva1'"
                                             :class="activeEvaTab === 'eva1' ?
@@ -912,10 +912,10 @@
                                     <h3 class="text-[13px] font-bold text-gray-800 mb-2">EVA 1 Evaluation</h3>
                                     
                                     <div class="mb-4">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">EVA 1 Status</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">EVA 1 Status</label>
                                         <select name="eva1_status" x-model="formData.eva1_status"
-                                            :class="formErrors.eva1_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
-                                            class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
+                                            :class="formErrors.eva1_status ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                                             <option value="" disabled>-- Select Status --</option>
                                             <option value="pending">Pending</option>
                                             <option value="not_started">Not Started</option>
@@ -927,7 +927,7 @@
                                     </div>
 
                                     <div x-data="{ newFile: null }">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Attachment</label>
                                         <input id="eva1_file" type="file" name="eva1_file" accept="application/pdf" class="sr-only" @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                         
                                         <!-- View Mode -->
@@ -964,10 +964,10 @@
                                     <h3 class="text-[13px] font-bold text-gray-800 mb-2">EVA 2 Evaluation</h3>
                                     
                                     <div class="mb-4">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">EVA 2 Status</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">EVA 2 Status</label>
                                         <select name="eva2_status" x-model="formData.eva2_status"
-                                            :class="formErrors.eva2_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
-                                            class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
+                                            :class="formErrors.eva2_status ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                                             <option value="" disabled>-- Select Status --</option>
                                             <option value="pending">Pending</option>
                                             <option value="not_started">Not Started</option>
@@ -979,7 +979,7 @@
                                     </div>
 
                                     <div x-data="{ newFile: null }">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Attachment</label>
                                         <input id="eva2_file" type="file" name="eva2_file" accept="application/pdf" class="sr-only" @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                         
                                         <!-- View Mode -->
@@ -1016,10 +1016,10 @@
                                     <h3 class="text-[13px] font-bold text-gray-800 mb-2">EVA 3 Evaluation</h3>
                                     
                                     <div class="mb-4">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">EVA 3 Status</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">EVA 3 Status</label>
                                         <select name="eva3_status" x-model="formData.eva3_status"
-                                            :class="formErrors.eva3_status ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-sky-500'"
-                                            class="native-select w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1">
+                                            :class="formErrors.eva3_status ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                                             <option value="" disabled>-- Select Status --</option>
                                             <option value="pending">Pending</option>
                                             <option value="not_started">Not Started</option>
@@ -1031,7 +1031,7 @@
                                     </div>
 
                                     <div x-data="{ newFile: null }">
-                                        <label class="block text-[12px] font-bold text-gray-500 mb-1.5">Attachment</label>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Attachment</label>
                                         <input id="eva3_file" type="file" name="eva3_file" accept="application/pdf" class="sr-only" @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
                                         
                                         <!-- View Mode -->

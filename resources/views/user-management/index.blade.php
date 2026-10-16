@@ -10,7 +10,7 @@
     <div class="flex gap-3">
         @can('tambah_user')
         <a href="{{ route('user-management.create') }}" class="bg-[#06b6d4] hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-[0_4px_12px_rgba(6,182,212,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(6,182,212,0.4)] flex items-center gap-2">
-            <i class="fas fa-plus"></i> Tambah User
+            <i class="fas fa-plus"></i> Add User
         </a>
         @endcan
     </div>
