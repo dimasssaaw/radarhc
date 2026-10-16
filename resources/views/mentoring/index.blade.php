@@ -9,9 +9,9 @@
     </div>
 </div>
 
-<div class="card-3d overflow-hidden">
+<div class="card-3d overflow-visible relative">
     <!-- Header / Actions / Filters -->
-    <form method="GET" action="{{ route('mentoring.index') }}" class="p-4 border-b border-gray-100 flex justify-between items-center bg-white relative">
+    <form method="GET" action="{{ route('mentoring.index') }}" class="p-4 border-b border-gray-100 flex justify-between items-center bg-white relative z-20 rounded-t-[20px]">
         <div class="relative w-72">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 text-sm"></i>
@@ -20,12 +20,12 @@
             <button type="submit" class="hidden"></button>
         </div>
         
-        <div class="flex items-center gap-3 relative">
+        <div class="flex items-center gap-3 relative z-30" x-data="{ openFilter: false }">
             @if(request()->hasAny(['search', 'department_id', 'jabatan']))
                 <a href="{{ route('mentoring.index') }}" class="text-xs text-red-500 hover:text-red-700 underline px-2">Reset</a>
             @endif
 
-            <button type="button" onclick="document.getElementById('filterDropdown').classList.toggle('hidden')" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 relative bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] hover:border-gray-300">
+            <button type="button" @click="openFilter = !openFilter" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 relative bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] hover:border-gray-300">
                 <i class="fas fa-filter text-gray-400"></i> Filter
                 @if(request()->hasAny(['department_id', 'jabatan']))
                     <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
@@ -33,7 +33,17 @@
             </button>
             
             <!-- Filter Dropdown (Small) -->
-            <div id="filterDropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-50 p-3">
+            <div id="filterDropdown" 
+                 x-show="openFilter" 
+                 @click.outside="openFilter = false"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                 style="display: none;"
+                 class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-4">
                 <div class="space-y-3">
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Department</label>
@@ -65,7 +75,7 @@
     </form>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto rounded-b-[20px]">
         <table class="w-full text-left border-collapse">
             <thead class="text-[10px] text-white uppercase bg-[#06b6d4] shadow-md relative z-10">
                 <tr>
@@ -160,7 +170,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="p-5 border-t border-gray-100 bg-white flex justify-between items-center">
+    <div class="p-5 border-t border-gray-100 bg-white flex justify-between items-center rounded-b-[20px]">
         @if(method_exists($employees, 'links'))
             <div class="w-full">
                 {{ $employees->links('pagination::tailwind') }}

@@ -26,11 +26,17 @@ class IdpController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with(['department', 'idps'])->orderBy('nama', 'asc');
 
-        if (auth()->user()->role !== 'admin') {
-            $employee = Karyawan::where('npk', auth()->user()->npk)->first();
-            if ($employee && $employee->department_id) {
-                $query->where('department_id', $employee->department_id);
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->filled('search')) {
@@ -48,16 +54,14 @@ class IdpController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('readiness')) {
             $query->where('readiness', $request->readiness);
         }
 
         $employees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('idp.index', compact('employees', 'departments'));
     }
@@ -66,15 +70,25 @@ class IdpController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with(['department', 'idps'])->orderBy('nama', 'asc');
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                     ->orWhere('npk', 'like', "%{$search}%");
             });
-        }
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
         }
         if ($request->filled('position_id')) {
             $query->where('position_id', $request->position_id);
@@ -84,9 +98,13 @@ class IdpController extends Controller implements HasMiddleware
         }
 
         $tableEmployees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
-        $employees = Karyawan::orderBy('nama')->get();
+        $employees = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Karyawan::where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
+            : Karyawan::orderBy('nama')->get();
 
         return view('idp.create', [
             'employees' => $tableEmployees,
@@ -172,12 +190,29 @@ class IdpController extends Controller implements HasMiddleware
     {
         $Idp = Idp::with('karyawan')->findOrFail($id);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         return view('idp.show', compact('Idp'));
     }
 
     public function showEmployee($employee_id)
     {
         $karyawan = Karyawan::findOrFail($employee_id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $Idp = Idp::where('id_karyawan', $employee_id)->latest()->first() ?? new Idp;
         $Idp->karyawan = $karyawan;
 
@@ -186,9 +221,28 @@ class IdpController extends Controller implements HasMiddleware
 
     public function edit(Request $request, $id)
     {
-        $Idp = Idp::findOrFail($id);
+        $Idp = Idp::with('karyawan')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $query = Karyawan::with(['department', 'idps'])->orderBy('nama', 'asc');
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -196,9 +250,6 @@ class IdpController extends Controller implements HasMiddleware
                 $q->where('nama', 'like', "%{$search}%")
                     ->orWhere('npk', 'like', "%{$search}%");
             });
-        }
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
         }
         if ($request->filled('position_id')) {
             $query->where('position_id', $request->position_id);
@@ -208,9 +259,13 @@ class IdpController extends Controller implements HasMiddleware
         }
 
         $tableEmployees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
-        $employees = Karyawan::orderBy('nama')->get();
+        $employees = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Karyawan::where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
+            : Karyawan::orderBy('nama')->get();
 
         return view('idp.edit', [
             'Idp' => $Idp,
@@ -266,26 +321,48 @@ class IdpController extends Controller implements HasMiddleware
             'grow_insight' => 'nullable|string',
         ]);
 
-        $Idp = Idp::findOrFail($id);
+        $Idp = Idp::with('karyawan')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $Idp->update($validated);
 
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Idp berhasil diperbarui.');
         }
 
-        return redirect()->route('idp.index')->with('success', 'Data Idp berhasil diperbarui.');
+        $indexRoute = $isAdmin ? 'idp.index' : 'user-idp.index';
+
+        return redirect()->route($indexRoute)->with('success', 'Data Idp berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        $Idp = Idp::findOrFail($id);
+        $Idp = Idp::with('karyawan')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $Idp->delete();
 
         if (request()->has('redirect_to')) {
             return redirect(request()->redirect_to)->with('success', 'Data Idp berhasil dihapus.');
         }
 
-        return redirect()->route('idp.index')->with('success', 'Data Idp berhasil dihapus.');
+        $indexRoute = $isAdmin ? 'idp.index' : 'user-idp.index';
+
+        return redirect()->route($indexRoute)->with('success', 'Data Idp berhasil dihapus.');
     }
 
     public function updateMetrics(Request $request, $id)

@@ -28,11 +28,17 @@ class EmployeeController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with('department')->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->filled('search')) {
@@ -50,10 +56,6 @@ class EmployeeController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('position_id')) {
             $query->where('position_id', $request->position_id);
         }
@@ -63,7 +65,9 @@ class EmployeeController extends Controller implements HasMiddleware
         }
 
         $employees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
         $positions = Position::orderBy('nama_jabatan')->get();
 
         return view('employee.index', compact('employees', 'departments', 'positions'));
@@ -76,11 +80,17 @@ class EmployeeController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with('department')->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif (request()->filled('department_id')) {
+            $query->where('department_id', request()->department_id);
         }
 
         if (request()->filled('search')) {
@@ -98,10 +108,6 @@ class EmployeeController extends Controller implements HasMiddleware
             });
         }
 
-        if (request()->filled('department_id')) {
-            $query->where('department_id', request()->department_id);
-        }
-
         if (request()->filled('position_id')) {
             $query->where('position_id', request()->position_id);
         }
@@ -111,7 +117,9 @@ class EmployeeController extends Controller implements HasMiddleware
         }
 
         $employees = $query->paginate(10)->appends(request()->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
         $positions = Position::orderBy('nama_jabatan')->get();
 
         return view('employee.create', compact('employees', 'departments', 'positions'));
@@ -149,6 +157,16 @@ class EmployeeController extends Controller implements HasMiddleware
         $validated['masuk_kerja'] = $validated['lama_bekerja'];
         unset($validated['lama_bekerja']);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $validated['department_id'] = $userKaryawan->department_id;
+            } else {
+                abort(403, 'Akses tidak diizinkan.');
+            }
+        }
+
         Karyawan::create($validated);
 
         return redirect()->route('employee.index')->with('success', 'Data Karyawan berhasil ditambahkan.');
@@ -161,6 +179,14 @@ class EmployeeController extends Controller implements HasMiddleware
     {
         $employee = Karyawan::findOrFail($id);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         return view('employee.show', compact('employee'));
     }
 
@@ -171,13 +197,25 @@ class EmployeeController extends Controller implements HasMiddleware
     {
         $employee = Karyawan::findOrFail($id);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $query = Karyawan::with('department')->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif (request()->filled('department_id')) {
+            $query->where('department_id', request()->department_id);
         }
 
         if (request()->filled('search')) {
@@ -195,10 +233,6 @@ class EmployeeController extends Controller implements HasMiddleware
             });
         }
 
-        if (request()->filled('department_id')) {
-            $query->where('department_id', request()->department_id);
-        }
-
         if (request()->filled('position_id')) {
             $query->where('position_id', request()->position_id);
         }
@@ -208,7 +242,9 @@ class EmployeeController extends Controller implements HasMiddleware
         }
 
         $employees = $query->paginate(10)->appends(request()->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
         $positions = Position::orderBy('nama_jabatan')->get();
 
         return view('employee.edit', compact('employee', 'employees', 'departments', 'positions'));
@@ -220,6 +256,14 @@ class EmployeeController extends Controller implements HasMiddleware
     public function update(Request $request, string $id)
     {
         $employee = Karyawan::findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $validated = $request->validate([
             'npk' => 'required|string|unique:karyawan,npk,'.$employee->id,
@@ -238,6 +282,10 @@ class EmployeeController extends Controller implements HasMiddleware
             'disc' => 'required|string',
             'hav' => 'required|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
         ]);
+
+        if (! $isAdmin) {
+            $validated['department_id'] = $userKaryawan->department_id;
+        }
 
         if ($request->hasFile('foto')) {
             // Hapus foto lama jika ada (optional)
@@ -263,6 +311,15 @@ class EmployeeController extends Controller implements HasMiddleware
     public function destroy(string $id)
     {
         $employee = Karyawan::findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $employee->delete();
 
         return back()->with('success', 'Data Karyawan berhasil dihapus.');

@@ -15,11 +15,17 @@ class UserIdpController extends Controller
             $q->latest();
         }])->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         // Apply filters
@@ -32,10 +38,6 @@ class UserIdpController extends Controller
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('id_departemen', $request->department_id);
-        }
-
         if ($request->filled('jabatan')) {
             $query->whereHas('position', function ($q) use ($request) {
                 $q->where('nama_jabatan', 'like', "%{$request->jabatan}%");
@@ -43,7 +45,9 @@ class UserIdpController extends Controller
         }
 
         $employees = $query->paginate(10)->withQueryString();
-        $departments = Department::all();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('user.idp.index', compact('employees', 'departments'));
     }
@@ -52,12 +56,29 @@ class UserIdpController extends Controller
     {
         $Idp = Idp::with('karyawan')->findOrFail($id);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         return view('user.idp.show', compact('Idp'));
     }
 
     public function showEmployee($employee_id)
     {
         $karyawan = Karyawan::findOrFail($employee_id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $Idp = Idp::where('id_karyawan', $employee_id)->latest()->first() ?? new Idp;
         $Idp->karyawan = $karyawan;
 

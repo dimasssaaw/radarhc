@@ -22,11 +22,17 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with('department')->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->has('search') && $request->search != '') {
@@ -44,16 +50,14 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->has('department_id') && $request->department_id != '') {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->has('position_id') && $request->position_id != '') {
             $query->where('position_id', $request->position_id);
         }
 
         $karyawans = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('journey.index', compact('karyawans', 'departments'));
     }
@@ -76,6 +80,14 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'strengths',
             'mentorings',
         ])->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $activeReport = $karyawan->assessmentReports->first();
 

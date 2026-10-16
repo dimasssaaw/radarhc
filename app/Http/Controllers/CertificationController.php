@@ -27,11 +27,17 @@ class CertificationController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with(['department', 'certifications'])->orderBy('nama', 'asc');
 
-        if (auth()->user()->role !== 'admin') {
-            $employee = Karyawan::where('npk', auth()->user()->npk)->first();
-            if ($employee && $employee->department_id) {
-                $query->where('department_id', $employee->department_id);
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->filled('search')) {
@@ -48,16 +54,14 @@ class CertificationController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('position_id')) {
             $query->where('position_id', $request->position_id);
         }
 
         $employees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('certification.index', compact('employees', 'departments'));
     }
@@ -65,6 +69,15 @@ class CertificationController extends Controller implements HasMiddleware
     public function show($id)
     {
         $employee = Karyawan::with('department')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $certifications = Certification::where('id_karyawan', $id)->latest()->get();
 
         return view('certification.show', compact('employee', 'certifications'));
@@ -72,6 +85,14 @@ class CertificationController extends Controller implements HasMiddleware
 
     public function store(Request $request, $employee_id)
     {
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            $targetEmployee = Karyawan::find($employee_id);
+            if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
         $request->validate([
             'nama_sertifikasi' => 'required|string',
             'penerbit' => 'nullable|string',
@@ -105,7 +126,15 @@ class CertificationController extends Controller implements HasMiddleware
 
     public function update(Request $request, $id)
     {
-        $certification = Certification::findOrFail($id);
+        $certification = Certification::with('karyawan')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $certification->karyawan || $certification->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $request->validate([
             'nama_sertifikasi' => 'required|string',
@@ -149,7 +178,15 @@ class CertificationController extends Controller implements HasMiddleware
 
     public function destroy($id)
     {
-        $certification = Certification::findOrFail($id);
+        $certification = Certification::with('karyawan')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $certification->karyawan || $certification->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         if ($certification->lampiran_sertifikasi) {
             $oldPath = str_replace('/HRG/', '', $certification->lampiran_sertifikasi);

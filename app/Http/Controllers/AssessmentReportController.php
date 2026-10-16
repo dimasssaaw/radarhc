@@ -25,11 +25,17 @@ class AssessmentReportController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with(['department', 'assessmentReports'])->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->filled('search')) {
@@ -47,16 +53,14 @@ class AssessmentReportController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('readiness')) {
             $query->where('readiness', $request->readiness);
         }
 
         $employees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('assessment_report.index', compact('employees', 'departments'));
     }
@@ -65,6 +69,19 @@ class AssessmentReportController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with(['department', 'assessmentReports'])->orderBy('nama', 'asc');
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -80,18 +97,18 @@ class AssessmentReportController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('readiness')) {
             $query->where('readiness', $request->readiness);
         }
 
         $tableEmployees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
-        $employees = Karyawan::with('department')->orderBy('nama')->get();
+        $employees = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Karyawan::with('department')->where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
+            : Karyawan::with('department')->orderBy('nama')->get();
 
         return view('assessment_report.create', [
             'employees' => $tableEmployees,
@@ -106,6 +123,15 @@ class AssessmentReportController extends Controller implements HasMiddleware
             'id_karyawan' => 'required|exists:karyawan,id',
         ]);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            $targetKaryawan = Karyawan::find($request->id_karyawan);
+            if (! $userKaryawan || ! $targetKaryawan || $targetKaryawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $data = $request->except(['_token', 'redirect_to']);
 
         AssessmentReport::create($data);
@@ -114,7 +140,9 @@ class AssessmentReportController extends Controller implements HasMiddleware
             return redirect($request->redirect_to)->with('success', 'Data Assessment Report berhasil ditambahkan.');
         }
 
-        return redirect()->route('assessment-report.index')->with('success', 'Data Assessment Report berhasil ditambahkan.');
+        $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
+
+        return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil ditambahkan.');
     }
 
     public function show(Request $request, $id)
@@ -122,6 +150,14 @@ class AssessmentReportController extends Controller implements HasMiddleware
         $karyawan = Karyawan::with(['department', 'assessmentReports' => function ($q) {
             $q->latest();
         }])->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $activeReport = null;
         if ($karyawan->assessmentReports->isNotEmpty()) {
@@ -140,7 +176,26 @@ class AssessmentReportController extends Controller implements HasMiddleware
     {
         $report = AssessmentReport::with('karyawan.department')->findOrFail($id);
 
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if (! $userKaryawan || ! $report->karyawan || $report->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $query = Karyawan::with(['department', 'assessmentReports'])->orderBy('nama', 'asc');
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -157,18 +212,18 @@ class AssessmentReportController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('readiness')) {
             $query->where('readiness', $request->readiness);
         }
 
         $tableEmployees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
-        $employees = Karyawan::orderBy('nama')->get();
+        $employees = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Karyawan::with('department')->where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
+            : Karyawan::with('department')->orderBy('nama')->get();
 
         return view('assessment_report.edit', [
             'report' => $report,
@@ -184,23 +239,44 @@ class AssessmentReportController extends Controller implements HasMiddleware
             'id_karyawan' => 'required|exists:karyawan,id',
         ]);
 
-        $data = $request->except(['_token', '_method', 'redirect_to']);
+        $report = AssessmentReport::with('karyawan')->findOrFail($id);
 
-        $report = AssessmentReport::findOrFail($id);
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $report->karyawan || $report->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
+        $data = $request->except(['_token', '_method', 'redirect_to']);
         $report->update($data);
 
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Assessment Report berhasil diperbarui.');
         }
 
-        return redirect()->route('assessment-report.index')->with('success', 'Data Assessment Report berhasil diperbarui.');
+        $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
+
+        return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        $report = AssessmentReport::findOrFail($id);
+        $report = AssessmentReport::with('karyawan')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || ! $report->karyawan || $report->karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $report->delete();
 
-        return redirect()->route('assessment-report.index')->with('success', 'Data Assessment Report berhasil dihapus.');
+        $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
+
+        return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil dihapus.');
     }
 }

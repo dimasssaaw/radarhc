@@ -28,11 +28,17 @@ class TrainingController extends Controller implements HasMiddleware
     {
         $query = Karyawan::with(['department', 'trainings'])->orderBy('nama', 'asc');
 
-        if (auth()->user()->role !== 'admin') {
-            $employee = Karyawan::where('npk', auth()->user()->npk)->first();
-            if ($employee && $employee->department_id) {
-                $query->where('department_id', $employee->department_id);
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
+            if ($userKaryawan && $userKaryawan->department_id) {
+                $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->filled('search')) {
@@ -50,24 +56,29 @@ class TrainingController extends Controller implements HasMiddleware
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('readiness')) {
             $query->where('readiness', $request->readiness);
         }
 
         $employees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('training.index', compact('employees', 'departments'));
     }
 
     public function show($id)
     {
-
         $employee = Karyawan::with('department')->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $training = Training::where('id_karyawan', $id)->first() ?? new Training([
             'target_mandatory' => 0,
@@ -112,6 +123,15 @@ class TrainingController extends Controller implements HasMiddleware
 
     public function updateTarget(Request $request, $id)
     {
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            $targetEmployee = Karyawan::find($id);
+            if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $request->validate([
             'target_mandatory' => 'required|integer|min:0',
             'target_skill' => 'required|integer|min:0',
@@ -133,6 +153,15 @@ class TrainingController extends Controller implements HasMiddleware
 
     public function storeHistory(Request $request, $employee_id)
     {
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            $targetEmployee = Karyawan::find($employee_id);
+            if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $request->validate([
             'kategori' => 'required|in:mandatory,skill,managerial',
             'nama_training' => 'required|string',

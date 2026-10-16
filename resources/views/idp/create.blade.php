@@ -12,7 +12,7 @@
                 <h2 class="text-xl font-bold text-gray-900">Tambah IDP</h2>
                 <p class="text-sm text-gray-500 mt-1">Tambahkan data Individual Development Plan untuk karyawan</p>
             </div>
-            <a href="{{ request('redirect_to') ? request('redirect_to') : route('idp.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <a href="{{ request('redirect_to') ?? (strtolower(auth()->user()->role ?? '') === 'admin' ? route('idp.index') : route('user-idp.index')) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
             </a>
         </div>
@@ -121,7 +121,7 @@
 
         <!-- Footer -->
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
-            <a href="{{ request('redirect_to') ? request('redirect_to') : route('idp.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
+            <a href="{{ request('redirect_to') ?? (strtolower(auth()->user()->role ?? '') === 'admin' ? route('idp.index') : route('user-idp.index')) }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
                 Batal
             </a>
             <button type="submit" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">

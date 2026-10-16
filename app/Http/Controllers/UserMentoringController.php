@@ -13,11 +13,17 @@ class UserMentoringController extends Controller
     {
         $query = Karyawan::with(['department', 'mentorings'])->orderBy('nama', 'asc');
 
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $userKaryawan = auth()->check() ? Karyawan::where('npk', auth()->user()->npk)->first() : null;
+
+        if (! $isAdmin) {
             if ($userKaryawan && $userKaryawan->department_id) {
                 $query->where('department_id', $userKaryawan->department_id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
+        } elseif ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
         }
 
         if ($request->filled('search')) {
@@ -35,10 +41,6 @@ class UserMentoringController extends Controller
             });
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
         if ($request->filled('jabatan')) {
             $jabatan = $request->jabatan;
             $query->whereHas('position', function ($q) use ($jabatan) {
@@ -47,7 +49,9 @@ class UserMentoringController extends Controller
         }
 
         $employees = $query->paginate(10)->appends($request->query());
-        $departments = Department::orderBy('nama_departemen')->get();
+        $departments = ! $isAdmin && $userKaryawan && $userKaryawan->department_id
+            ? Department::where('id', $userKaryawan->department_id)->get()
+            : Department::orderBy('nama_departemen')->get();
 
         return view('user.mentoring.index', compact('employees', 'departments'));
     }
@@ -57,6 +61,14 @@ class UserMentoringController extends Controller
         $karyawan = Karyawan::with(['department', 'mentorings' => function ($q) {
             $q->latest();
         }])->findOrFail($id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
 
         $mentoring = $karyawan->mentorings->first();
         if ($mentoring) {
@@ -69,6 +81,15 @@ class UserMentoringController extends Controller
     public function showEmployee($employee_id)
     {
         $karyawan = Karyawan::findOrFail($employee_id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
         $mentoring = Mentoring::where('id_karyawan', $employee_id)->latest()->first() ?? new Mentoring;
         $mentoring->karyawan = $karyawan;
 
