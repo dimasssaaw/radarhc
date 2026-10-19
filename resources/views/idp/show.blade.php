@@ -618,7 +618,7 @@
                                 <option value="completed" {{ ($Idp->status_idp ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
                             </select>
                         </div>
-                        <div>
+                        <div> 
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Mentor</label>
                             <input type="text" name="mentor" value="{{ $Idp->mentor ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="Nama Mentor">
                         </div>
