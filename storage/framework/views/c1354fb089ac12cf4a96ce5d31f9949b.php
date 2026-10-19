@@ -247,8 +247,20 @@
                 
 
                 <!-- Profile Dropdown -->
-                <div x-data="{ open: false }" class="relative">
-                    <button @click="open = !open" @click.away="open = false" class="focus:outline-none flex items-center gap-2 p-1 rounded-lg hover:bg-gray-50 transition-colors">
+                <div x-data="{ 
+                    open: false,
+                    dropUp: false,
+                    toggle(btnEl) {
+                        this.open = !this.open;
+                        if (this.open) {
+                            let rect = btnEl.getBoundingClientRect();
+                            let spaceBelow = window.innerHeight - rect.bottom;
+                            let spaceAbove = rect.top;
+                            this.dropUp = spaceBelow < 200 && spaceAbove > spaceBelow;
+                        }
+                    }
+                }" class="relative">
+                    <button type="button" @click="toggle($el)" @click.away="open = false" class="focus:outline-none flex items-center gap-2 p-1 rounded-lg hover:bg-gray-50 transition-colors">
                         <div class="w-8 h-8 bg-[#00b4d8] rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-white font-bold text-xs">
                             <?php echo e(strtoupper(substr(auth()->user()->name ?? 'HR', 0, 2))); ?>
 
@@ -258,19 +270,20 @@
                     <!-- Dropdown -->
                     <div x-show="open" style="display: none;"
                          x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
                          x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                         x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                         class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden z-50 origin-top-right">
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         :class="dropUp ? 'bottom-full mb-3 origin-bottom-right' : 'top-full mt-3 origin-top-right'"
+                         class="absolute right-0 w-56 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden z-50">
                         
                         <div class="px-4 py-4 border-b border-gray-50 bg-gradient-to-br from-sky-50 to-white">
                             <p class="text-sm font-bold text-gray-800 truncate"><?php echo e(auth()->user()->name ?? 'Administrator'); ?></p>
                             <p class="text-[10px] font-bold text-[#00b4d8] uppercase tracking-widest mt-1"><?php echo e(auth()->user()->role ?? 'HR / Head'); ?></p>
                         </div>
                         <div class="p-2">
-                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                            <form method="POST" action="<?php echo e(route('logout')); ?>" hx-boost="false" data-hx-boost="false" hx-disable>
                                 <?php echo csrf_field(); ?>
                                 <button type="submit" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-3 focus:outline-none">
                                     <i class="fas fa-sign-out-alt w-4 text-center"></i> Logout
@@ -323,22 +336,38 @@
     <?php echo $__env->yieldContent('scripts'); ?>
     
     <script>
-        function initTomSelect() {
-            document.querySelectorAll('select').forEach(function(el) {
+        function initTomSelect(container) {
+            let root = (container instanceof HTMLElement) ? container : document;
+            root.querySelectorAll('select').forEach(function(el) {
                 if (el.classList.contains('native-select')) return;
                 if (el.tomselect) return; // Prevent double initialization
                 
                 let isSearchable = el.classList.contains('searchable');
                 let isDropUp = el.classList.contains('drop-up');
                 el.className = isDropUp ? 'drop-up' : '';
-                new TomSelect(el, {
+                let ts = new TomSelect(el, {
                     controlInput: isSearchable ? undefined : null
                 });
+                
+                let reposition = function() {
+                    let controlRect = ts.control.getBoundingClientRect();
+                    let dropdownHeight = Math.max(ts.dropdown.scrollHeight || 0, ts.dropdown.offsetHeight || 0, 240);
+                    let spaceBelow = window.innerHeight - controlRect.bottom;
+                    let spaceAbove = controlRect.top;
+                    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                        ts.wrapper.classList.add('drop-up');
+                    } else {
+                        ts.wrapper.classList.remove('drop-up');
+                    }
+                };
+                
+                ts.on('dropdown_open', reposition);
             });
         }
+        window.initTomSelect = initTomSelect;
         
-        document.addEventListener('DOMContentLoaded', initTomSelect);
-        document.addEventListener('htmx:afterSwap', initTomSelect);
+        document.addEventListener('DOMContentLoaded', () => initTomSelect());
+        document.addEventListener('htmx:afterSwap', (e) => initTomSelect(e.detail?.target));
         
         // NProgress binding for HTMX
         document.addEventListener('htmx:beforeRequest', function() {
@@ -349,6 +378,24 @@
         });
         document.addEventListener('htmx:historyRestore', function() {
             NProgress.done();
+        });
+
+        // Redirect completely if session expired (401/419) or response redirected to login
+        document.addEventListener('htmx:responseError', function(event) {
+            if (event.detail?.xhr?.status === 401 || event.detail?.xhr?.status === 419) {
+                window.location.href = '<?php echo e(route('login')); ?>';
+            }
+        });
+        document.addEventListener('htmx:beforeSwap', function(event) {
+            if (event.detail?.xhr?.status === 401 || event.detail?.xhr?.status === 419) {
+                window.location.href = '<?php echo e(route('login')); ?>';
+                event.detail.shouldSwap = false;
+            }
+            let responseUrl = event.detail?.xhr?.responseURL;
+            if (responseUrl && (responseUrl.endsWith('/login') || responseUrl === '<?php echo e(url('/')); ?>' || responseUrl === '<?php echo e(url('/')); ?>/' || responseUrl === '<?php echo e(route('login')); ?>')) {
+                window.location.href = '<?php echo e(route('login')); ?>';
+                event.detail.shouldSwap = false;
+            }
         });
     </script>
 </body>

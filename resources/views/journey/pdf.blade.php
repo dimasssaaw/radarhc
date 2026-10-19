@@ -841,7 +841,7 @@
         // 6. Readiness Pill Styling
         $readiness = strtolower($karyawan->readiness ?? '');
         $isReady = str_contains($readiness, 'ready') && $readiness !== 'not_ready';
-        $readinessText = !empty($karyawan->readiness) ? ($karyawan->readiness === 'not_ready' ? 'Not Ready' : ucwords(str_replace('_', ' ', $karyawan->readiness))) : '-';
+        $readinessText = !empty($karyawan->readiness) ? ($karyawan->readiness === 'not_ready' ? 'Not Ready' : trim(str_ireplace('ready', '', $karyawan->readiness))) : '-';
 
         // 7. Development Focus Notes
         $activeIdp = $karyawan->idps->sortByDesc('created_at')->first();

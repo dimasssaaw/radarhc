@@ -46,6 +46,10 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        if ($request->header('HX-Request')) {
+            return response('', 200)->header('HX-Redirect', route('login'));
+        }
+
         return redirect('/');
     }
 }

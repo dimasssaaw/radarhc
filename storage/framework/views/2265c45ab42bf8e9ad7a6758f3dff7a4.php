@@ -104,9 +104,15 @@
                     </div>
                 </div>
 
+                <?php if(strtolower(auth()->user()->role ?? '') === 'admin'): ?>
                 <a href="<?php echo e(route('employee-journey.index')); ?>" class="menu-3d flex items-center font-medium text-sm <?php echo e(request()->is('employee-journey*') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600'); ?>" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
                     <i class="far fa-compass w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Employee Journey</span>
                 </a>
+                <?php else: ?>
+                <a href="<?php echo e(route('user-journey.index')); ?>" class="menu-3d flex items-center font-medium text-sm <?php echo e(request()->is('user-journey*') || request()->is('employee-journey*') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600'); ?>" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
+                    <i class="far fa-compass w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Employee Journey</span>
+                </a>
+                <?php endif; ?>
                 
 
 
@@ -144,7 +150,7 @@
         
         <!-- Logout -->
         <div class="p-6 border-t border-gray-100 shrink-0" :class="sidebarCollapsed ? 'flex justify-center px-0' : ''">
-            <form method="POST" action="<?php echo e(route('logout')); ?>" :class="sidebarCollapsed ? 'w-12' : 'w-full'">
+            <form method="POST" action="<?php echo e(route('logout')); ?>" :class="sidebarCollapsed ? 'w-12' : 'w-full'" hx-boost="false" data-hx-boost="false" hx-disable>
                 <?php echo csrf_field(); ?>
                 <button type="submit" class="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-medium rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-[0_6px_15px_rgba(0,180,216,0.4)]" :class="sidebarCollapsed ? 'h-12 !p-0 mx-auto' : 'py-2.5 gap-2'">
                     <i class="fas fa-sign-out-alt text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Logout</span>

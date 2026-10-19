@@ -126,18 +126,31 @@
                     <td class="px-5 py-4 text-center text-gray-600">{{ $emp->department ? $emp->department->nama_departemen : '-' }}</td>
                     <td class="px-5 py-4 text-center">
                         @php
+                            $rawReadiness = $emp->readiness ?? '';
+                            $readinessText = '-';
+                            if ($rawReadiness === 'not_ready') {
+                                $readinessText = 'Not Ready';
+                            } elseif (!empty($rawReadiness)) {
+                                $readinessText = trim(str_ireplace('ready', '', $rawReadiness));
+                            }
+
                             $readinessStyles = [
+                                'R1' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
                                 'R1 ready' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
+                                'R2' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
                                 'R2 ready' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
+                                'R3' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
                                 'R3 ready' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
+                                'R4' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
                                 'R4 ready' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
+                                'R5' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
                                 'R5 ready' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
                                 'not_ready' => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'border' => 'border-red-200/50', 'dot' => 'bg-red-500'],
                             ];
-                            $style = $readinessStyles[$emp->readiness] ?? ['bg' => 'bg-gray-50', 'text' => 'text-gray-700', 'border' => 'border-gray-200/50', 'dot' => 'bg-gray-500'];
+                            $style = $readinessStyles[$readinessText] ?? $readinessStyles[$rawReadiness] ?? ['bg' => 'bg-gray-50', 'text' => 'text-gray-700', 'border' => 'border-gray-200/50', 'dot' => 'bg-gray-500'];
                         @endphp
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium {{ $style['bg'] }} {{ $style['text'] }} border {{ $style['border'] }}">
-                            <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }}"></span> {{ $emp->readiness === 'not_ready' ? 'Not Ready' : (empty($emp->readiness) ? '-' : ucwords($emp->readiness)) }}
+                            <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }}"></span> {{ $readinessText }}
                         </span>
                     </td>
                     <td class="px-5 py-4 text-center">

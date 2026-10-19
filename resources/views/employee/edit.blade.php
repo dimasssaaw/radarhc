@@ -75,11 +75,11 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Kaderisasi <span class="text-red-500">*</span></label>
                         <select name="readiness" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('readiness') border-red-500 @enderror">
                             <option value="">Pilih Status</option>
-                            <option value="R1 ready" {{ old('readiness', $employee->readiness) == 'R1 ready' ? 'selected' : '' }}>R1 Ready</option>
-                            <option value="R2 ready" {{ old('readiness', $employee->readiness) == 'R2 ready' ? 'selected' : '' }}>R2 Ready</option>
-                            <option value="R3 ready" {{ old('readiness', $employee->readiness) == 'R3 ready' ? 'selected' : '' }}>R3 Ready</option>
-                            <option value="R4 ready" {{ old('readiness', $employee->readiness) == 'R4 ready' ? 'selected' : '' }}>R4 Ready</option>
-                            <option value="R5 ready" {{ old('readiness', $employee->readiness) == 'R5 ready' ? 'selected' : '' }}>R5 Ready</option>
+                            <option value="R1 ready" {{ in_array(old('readiness', $employee->readiness), ['R1', 'R1 ready']) ? 'selected' : '' }}>R1</option>
+                            <option value="R2 ready" {{ in_array(old('readiness', $employee->readiness), ['R2', 'R2 ready']) ? 'selected' : '' }}>R2</option>
+                            <option value="R3 ready" {{ in_array(old('readiness', $employee->readiness), ['R3', 'R3 ready']) ? 'selected' : '' }}>R3</option>
+                            <option value="R4 ready" {{ in_array(old('readiness', $employee->readiness), ['R4', 'R4 ready']) ? 'selected' : '' }}>R4</option>
+                            <option value="R5 ready" {{ in_array(old('readiness', $employee->readiness), ['R5', 'R5 ready']) ? 'selected' : '' }}>R5</option>
                             <option value="not_ready" {{ old('readiness', $employee->readiness) == 'not_ready' ? 'selected' : '' }}>Not Ready</option>
                         </select>
                     </div>

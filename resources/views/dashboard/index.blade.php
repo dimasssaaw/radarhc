@@ -226,8 +226,17 @@
                     <p class="text-xs text-gray-500">{{ $karyawan->department ? $karyawan->department->nama_departemen : '-' }} &bull; {{ $karyawan->position?->nama_jabatan }}</p>
                 </div>
                 <div class="text-right">
+                    @php
+                        $rawStagnasiReadiness = $karyawan->readiness ?? '';
+                        $stagnasiReadinessText = 'Belum Dinilai';
+                        if ($rawStagnasiReadiness === 'not_ready') {
+                            $stagnasiReadinessText = 'Not Ready';
+                        } elseif (!empty($rawStagnasiReadiness)) {
+                            $stagnasiReadinessText = trim(str_ireplace('ready', '', $rawStagnasiReadiness));
+                        }
+                    @endphp
                     <span class="inline-block px-2 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded uppercase tracking-wide border border-red-100">
-                        Readiness: {{ $karyawan->readiness ?? 'Belum Dinilai' }}
+                        Readiness: {{ $stagnasiReadinessText }}
                     </span>
                 </div>
             </div>

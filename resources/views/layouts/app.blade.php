@@ -282,7 +282,7 @@
                             <p class="text-[10px] font-bold text-[#00b4d8] uppercase tracking-widest mt-1">{{ auth()->user()->role ?? 'HR / Head' }}</p>
                         </div>
                         <div class="p-2">
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" hx-boost="false" data-hx-boost="false" hx-disable>
                                 @csrf
                                 <button type="submit" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-3 focus:outline-none">
                                     <i class="fas fa-sign-out-alt w-4 text-center"></i> Logout
@@ -377,6 +377,24 @@
         });
         document.addEventListener('htmx:historyRestore', function() {
             NProgress.done();
+        });
+
+        // Redirect completely if session expired (401/419) or response redirected to login
+        document.addEventListener('htmx:responseError', function(event) {
+            if (event.detail?.xhr?.status === 401 || event.detail?.xhr?.status === 419) {
+                window.location.href = '{{ route('login') }}';
+            }
+        });
+        document.addEventListener('htmx:beforeSwap', function(event) {
+            if (event.detail?.xhr?.status === 401 || event.detail?.xhr?.status === 419) {
+                window.location.href = '{{ route('login') }}';
+                event.detail.shouldSwap = false;
+            }
+            let responseUrl = event.detail?.xhr?.responseURL;
+            if (responseUrl && (responseUrl.endsWith('/login') || responseUrl === '{{ url('/') }}' || responseUrl === '{{ url('/') }}/' || responseUrl === '{{ route('login') }}')) {
+                window.location.href = '{{ route('login') }}';
+                event.detail.shouldSwap = false;
+            }
         });
     </script>
 </body>

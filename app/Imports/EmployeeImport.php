@@ -41,7 +41,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                     'email' => $row['email'] ?? $karyawan->email,
                     'grade' => $row['grade'] ?? $karyawan->grade,
                     'iq' => isset($row['iq']) ? (int) $row['iq'] : $karyawan->iq,
-                    'readiness' => $row['readiness'] ?? $karyawan->readiness,
+                    'readiness' => isset($row['readiness']) ? $this->parseReadiness($row['readiness']) : $karyawan->readiness,
                     'disc' => $row['disc'] ?? $karyawan->disc,
                     'hav' => $row['hav'] ?? $karyawan->hav,
                 ]);
@@ -59,12 +59,25 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                     'email' => $row['email'] ?? '-',
                     'grade' => $row['grade'] ?? '-',
                     'iq' => isset($row['iq']) ? (int) $row['iq'] : 0,
-                    'readiness' => $row['readiness'] ?? 'not_ready',
+                    'readiness' => $this->parseReadiness($row['readiness'] ?? null),
                     'disc' => $row['disc'] ?? '-',
                     'hav' => $row['hav'] ?? 'potential',
                 ]);
             }
         }
+    }
+
+    private function parseReadiness($value)
+    {
+        if (empty($value)) {
+            return 'not_ready';
+        }
+        $val = trim($value);
+        if (in_array(strtoupper($val), ['R1', 'R2', 'R3', 'R4', 'R5'])) {
+            return strtoupper($val).' ready';
+        }
+
+        return $val;
     }
 
     private function parseDate($value)

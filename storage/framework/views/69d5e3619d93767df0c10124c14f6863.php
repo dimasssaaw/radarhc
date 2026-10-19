@@ -28,18 +28,18 @@
                 </h3>
                 <div class="space-y-4">
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Pendidikan</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Education</p>
                         <p class="font-bold text-gray-800 text-sm"><?php echo e($employee->pendidikan ?? '-'); ?></p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Tgl Lahir</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Birth Date</p>
                         <p class="font-bold text-gray-800 text-sm">
-                            <?php echo e($employee->tanggal_lahir ? \Carbon\Carbon::parse($employee->tanggal_lahir)->format('d M Y') . ' (' . \Carbon\Carbon::parse($employee->tanggal_lahir)->age . ' Thn)' : '-'); ?>
+                            <?php echo e($employee->tanggal_lahir ? \Carbon\Carbon::parse($employee->tanggal_lahir)->format('d M Y') . ' (' . \Carbon\Carbon::parse($employee->tanggal_lahir)->age . ' Yrs)' : '-'); ?>
 
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">No. HP</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Phone</p>
                         <p class="font-bold text-gray-800 text-sm"><?php echo e($employee->kontak ?? '-'); ?></p>
                     </div>
                     <div>
@@ -60,7 +60,7 @@
                         <p class="font-bold text-gray-800 text-sm"><?php echo e($employee->npk ?? '-'); ?></p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Departemen</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Department</p>
                         <p class="font-bold text-gray-800 text-sm"><?php echo e($employee->department->nama_departemen ?? '-'); ?></p>
                     </div>
                     <div>
@@ -68,7 +68,7 @@
                         <p class="font-bold text-gray-800 text-sm"><?php echo e($employee->grade ?? '-'); ?></p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 mb-0.5">Lama Bekerja</p>
+                        <p class="text-xs text-gray-400 mb-0.5">Length of Service</p>
                         <p class="font-bold text-gray-800 text-sm">
                             <?php
                                 $diffString = '-';
@@ -76,7 +76,7 @@
                                     try {
                                         $start = \Carbon\Carbon::parse($employee->masuk_kerja);
                                         $diff = $start->diff(\Carbon\Carbon::now());
-                                        $diffString = $diff->y . ' Thn ' . $diff->m . ' Bln';
+                                        $diffString = $diff->y . ' Yrs ' . $diff->m . ' Mos';
                                     } catch (\Exception $e) {
                                         $diffString = $employee->masuk_kerja; 
                                     }
@@ -106,20 +106,37 @@
                     <div>
                         <p class="text-xs text-gray-400 mb-0.5">Readiness</p>
                         <?php
-                            $readiness = strtolower($employee->readiness ?? '');
-                            $isReady = str_contains($readiness, 'ready') && $readiness !== 'not_ready';
-                            $readyText = $employee->readiness === 'not_ready' ? 'Not Ready' : ucwords($employee->readiness ?? '-');
+                            $rawReadiness = $employee->readiness ?? '';
+                            $readinessText = '-';
+                            if ($rawReadiness === 'not_ready') {
+                                $readinessText = 'Not Ready';
+                            } elseif (!empty($rawReadiness)) {
+                                $readinessText = trim(str_ireplace('ready', '', $rawReadiness));
+                            }
+
+                            $readinessStyles = [
+                                'R1' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
+                                'R1 ready' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
+                                'R2' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
+                                'R2 ready' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
+                                'R3' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
+                                'R3 ready' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
+                                'R4' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
+                                'R4 ready' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
+                                'R5' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
+                                'R5 ready' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
+                                'not_ready' => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'border' => 'border-red-200/50', 'dot' => 'bg-red-500'],
+                                'Not Ready' => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'border' => 'border-red-200/50', 'dot' => 'bg-red-500'],
+                            ];
+                            $style = $readinessStyles[$readinessText] ?? $readinessStyles[$rawReadiness] ?? ['bg' => 'bg-gray-50', 'text' => 'text-gray-700', 'border' => 'border-gray-200/50', 'dot' => 'bg-gray-500'];
                         ?>
-                        <?php if($isReady): ?>
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                <?php echo e($readyText); ?>
+                        <?php if(!empty($rawReadiness) && $readinessText !== '-'): ?>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium <?php echo e($style['bg']); ?> <?php echo e($style['text']); ?> border <?php echo e($style['border']); ?>">
+                                <span class="w-1.5 h-1.5 rounded-full <?php echo e($style['dot']); ?>"></span> <?php echo e($readinessText); ?>
 
                             </span>
                         <?php else: ?>
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200">
-                                <?php echo e($readyText); ?>
-
-                            </span>
+                            <p class="font-bold text-gray-800 text-sm">-</p>
                         <?php endif; ?>
                     </div>
                     <div>

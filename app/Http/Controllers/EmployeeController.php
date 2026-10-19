@@ -143,10 +143,14 @@ class EmployeeController extends Controller implements HasMiddleware
             'grade' => 'required|string',
             'lama_bekerja' => 'required|date',
             'iq' => 'required|integer',
-            'readiness' => 'required|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready',
+            'readiness' => 'required|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready,R1,R2,R3,R4,R5',
             'disc' => 'required|string',
             'hav' => 'required|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
         ]);
+
+        if (in_array($validated['readiness'], ['R1', 'R2', 'R3', 'R4', 'R5'])) {
+            $validated['readiness'] .= ' ready';
+        }
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
@@ -278,10 +282,14 @@ class EmployeeController extends Controller implements HasMiddleware
             'grade' => 'required|string',
             'lama_bekerja' => 'required|date',
             'iq' => 'required|integer',
-            'readiness' => 'required|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready',
+            'readiness' => 'required|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready,R1,R2,R3,R4,R5',
             'disc' => 'required|string',
             'hav' => 'required|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
         ]);
+
+        if (in_array($validated['readiness'], ['R1', 'R2', 'R3', 'R4', 'R5'])) {
+            $validated['readiness'] .= ' ready';
+        }
 
         if (! $isAdmin) {
             $validated['department_id'] = $userKaryawan->department_id;

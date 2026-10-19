@@ -150,7 +150,7 @@
         
         <!-- Logout -->
         <div class="p-6 border-t border-gray-100 shrink-0" :class="sidebarCollapsed ? 'flex justify-center px-0' : ''">
-            <form method="POST" action="{{ route('logout') }}" :class="sidebarCollapsed ? 'w-12' : 'w-full'">
+            <form method="POST" action="{{ route('logout') }}" :class="sidebarCollapsed ? 'w-12' : 'w-full'" hx-boost="false" data-hx-boost="false" hx-disable>
                 @csrf
                 <button type="submit" class="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-medium rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-[0_6px_15px_rgba(0,180,216,0.4)]" :class="sidebarCollapsed ? 'h-12 !p-0 mx-auto' : 'py-2.5 gap-2'">
                     <i class="fas fa-sign-out-alt text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Logout</span>

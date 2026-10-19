@@ -4,17 +4,18 @@
 <div class="mb-6 flex justify-between items-end">
     <div>
         <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
-            <a href="<?php echo e(route('profile.index')); ?>" class="hover:text-gray-700 transition-colors">Profile data</a>
+            <a href="<?php echo e(route('employee.index')); ?>" class="hover:text-gray-700 transition-colors">Employee data</a>
             <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
             <span class="text-gray-900 font-medium">Profile View</span>
         </div>
     </div>
     <div class="flex gap-3">
-        <a href="<?php echo e(route('profile.index')); ?>" class="bg-white shadow-[0_2px_4px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.1)] border border-gray-100 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-gray-700">
+        <a href="<?php echo e(route('employee.index')); ?>" class="bg-white shadow-[0_2px_4px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.1)] border border-gray-100 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-gray-700">
             <i class="fas fa-arrow-left text-gray-400"></i> Back
         </a>
     </div>
 </div>
+
 
 <!-- Employee Profile Header -->
 <?php echo $__env->make('components.employee-profile-header', ['employee' => $employee], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
@@ -49,10 +50,10 @@
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['edit_karyawan', 'hapus_karyawan'])): ?>
                         <td class="px-6 py-4 text-center flex justify-center gap-2">
                             <button onclick="document.getElementById('editViaCharacterModal<?php echo e($via->id); ?>').classList.remove('hidden')" class="text-emerald-500 hover:text-emerald-700 transition-colors p-1 rounded hover:bg-emerald-50" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                            <form action="<?php echo e(route('employee-via-character.destroy', $via->id)); ?>" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                            <form action="<?php echo e(route('employee-via-character.destroy', $via->id)); ?>" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                 <?php echo csrf_field(); ?>
                                 <?php echo method_field('DELETE'); ?>
-                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
                             </form>
                         </td>
                         <?php endif; ?>
@@ -96,10 +97,10 @@
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['edit_karyawan', 'hapus_karyawan'])): ?>
                         <td class="px-6 py-4 text-center flex justify-center gap-2">
                             <button onclick="document.getElementById('editStrengthModal<?php echo e($st->id); ?>').classList.remove('hidden')" class="text-emerald-500 hover:text-emerald-700 transition-colors p-1 rounded hover:bg-emerald-50" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                            <form action="<?php echo e(route('employee-strength.destroy', $st->id)); ?>" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                            <form action="<?php echo e(route('employee-strength.destroy', $st->id)); ?>" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                 <?php echo csrf_field(); ?>
                                 <?php echo method_field('DELETE'); ?>
-                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
+                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
                             </form>
                         </td>
                         <?php endif; ?>
@@ -196,40 +197,40 @@
     <div class="w-full rounded-xl overflow-hidden grid grid-cols-2 shadow-sm border border-gray-100 font-bold text-[10px] tracking-wide text-white">
         <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
         <div class="bg-[#facd42] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 text-[#8a6800] transition-opacity duration-300 <?php echo e(($activeBox && $activeBox !== 'TL') ? 'opacity-30' : 'opacity-100'); ?>">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - MODERAT</div>
-            <div>COACHING - MODERAT</div>
+            <div>DIRECTING - MODERATE</div>
+            <div>MENTORING - MODERATE</div>
+            <div>COACHING - MODERATE</div>
         </div>
         
         <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
         <div class="bg-[#4485f5] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 <?php echo e(($activeBox && $activeBox !== 'TR') ? 'opacity-30' : 'opacity-100'); ?>">
-            <div>DIRECTING - RENDAH</div>
-            <div>MENTORING - RENDAH</div>
-            <div>COACHING - RENDAH</div>
+            <div>DIRECTING - LOW</div>
+            <div>MENTORING - LOW</div>
+            <div>COACHING - LOW</div>
         </div>
         
         <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
         <div class="bg-[#78c87f] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 text-[#205724] transition-opacity duration-300 <?php echo e(($activeBox && $activeBox !== 'BL') ? 'opacity-30' : 'opacity-100'); ?>">
-            <div>DIRECTING - TINGGI</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - TINGGI</div>
+            <div>DIRECTING - HIGH</div>
+            <div>MENTORING - HIGH</div>
+            <div>COACHING - HIGH</div>
         </div>
         
         <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
         <div class="bg-[#f05051] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 <?php echo e(($activeBox && $activeBox !== 'BR') ? 'opacity-30' : 'opacity-100'); ?>">
-            <div>DIRECTING - MODERAT</div>
-            <div>MENTORING - TINGGI</div>
-            <div>COACHING - MODERAT</div>
+            <div>DIRECTING - MODERATE</div>
+            <div>MENTORING - HIGH</div>
+            <div>COACHING - MODERATE</div>
         </div>
     </div>
 </div>
 
 <?php $__env->startPush('modals'); ?>
-<!-- Modal Tambah Via Character -->
+<!-- Modal Add Via Character -->
 <div id="addViaCharacterModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 transition-opacity">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all relative z-[10000]">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h3 class="text-lg font-bold text-gray-900">Tambah Via Character</h3>
+            <h3 class="text-lg font-bold text-gray-900">Add Via Character</h3>
             <button type="button" onclick="document.getElementById('addViaCharacterModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -255,11 +256,11 @@
     </div>
 </div>
 
-<!-- Modal Tambah Strength & Weakness -->
+<!-- Modal Add Strength & Weakness -->
 <div id="addStrengthModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 transition-opacity">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all relative z-[10000]">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h3 class="text-lg font-bold text-gray-900">Tambah Strength & Weakness</h3>
+            <h3 class="text-lg font-bold text-gray-900">Add Strength & Weakness</h3>
             <button type="button" onclick="document.getElementById('addStrengthModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -311,7 +312,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('editViaCharacterModal<?php echo e($via->id); ?>').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Perbarui</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>
@@ -344,7 +345,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('editStrengthModal<?php echo e($st->id); ?>').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Perbarui</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] rounded-lg hover:bg-[#0284c7] transition-all focus:outline-none">Update</button>
             </div>
         </form>
     </div>
@@ -406,4 +407,5 @@
 
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\radarhc\resources\views/user/profile/show.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\radarhc\resources\views/employee/show.blade.php ENDPATH**/ ?>

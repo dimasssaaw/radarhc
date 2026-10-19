@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -38,12 +39,16 @@ class LoginController extends Controller
         return redirect()->route('dashboard');
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): Response|RedirectResponse
     {
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if ($request->header('HX-Request')) {
+            return response('', 200)->header('HX-Redirect', route('login'));
+        }
 
         return redirect()->route('login');
     }
