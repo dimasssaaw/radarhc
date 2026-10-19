@@ -2,105 +2,171 @@
 @section('title', 'Training Details')
 
 @section('content')
-    <div x-data="{
-        showFormModal: {{ $errors->any() ? 'true' : 'false' }},
-        showUploadModal: false,
-        uploadEva: '',
-        uploadId: null,
-        formTitle: 'Add Training',
-        formAction: '{{ route('training.store-history', $employee->id) }}',
-        formMethod: 'POST',
-        activeEvaTab: 'eva1',
-        formData: { 
-            id: '', 
-            kategori: '', 
-            nama: '', 
-            tanggal: '', 
-            eva1_status: '', 
-            eva2_status: '', 
-            eva3_status: '', 
-            eva1_lampiran: '',
-            eva2_lampiran: '',
-            eva3_lampiran: ''
-        },
-        formErrors: {},
-        isSubmitting: false,
+    <script>
+        function trainingDetails() {
+            return {
+                showFormModal: {{ $errors->any() ? 'true' : 'false' }},
+                showUploadModal: false,
+                uploadEva: '',
+                uploadId: null,
+                formTitle: 'Add Training',
+                formAction: '{{ route('training.store-history', $employee->id) }}',
+                formMethod: 'POST',
+                activeEvaTab: 'eva1',
+                formData: { 
+                    id: '', 
+                    kategori: '', 
+                    nama: '', 
+                    tanggal: '', 
+                    eva1_status: '', 
+                    eva2_status: '', 
+                    eva3_status: '', 
+                    eva1_lampiran: '',
+                    eva2_lampiran: '',
+                    eva3_lampiran: ''
+                },
+                formErrors: {},
+                isSubmitting: false,
 
-        getOriginalFileName(path) {
-            if (!path) return '';
-            let name = path.split('/').pop();
-            let underscoreIndex = name.indexOf('_');
-            return underscoreIndex !== -1 ? name.substring(underscoreIndex + 1) : name;
-        },
+                getOriginalFileName(path) {
+                    if (!path) return '';
+                    let name = path.split('/').pop();
+                    let underscoreIndex = name.indexOf('_');
+                    return underscoreIndex !== -1 ? name.substring(underscoreIndex + 1) : name;
+                },
 
-        async submitForm(formElement) {
-            this.isSubmitting = true;
-            try {
-                const fd = new FormData(formElement);
-                const response = await fetch(this.formAction, {
-                    method: 'POST',
-                    body: fd,
-                    headers: { 
-                        'X-Requested-With': 'XMLHttpRequest', 
-                        'Accept': 'application/json' 
+                getStatusModalLabel(statusVal) {
+                    let map = {
+                        '': '-- Select Status --',
+                        'pending': 'Pending',
+                        'not_started': 'Not Started',
+                        'in_progress': 'In Progress',
+                        'completed': 'Completed',
+                        'remedial': 'Remedial'
+                    };
+                    return map[statusVal] || '-- Select Status --';
+                },
+
+                async submitForm(formElement) {
+                    this.isSubmitting = true;
+                    try {
+                        const fd = new FormData(formElement);
+                        const response = await fetch(this.formAction, {
+                            method: 'POST',
+                            body: fd,
+                            headers: { 
+                                'X-Requested-With': 'XMLHttpRequest', 
+                                'Accept': 'application/json' 
+                            }
+                        });
+
+                        if (response.ok || response.redirected) {
+                            window.location.reload();
+                        } else if (response.status === 422) {
+                            const data = await response.json();
+                            this.formErrors = data.errors;
+                        } else {
+                            alert('A server error occurred.');
+                        }
+                    } catch (err) {
+                        alert('Failed to connect to the server.');
+                    } finally {
+                        this.isSubmitting = false;
                     }
-                });
+                },
 
-                if (response.ok || response.redirected) {
-                    window.location.reload();
-                } else if (response.status === 422) {
-                    const data = await response.json();
-                    this.formErrors = data.errors;
-                } else {
-                    alert('A server error occurred.');
+                openModal(title, kategori, data = null) {
+                    this.formTitle = title;
+                    this.formData.kategori = kategori;
+                    this.formErrors = {};
+
+                    if (data) {
+                        this.formAction = '{{ url('training/history') }}/' + data.id;
+                        this.formMethod = 'PUT';
+                        this.formData.id = data.id;
+                        this.formData.nama = data.nama_training;
+                        this.formData.tanggal = data.tanggal_training ? data.tanggal_training.split(' ')[0] : '';
+                        this.formData.eva1_status = data.eva1_status || '';
+                        this.formData.eva2_status = data.eva2_status || '';
+                        this.formData.eva3_status = data.eva3_status || '';
+                        this.formData.eva1_lampiran = data.eva1_lampiran || '';
+                        this.formData.eva2_lampiran = data.eva2_lampiran || '';
+                        this.formData.eva3_lampiran = data.eva3_lampiran || '';
+                    } else {
+                        this.formAction = '{{ route('training.store-history', $employee->id) }}';
+                        this.formMethod = 'POST';
+                        this.formData.id = null;
+                        this.formData.nama = '';
+                        this.formData.tanggal = '';
+                        this.formData.eva1_status = '';
+                        this.formData.eva2_status = '';
+                        this.formData.eva3_status = '';
+                        this.formData.eva1_lampiran = '';
+                        this.formData.eva2_lampiran = '';
+                        this.formData.eva3_lampiran = '';
+                    }
+                    this.activeEvaTab = 'eva1';
+                    this.showFormModal = true;
+                    this.syncTomSelect();
+                },
+
+                syncTomSelect() {
+                    this.$nextTick(() => {
+                        let modalEl = document.querySelector('[role="dialog"]');
+                        ['eva1', 'eva2', 'eva3'].forEach(tab => {
+                            let el = modalEl ? modalEl.querySelector('select[name="' + tab + '_status"]') : document.querySelector('select[name="' + tab + '_status"]');
+                            if (el) {
+                                if (!el.tomselect && typeof TomSelect !== 'undefined') {
+                                    let ts = new TomSelect(el, {
+                                        controlInput: null,
+                                        allowEmptyOption: true
+                                    });
+                                    el._tomSelectHooked = true;
+                                    ts.on('dropdown_open', () => {
+                                        let controlRect = ts.control.getBoundingClientRect();
+                                        let dropdownHeight = Math.max(ts.dropdown.scrollHeight || 0, ts.dropdown.offsetHeight || 0, 220);
+                                        let spaceBelow = window.innerHeight - controlRect.bottom;
+                                        let spaceAbove = controlRect.top;
+                                        if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                                            ts.wrapper.classList.add('drop-up');
+                                        } else {
+                                            ts.wrapper.classList.remove('drop-up');
+                                        }
+                                    });
+                                    ts.on('change', (val) => {
+                                        this.formData[tab + '_status'] = val;
+                                    });
+                                    let currentVal = this.formData[tab + '_status'] || '';
+                                    if (currentVal) {
+                                        ts.setValue(currentVal, true);
+                                    }
+                                } else if (el.tomselect) {
+                                    if (!el._tomSelectHooked) {
+                                        el._tomSelectHooked = true;
+                                        el.tomselect.on('change', (val) => {
+                                            this.formData[tab + '_status'] = val;
+                                        });
+                                    }
+                                    let currentVal = this.formData[tab + '_status'] || '';
+                                    if (el.tomselect.getValue() !== currentVal) {
+                                        el.tomselect.setValue(currentVal, true);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                },
+
+                openUploadModal(eva, id) {
+                    this.uploadEva = eva;
+                    this.uploadId = id;
+                    this.showUploadModal = true;
                 }
-            } catch (err) {
-                alert('Failed to connect to the server.');
-            } finally {
-                this.isSubmitting = false;
-            }
-        },
-
-        openModal(title, kategori, data = null) {
-            this.formTitle = title;
-            this.formData.kategori = kategori;
-            this.formErrors = {};
-
-            if (data) {
-                this.formAction = '{{ url('training/history') }}/' + data.id;
-                this.formMethod = 'PUT';
-                this.formData.id = data.id;
-                this.formData.nama = data.nama_training;
-                this.formData.tanggal = data.tanggal_training ? data.tanggal_training.split(' ')[0] : '';
-                this.formData.eva1_status = data.eva1_status || '';
-                this.formData.eva2_status = data.eva2_status || '';
-                this.formData.eva3_status = data.eva3_status || '';
-                this.formData.eva1_lampiran = data.eva1_lampiran || '';
-                this.formData.eva2_lampiran = data.eva2_lampiran || '';
-                this.formData.eva3_lampiran = data.eva3_lampiran || '';
-            } else {
-                this.formAction = '{{ route('training.store-history', $employee->id) }}';
-                this.formMethod = 'POST';
-                this.formData.id = null;
-                this.formData.nama = '';
-                this.formData.tanggal = '';
-                this.formData.eva1_status = '';
-                this.formData.eva2_status = '';
-                this.formData.eva3_status = '';
-                this.formData.eva1_lampiran = '';
-                this.formData.eva2_lampiran = '';
-                this.formData.eva3_lampiran = '';
-            }
-            this.activeEvaTab = 'eva1';
-            this.showFormModal = true;
-        },
-
-        openUploadModal(eva, id) {
-            this.uploadEva = eva;
-            this.uploadId = id;
-            this.showUploadModal = true;
+            };
         }
-    }">
+    </script>
+
+    <div x-data="trainingDetails()" x-init="if (showFormModal) syncTomSelect()">
         <div class="min-h-full -mx-8 -my-8 bg-white p-8">
             <!-- Header -->
             <div class="mb-6 flex justify-between items-end">
@@ -171,7 +237,7 @@
                 <div class="lg:col-span-7 bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.10)]"
                     x-data="{ showEditTarget: false }">
                     <form id="training-target-form" action="{{ route('training.update-target', $employee->id) }}"
-                        method="POST" @submit.prevent>
+                        method="POST">
                         @csrf
                     </form>
 
@@ -280,103 +346,256 @@
                 <!-- Tabel {{ $section['title'] }} -->
                 <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.10)]">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-bold text-gray-900">{{ $section['title'] }}</h3>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $section['color'] }};"></div>
+                            <h3 class="text-sm font-bold text-gray-900">{{ $section['title'] }}</h3>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                                {{ count($section['items']) }}
+                            </span>
+                        </div>
                         @can('tambah_training')
                             <button @click="openModal('Add {{ $section['title'] }}', '{{ $section['kategori'] }}')"
-                                class="bg-white border text-[{{ $section['color'] }}] border-[{{ $section['color'] }}] {{ $section['hover_bg'] }} px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                                <i class="fas fa-plus"></i> Add
+                                style="color: {{ $section['color'] }}; border-color: {{ $section['color'] }};"
+                                class="bg-white border {{ $section['hover_bg'] }} px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs">
+                                <i class="fas fa-plus text-[10px]"></i> Add
                             </button>
                         @endcan
                     </div>
 
-                    <div class="overflow-visible rounded-lg border border-gray-200">
-                        <table class="w-full text-left text-sm border-collapse">
-                            <thead class="text-white text-[11px] uppercase tracking-wider bg-[{{ $section['color'] }}]">
+                    <div class="overflow-visible rounded-lg border border-gray-200 bg-white">
+                        <table class="w-full text-left text-sm border-collapse table-fixed">
+                            <thead class="text-white text-[11px] uppercase tracking-wider font-semibold" style="background-color: {{ $section['color'] }};">
                                 <tr>
-                                    <th class="px-4 py-3 font-semibold">Training Name</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Status</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Date</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Evaluation</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Attachment</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Action</th>
+                                    <th class="px-4 py-3 font-semibold text-left" style="width: 20%;">Training Name</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: 20%;">Status</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: 15%;">Date</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: 18%;">Evaluation</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: 17%;">Attachment</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: 10%;">Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 @forelse($section['items'] as $item)
-                                    <tr class="hover:bg-gray-50" 
-                                        x-data="{ selectedEva: sessionStorage.getItem('selectedEva_{{ $section['key_prefix'] }}_{{ $item->id }}') || 'eva1' }" 
+                                    <tr class="hover:bg-gray-50/70 transition-colors" 
+                                        :class="(openStatusDropdown || openEvaDropdown) ? 'relative z-30' : ''"
+                                        x-data="{ 
+                                            selectedEva: sessionStorage.getItem('selectedEva_{{ $section['key_prefix'] }}_{{ $item->id }}') || 'eva1',
+                                            evaStatus: {
+                                                eva1: '{{ $item->eva1_status ?? '' }}',
+                                                eva2: '{{ $item->eva2_status ?? '' }}',
+                                                eva3: '{{ $item->eva3_status ?? '' }}'
+                                            },
+                                            openStatusDropdown: false,
+                                            openEvaDropdown: false,
+                                            dropUpStatus: false,
+                                            dropUpEva: false,
+                                            isUpdatingStatus: false,
+
+                                            statusOptions: [
+                                                { value: '', label: 'Select Status' },
+                                                { value: 'pending', label: 'Pending' },
+                                                { value: 'not_started', label: 'Not Started' },
+                                                { value: 'in_progress', label: 'In Progress' },
+                                                { value: 'completed', label: 'Completed' },
+                                                { value: 'remedial', label: 'Remedial' }
+                                            ],
+
+                                            evaOptions: [
+                                                { value: 'eva1', label: 'EVA 1 {{ $item->eva1_lampiran ? '✓' : '(empty)' }}' },
+                                                { value: 'eva2', label: 'EVA 2 {{ $item->eva2_lampiran ? '✓' : '(empty)' }}' },
+                                                { value: 'eva3', label: 'EVA 3 {{ $item->eva3_lampiran ? '✓' : '(empty)' }}' }
+                                            ],
+
+                                            getCurrentStatusLabel() {
+                                                let val = this.evaStatus[this.selectedEva] || '';
+                                                let found = this.statusOptions.find(o => o.value === val);
+                                                return found ? found.label : '-- Select Status --';
+                                            },
+
+                                            getCurrentEvaLabel() {
+                                                let found = this.evaOptions.find(o => o.value === this.selectedEva);
+                                                return found ? found.label : 'EVA 1';
+                                            },
+
+                                            toggleStatusDropdown(buttonEl) {
+                                                this.openStatusDropdown = !this.openStatusDropdown;
+                                                this.openEvaDropdown = false;
+                                                if (this.openStatusDropdown) {
+                                                    let rect = buttonEl.getBoundingClientRect();
+                                                    let spaceBelow = window.innerHeight - rect.bottom;
+                                                    let spaceAbove = rect.top;
+                                                    this.dropUpStatus = spaceBelow < 220 && spaceAbove > spaceBelow;
+                                                }
+                                            },
+
+                                            toggleEvaDropdown(buttonEl) {
+                                                this.openEvaDropdown = !this.openEvaDropdown;
+                                                this.openStatusDropdown = false;
+                                                if (this.openEvaDropdown) {
+                                                    let rect = buttonEl.getBoundingClientRect();
+                                                    let spaceBelow = window.innerHeight - rect.bottom;
+                                                    let spaceAbove = rect.top;
+                                                    this.dropUpEva = spaceBelow < 180 && spaceAbove > spaceBelow;
+                                                }
+                                            },
+
+                                            async changeStatus(newStatus) {
+                                                if (this.evaStatus[this.selectedEva] === newStatus) {
+                                                    this.openStatusDropdown = false;
+                                                    return;
+                                                }
+                                                const prevStatus = this.evaStatus[this.selectedEva];
+                                                this.evaStatus[this.selectedEva] = newStatus;
+                                                this.openStatusDropdown = false;
+                                                this.isUpdatingStatus = true;
+
+                                                try {
+                                                    let fd = new FormData();
+                                                    fd.append('_token', '{{ csrf_token() }}');
+                                                    fd.append('_method', 'PATCH');
+                                                    fd.append(this.selectedEva + '_status', newStatus);
+
+                                                    let res = await fetch('{{ route('training.update-status', $item->id) }}', {
+                                                        method: 'POST',
+                                                        body: fd,
+                                                        headers: { 
+                                                            'X-Requested-With': 'XMLHttpRequest',
+                                                            'Accept': 'application/json'
+                                                        }
+                                                    });
+
+                                                    if (res.ok || res.redirected) {
+                                                        this.isUpdatingStatus = false;
+                                                    } else {
+                                                        alert('Gagal memperbarui status');
+                                                        this.evaStatus[this.selectedEva] = prevStatus;
+                                                        this.isUpdatingStatus = false;
+                                                    }
+                                                } catch (err) {
+                                                    alert('Gagal terhubung ke server');
+                                                    this.evaStatus[this.selectedEva] = prevStatus;
+                                                    this.isUpdatingStatus = false;
+                                                }
+                                            }
+                                        }" 
                                         x-init="$watch('selectedEva', val => sessionStorage.setItem('selectedEva_{{ $section['key_prefix'] }}_{{ $item->id }}', val))">
                                         
-                                        <td class="px-4 py-4 text-gray-800 font-medium">{{ $item->nama_training }}</td>
+                                        <!-- Training Name -->
+                                        <td class="px-4 py-3 text-gray-800 font-medium text-sm align-middle break-words">
+                                            {{ $item->nama_training }}
+                                        </td>
                                         
-                                        <!-- Status Evaluasi -->
-                                        <td class="px-4 py-4 text-center">
-                                            @foreach (['eva1', 'eva2', 'eva3'] as $eva)
-                                                @php $statusField = "{$eva}_status"; @endphp
-                                                <div x-show="selectedEva === '{{ $eva }}'" @if(!$loop->first) style="display: none;" @endif>
-                                                    <form action="{{ route('training.update-status', $item->id) }}" method="POST" @submit.prevent>
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <div class="relative inline-block w-full min-w-[110px]">
-                                                            <select name="{{ $statusField }}" 
-                                                                @change="fetch($el.form.action, { 
-                                                                    method: 'POST', 
-                                                                    body: new FormData($el.form), 
-                                                                    headers: {'X-Requested-With': 'XMLHttpRequest'} 
-                                                                }).then(r => r.text()).then(h => { 
-                                                                    let doc = new DOMParser().parseFromString(h, 'text/html'); 
-                                                                    let target = document.querySelector('.min-h-full'); 
-                                                                    target.innerHTML = doc.querySelector('.min-h-full').innerHTML; 
-                                                                    setTimeout(() => { if(typeof initTomSelect !== 'undefined') initTomSelect(); }, 50); 
-                                                                })"
-                                                                class="w-full text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[{{ $section['color'] }}] focus:border-[{{ $section['color'] }}] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                                <option value="" disabled @selected(empty($item->$statusField) || $item->$statusField === 'pending')>-- Select Status --</option>
-                                                                <option value="completed" @selected($item->$statusField === 'completed')>Completed</option>
-                                                                <option value="in_progress" @selected($item->$statusField === 'in_progress')>In Progress</option>
-                                                                <option value="remedial" @selected($item->$statusField === 'remedial')>Remedial</option>
-                                                                <option value="not_started" @selected($item->$statusField === 'not_started')>Not Started</option>
-                                                            </select>
-                                                            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                                                <i class="fas fa-chevron-down text-gray-400 text-[10px]"></i>
-                                                            </div>
-                                                        </div>
-                                                    </form>
+                                        <!-- Status Evaluasi Dropdown -->
+                                        <td class="px-4 py-3 text-center align-middle">
+                                            <div class="relative inline-block w-[160px]" 
+                                                :class="openStatusDropdown ? 'z-50' : 'z-0'"
+                                                @click.outside="openStatusDropdown = false">
+                                                <!-- Dropdown Trigger Button -->
+                                                <button type="button" 
+                                                    @click="toggleStatusDropdown($el)"
+                                                    :disabled="isUpdatingStatus"
+                                                    class="group w-full bg-white rounded-lg border shadow-xs py-2 px-3 text-xs font-medium h-[38px] flex items-center justify-between text-gray-700 cursor-pointer transition-all duration-200 focus:outline-none hover:border-[#0ea5e9] hover:bg-[#f0f9ff]/40"
+                                                    :class="openStatusDropdown ? 'border-[#0ea5e9] ring-2 ring-[#0ea5e9]/20 bg-[#f0f9ff]/30' : 'border-gray-200 hover:border-[#0ea5e9]'">
+                    
+                                                    <div class="flex items-center gap-1.5 truncate flex-1 pr-1">
+                                                        <i x-show="isUpdatingStatus" class="fas fa-spinner fa-spin text-xs text-[#0ea5e9]" style="display: none;"></i>
+                                                        <span class="truncate font-medium text-left" :class="isUpdatingStatus ? 'opacity-60' : ''" x-text="getCurrentStatusLabel()"></span>
+                                                    </div>
+                    
+                                                    <i class="fas fa-chevron-down text-[10px] text-gray-400 group-hover:text-[#0ea5e9] transition-transform duration-200 shrink-0" 
+                                                        :class="openStatusDropdown ? 'rotate-180 text-[#0ea5e9]' : ''"></i>
+                                                </button>
+
+                                                <!-- Dropdown Menu -->
+                                                <div x-show="openStatusDropdown" 
+                                                    x-transition:enter="transition ease-out duration-100"
+                                                    x-transition:enter-start="opacity-0 scale-95"
+                                                    x-transition:enter-end="opacity-100 scale-100"
+                                                    x-transition:leave="transition ease-in duration-75"
+                                                    x-transition:leave-start="opacity-100 scale-100"
+                                                    x-transition:leave-end="opacity-0 scale-95"
+                                                    style="display: none;"
+                                                    :class="dropUpStatus ? 'bottom-full mb-1 origin-bottom' : 'top-full mt-1 origin-top'"
+                                                    class="absolute left-0 w-full min-w-[160px] bg-white rounded-lg border border-gray-200 shadow-xl p-1 z-[9999] text-left">
+                                                    
+                                                    <template x-for="opt in statusOptions" :key="opt.value">
+                                                        <button type="button" 
+                                                            @click="changeStatus(opt.value)"
+                                                            class="dropdown-option-btn w-full px-3 py-2 rounded-md transition-colors text-xs text-left flex items-center justify-between cursor-pointer"
+                                                            :class="evaStatus[selectedEva] === opt.value ? 'is-active bg-[#e0f2fe] text-[#0284c7] font-medium' : 'text-gray-700'"
+                                                            :style="evaStatus[selectedEva] === opt.value ? 'background-color: #e0f2fe !important; color: #0284c7 !important; font-weight: 500;' : ''">
+                                                            <span x-text="opt.label"></span>
+                                                        </button>
+                                                    </template>
                                                 </div>
-                                            @endforeach
+                                            </div>
                                         </td>
 
                                         <!-- Tanggal -->
-                                        <td class="px-4 py-4 text-center text-gray-600">
+                                        <td class="px-4 py-3 text-center align-middle text-gray-600 text-xs font-medium whitespace-nowrap">
                                             {{ \Carbon\Carbon::parse($item->tanggal_training)->format('d M Y') }}
                                         </td>
 
                                         <!-- Dropdown Pemilih Evaluasi -->
-                                        <td class="px-4 py-4 text-center">
-                                            <div class="relative inline-block w-full min-w-[100px]">
-                                                <select x-model="selectedEva"
-                                                    class="w-full relative z-20 text-xs border border-gray-200 rounded-lg text-gray-700 bg-gray-50 focus:ring-[{{ $section['color'] }}] focus:border-[{{ $section['color'] }}] appearance-none pr-7 pl-2 py-1.5 cursor-pointer transition-shadow hover:bg-white hover:border-gray-300">
-                                                    <option value="eva1">EVA 1 {{ $item->eva1_lampiran ? '✓' : '(empty)' }}</option>
-                                                    <option value="eva2">EVA 2 {{ $item->eva2_lampiran ? '✓' : '(empty)' }}</option>
-                                                    <option value="eva3">EVA 3 {{ $item->eva3_lampiran ? '✓' : '(empty)' }}</option>
-                                                </select>
+                                        <td class="px-4 py-3 text-center align-middle">
+                                            <div class="relative inline-block w-[140px]" 
+                                                :class="openEvaDropdown ? 'z-40' : 'z-10'"
+                                                @click.outside="openEvaDropdown = false">
+                                                <!-- Dropdown Trigger Button -->
+                                                <button type="button" 
+                                                    @click="toggleEvaDropdown($el)"
+                                                    class="group w-full bg-white rounded-lg border shadow-xs py-2 px-3 text-xs font-medium h-[38px] flex items-center justify-between text-gray-700 cursor-pointer transition-all duration-200 focus:outline-none hover:border-[#0ea5e9] hover:bg-[#f0f9ff]/40"
+                                                    :class="openEvaDropdown ? 'border-[#0ea5e9] ring-2 ring-[#0ea5e9]/20 bg-[#f0f9ff]/30' : 'border-gray-200 hover:border-[#0ea5e9]'">
+                                                    <span class="truncate font-medium text-left flex-1 pr-1" x-text="getCurrentEvaLabel()"></span>
+                                                    <i class="fas fa-chevron-down text-[10px] text-gray-400 group-hover:text-[#0ea5e9] transition-transform duration-200 shrink-0" 
+                                                        :class="openEvaDropdown ? 'rotate-180 text-[#0ea5e9]' : ''"></i>
+                                                </button>
+
+                                                <!-- Dropdown Menu -->
+                                                <div x-show="openEvaDropdown" 
+                                                    x-transition:enter="transition ease-out duration-100"
+                                                    x-transition:enter-start="opacity-0 scale-95"
+                                                    x-transition:enter-end="opacity-100 scale-100"
+                                                    x-transition:leave="transition ease-in duration-75"
+                                                    x-transition:leave-start="opacity-100 scale-100"
+                                                    x-transition:leave-end="opacity-0 scale-95"
+                                                    style="display: none;"
+                                                    :class="dropUpEva ? 'bottom-full mb-1 origin-bottom' : 'top-full mt-1 origin-top'"
+                                                    class="absolute left-0 w-full min-w-[140px] bg-white rounded-lg border border-gray-200 shadow-xl p-1 z-[9999] text-left">
+                                                    
+                                                    <template x-for="opt in evaOptions" :key="opt.value">
+                                                        <button type="button" 
+                                                            @click="selectedEva = opt.value; openEvaDropdown = false"
+                                                            class="dropdown-option-btn w-full px-3 py-2 rounded-md transition-colors text-xs text-left flex items-center justify-between cursor-pointer"
+                                                            :class="selectedEva === opt.value ? 'is-active bg-[#e0f2fe] text-[#0284c7] font-medium' : 'text-gray-700'"
+                                                            :style="selectedEva === opt.value ? 'background-color: #e0f2fe !important; color: #0284c7 !important; font-weight: 500;' : ''">
+                                                            <span x-text="opt.label"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </td>
 
                                         <!-- Lampiran -->
-                                        <td class="px-4 py-4 text-center">
+                                        <td class="px-4 py-3 text-center align-middle">
                                             @foreach (['eva1', 'eva2', 'eva3'] as $eva)
                                                 @php $lampiranField = "{$eva}_lampiran"; @endphp
-                                                <div x-show="selectedEva === '{{ $eva }}'" @if(!$loop->first) style="display: none;" @endif>
+                                                <div x-show="selectedEva === '{{ $eva }}'" @if(!$loop->first) style="display: none;" @endif class="flex items-center justify-center">
                                                     @if ($item->$lampiranField)
                                                         <a href="{{ Storage::disk('hrg')->url($item->$lampiranField) }}" target="_blank"
-                                                            class="text-xs text-gray-600 hover:text-blue-600 flex items-center justify-center gap-1">
-                                                            <i class="fas fa-file-pdf text-red-500"></i> {{ strtoupper($eva) }} Attachment
+                                                            class="inline-flex items-center justify-center gap-1.5 px-3 h-[38px] rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 hover:text-rose-700 transition-colors shadow-2xs"
+                                                            title="View {{ strtoupper($eva) }} PDF">
+                                                            <i class="fas fa-file-pdf text-rose-500 text-sm"></i>
+                                                            <span class="truncate">{{ strtoupper($eva) }} PDF</span>
                                                         </a>
                                                     @else
                                                         <button type="button"
                                                             @click="openUploadModal('{{ $eva }}', {{ $item->id }})"
-                                                            class="text-xs border border-[{{ $section['color'] }}] text-[{{ $section['color'] }}] px-2 py-1 rounded {{ $section['hover_bg'] }}">
-                                                            + Attachment
+                                                            style="color: {{ $section['color'] }};"
+                                                            class="inline-flex items-center justify-center gap-1.5 px-3 h-[38px] rounded-lg text-xs font-medium border border-dashed border-gray-300 hover:border-current {{ $section['hover_bg'] }} transition-colors"
+                                                            title="Upload {{ strtoupper($eva) }} Attachment">
+                                                            <i class="fas fa-plus text-[10px]"></i>
+                                                            <span>Attachment</span>
                                                         </button>
                                                     @endif
                                                 </div>
@@ -384,14 +603,14 @@
                                         </td>
 
                                         <!-- Aksi -->
-                                        <td class="px-4 py-4 text-center align-middle">
-                                            <div class="flex items-center justify-center gap-3">
+                                        <td class="px-4 py-3 text-center align-middle">
+                                            <div class="flex items-center justify-center gap-1.5">
                                                 @can('edit_training')
                                                     <button type="button"
                                                         @click="openModal('Edit {{ $section['title'] }}', '{{ $section['kategori'] }}', @js($item))"
-                                                        class="text-gray-400 hover:text-gray-700 transition-colors"
+                                                        class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0ea5e9] hover:bg-sky-50 transition-all"
                                                         title="Edit training">
-                                                        <i class="fas fa-pen"></i>
+                                                        <i class="fas fa-pen text-xs"></i>
                                                     </button>
                                                 @endcan
 
@@ -403,9 +622,9 @@
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                            class="text-gray-400 hover:text-red-500 transition-colors"
+                                                            class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all"
                                                             title="Delete training">
-                                                            <i class="fas fa-trash"></i>
+                                                            <i class="fas fa-trash text-xs"></i>
                                                         </button>
                                                     </form>
                                                 @endcan
@@ -414,8 +633,11 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">
-                                            No data available {{ $section['title'] }}
+                                        <td colspan="6" class="px-4 py-8 text-center text-gray-400 text-xs">
+                                            <div class="flex flex-col items-center justify-center gap-1.5">
+                                                <i class="fas fa-folder-open text-2xl text-gray-300"></i>
+                                                <p>No {{ strtolower($section['title']) }} history found</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -492,7 +714,7 @@
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Evaluation</label>
                                     <div class="grid grid-cols-3 gap-2">
                                         @foreach (['eva1' => 'EVA 1', 'eva2' => 'EVA 2', 'eva3' => 'EVA 3'] as $tabKey => $tabLabel)
-                                            <button type="button" @click="activeEvaTab = '{{ $tabKey }}'"
+                                            <button type="button" @click="activeEvaTab = '{{ $tabKey }}'; syncTomSelect();"
                                                 :class="activeEvaTab === '{{ $tabKey }}' ?
                                                     'bg-sky-50 text-sky-600 border-sky-300' :
                                                     'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
@@ -509,18 +731,61 @@
                                         class="bg-[#f7f9f8] border border-gray-100 rounded-xl p-4 mt-1">
                                         <h3 class="text-[13px] font-bold text-gray-800 mb-2">{{ strtoupper($tab) }} Evaluation</h3>
                                         
-                                        <div class="mb-4">
-                                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">{{ strtoupper($tab) }} Status</label>
-                                            <select name="{{ $tab }}_status" x-model="formData.{{ $tab }}_status"
-                                                :class="formErrors.{{ $tab }}_status ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
-                                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
-                                                <option value="" disabled>-- Select Status --</option>
-                                                <option value="pending">Pending</option>
-                                                <option value="not_started">Not Started</option>
-                                                <option value="in_progress">In Progress</option>
-                                                <option value="completed">Completed</option>
-                                                <option value="remedial">Remedial</option>
-                                            </select>
+                                        <!-- Custom Dropdown Status Modal -->
+                                        <div x-data="{ 
+                                            openStatusModalDrop: false,
+                                            dropUp: false,
+                                            statusOptions: [
+                                                { value: '', label: '-- Select Status --' },
+                                                { value: 'pending', label: 'Pending' },
+                                                { value: 'not_started', label: 'Not Started' },
+                                                { value: 'in_progress', label: 'In Progress' },
+                                                { value: 'completed', label: 'Completed' },
+                                                { value: 'remedial', label: 'Remedial' }
+                                            ],
+                                            toggle(btnEl) {
+                                                this.openStatusModalDrop = !this.openStatusModalDrop;
+                                                if (this.openStatusModalDrop) {
+                                                    let rect = btnEl.getBoundingClientRect();
+                                                    let spaceBelow = window.innerHeight - rect.bottom;
+                                                    let spaceAbove = rect.top;
+                                                    this.dropUp = spaceBelow < 180 && spaceAbove > spaceBelow;
+                                                }
+                                            }
+                                        }" class="mb-4">
+                                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
+                                            <input type="hidden" name="{{ $tab }}_status" :value="formData.{{ $tab }}_status">
+                                            <div class="relative" :class="openStatusModalDrop ? 'z-50' : 'z-10'" @click.outside="openStatusModalDrop = false">
+                                                <button type="button" 
+                                                    @click="toggle($el)"
+                                                    class="group w-full bg-white rounded-lg border shadow-sm py-2 px-3 text-sm min-h-[40px] flex items-center justify-between text-gray-700 cursor-pointer transition-all duration-200 focus:outline-none hover:border-[#0ea5e9] hover:bg-[#f0f9ff]/40"
+                                                    :class="formErrors.{{ $tab }}_status ? 'border-red-500 ring-1 ring-red-500' : (openStatusModalDrop ? 'border-[#0ea5e9] ring-2 ring-[#0ea5e9]/20 bg-[#f0f9ff]/30' : 'border-gray-300 hover:border-[#0ea5e9]')">
+                                                    <span class="truncate font-normal" x-text="getStatusModalLabel(formData.{{ $tab }}_status)"></span>
+                                                    <i class="fas fa-chevron-down text-[11px] text-[#0ea5e9] transition-transform duration-300 ml-2" 
+                                                        :class="openStatusModalDrop ? 'rotate-180' : ''"></i>
+                                                </button>
+
+                                                <div x-show="openStatusModalDrop" 
+                                                    x-transition:enter="transition ease-out duration-100"
+                                                    x-transition:enter-start="opacity-0 scale-95"
+                                                    x-transition:enter-end="opacity-100 scale-100"
+                                                    x-transition:leave="transition ease-in duration-75"
+                                                    x-transition:leave-start="opacity-100 scale-100"
+                                                    x-transition:leave-end="opacity-0 scale-95"
+                                                    style="display: none;"
+                                                    :class="dropUp ? 'bottom-full mb-1 origin-bottom' : 'top-full mt-1 origin-top'"
+                                                    class="absolute left-0 w-full bg-white rounded-lg border border-gray-200 shadow-xl p-1 z-[9999] text-left">
+                                                    <template x-for="opt in statusOptions" :key="opt.value">
+                                                        <button type="button" 
+                                                            @click="formData.{{ $tab }}_status = opt.value; openStatusModalDrop = false"
+                                                            class="dropdown-option-btn w-full px-3 py-2 rounded-md transition-colors text-sm text-left flex items-center justify-between cursor-pointer"
+                                                            :class="formData.{{ $tab }}_status === opt.value ? 'is-active bg-[#e0f2fe] text-[#0284c7] font-medium' : 'text-gray-700'"
+                                                            :style="formData.{{ $tab }}_status === opt.value ? 'background-color: #e0f2fe !important; color: #0284c7 !important; font-weight: 500;' : ''">
+                                                            <span x-text="opt.label"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
                                             <p x-show="formErrors.{{ $tab }}_status" class="text-red-500 text-xs mt-1" 
                                                 x-text="formErrors.{{ $tab }}_status ? formErrors.{{ $tab }}_status[0] : ''" style="display: none;"></p>
                                         </div>
@@ -666,6 +931,17 @@
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
+        }
+
+        /* Custom dropdown active and hover highlight */
+        .dropdown-option-btn.is-active {
+            background-color: #e0f2fe !important;
+            color: #0284c7 !important;
+            font-weight: 500 !important;
+        }
+        .dropdown-option-btn:hover {
+            background-color: #e0f2fe !important;
+            color: #0284c7 !important;
         }
     </style>
 @endpush

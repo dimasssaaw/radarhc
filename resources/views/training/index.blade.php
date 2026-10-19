@@ -20,12 +20,24 @@
             <button type="submit" class="hidden"></button>
         </div>
         
-        <div class="flex items-center gap-3 relative z-30" x-data="{ openFilter: false }">
+        <div class="flex items-center gap-3 relative z-30" x-data="{ 
+            openFilter: false,
+            dropUp: false,
+            toggleFilter(btnEl) {
+                this.openFilter = !this.openFilter;
+                if (this.openFilter) {
+                    let rect = btnEl.getBoundingClientRect();
+                    let spaceBelow = window.innerHeight - rect.bottom;
+                    let spaceAbove = rect.top;
+                    this.dropUp = spaceBelow < 280 && spaceAbove > spaceBelow;
+                }
+            }
+        }">
             @if(request()->hasAny(['search', 'department_id', 'jabatan']))
                 <a href="{{ route('training.index') }}" class="text-xs text-red-500 hover:text-red-700 underline px-2">Reset</a>
             @endif
 
-            <button type="button" @click="openFilter = !openFilter" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 relative bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] hover:border-gray-300">
+            <button type="button" @click="toggleFilter($el)" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 relative bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] hover:border-gray-300">
                 <i class="fas fa-filter text-gray-400"></i> Filter
                 @if(request()->hasAny(['department_id', 'jabatan']))
                     <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
@@ -37,17 +49,18 @@
                  x-show="openFilter" 
                  @click.outside="openFilter = false"
                  x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 translate-y-1 scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
                  x-transition:leave="transition ease-in duration-100"
-                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
                  style="display: none;"
-                 class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-4">
+                 :class="dropUp ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'"
+                 class="absolute right-0 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-4">
                 <div class="space-y-3">
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Department</label>
-                        <select name="department_id" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
+                        <select name="department_id" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0ea5e9] hover:border-[#0ea5e9] hover:bg-[#f0f9ff]/40 cursor-pointer transition-colors">
                             <option value="">All</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
@@ -57,7 +70,7 @@
                     
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Position</label>
-                        <select name="jabatan" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
+                        <select name="jabatan" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0ea5e9] hover:border-[#0ea5e9] hover:bg-[#f0f9ff]/40 cursor-pointer transition-colors">
                             <option value="">All</option>
                             <option value="head" {{ request('jabatan') == 'head' ? 'selected' : '' }}>Department Head</option>
                             <option value="group head" {{ request('jabatan') == 'group head' ? 'selected' : '' }}>Group Head</option>

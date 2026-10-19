@@ -186,9 +186,9 @@ class TrainingController extends Controller implements HasMiddleware
             'nama_training' => $request->nama_training,
             'status_training' => 'completed',
             'tanggal_training' => $request->tanggal_training,
-            'eva1_status' => $request->eva1_status,
-            'eva2_status' => $request->eva2_status,
-            'eva3_status' => $request->eva3_status,
+            'eva1_status' => $request->eva1_status ?: null,
+            'eva2_status' => $request->eva2_status ?: null,
+            'eva3_status' => $request->eva3_status ?: null,
         ]);
 
         $karyawan = Karyawan::findOrFail($employee_id);
@@ -234,9 +234,9 @@ class TrainingController extends Controller implements HasMiddleware
 
         $riwayat->nama_training = $request->nama_training;
         $riwayat->tanggal_training = $request->tanggal_training;
-        $riwayat->eva1_status = $request->eva1_status;
-        $riwayat->eva2_status = $request->eva2_status;
-        $riwayat->eva3_status = $request->eva3_status;
+        $riwayat->eva1_status = $request->eva1_status ?: null;
+        $riwayat->eva2_status = $request->eva2_status ?: null;
+        $riwayat->eva3_status = $request->eva3_status ?: null;
 
         $karyawan = Karyawan::findOrFail($riwayat->id_karyawan);
         $folderPath = 'training/'.$karyawan->npk.'_'.Str::slug($karyawan->nama);
@@ -282,19 +282,27 @@ class TrainingController extends Controller implements HasMiddleware
             $rules['status_training'] = 'required|in:completed,in_progress,remedial,not_started';
             $data['status_training'] = $request->status_training;
         } elseif ($request->has('eva1_status')) {
-            $rules['eva1_status'] = 'required|in:completed,in_progress,remedial,not_started,pending';
-            $data['eva1_status'] = $request->eva1_status;
+            $rules['eva1_status'] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
+            $data['eva1_status'] = $request->eva1_status ?: null;
         } elseif ($request->has('eva2_status')) {
-            $rules['eva2_status'] = 'required|in:completed,in_progress,remedial,not_started,pending';
-            $data['eva2_status'] = $request->eva2_status;
+            $rules['eva2_status'] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
+            $data['eva2_status'] = $request->eva2_status ?: null;
         } elseif ($request->has('eva3_status')) {
-            $rules['eva3_status'] = 'required|in:completed,in_progress,remedial,not_started,pending';
-            $data['eva3_status'] = $request->eva3_status;
+            $rules['eva3_status'] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
+            $data['eva3_status'] = $request->eva3_status ?: null;
         }
 
         if (! empty($rules)) {
             $request->validate($rules);
             $riwayat->update($data);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui',
+                'data' => $riwayat,
+            ]);
         }
 
         return redirect()->back()->with('success', 'Status berhasil diperbarui');
