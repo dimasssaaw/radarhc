@@ -11,8 +11,15 @@ class ProfileController extends Controller
 {
     public function index(Request $request)
     {
-        $userEmail = $request->user()->email;
-        $myProfile = Karyawan::where('email', $userEmail)->with('department')->first();
+        $user = $request->user();
+        $myProfile = null;
+
+        if ($user) {
+            $myProfile = Karyawan::where('npk', $user->npk)
+                ->orWhere('email', $user->email)
+                ->with('department')
+                ->first();
+        }
 
         $query = Karyawan::with('department')->orderBy('nama', 'asc');
 

@@ -11,11 +11,18 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
-        $userEmail = $request->user()->email;
-        $karyawan = Karyawan::where('email', $userEmail)->with('department')->first();
+        $user = $request->user();
+        $karyawan = null;
+
+        if ($user) {
+            $karyawan = Karyawan::where('npk', $user->npk)
+                ->orWhere('email', $user->email)
+                ->with('department')
+                ->first();
+        }
 
         if (! $karyawan) {
-            // Fallback for demo/dev if emails don't match
+            // Fallback for demo/dev if user not found
             $karyawan = Karyawan::with('department')->first();
         }
 

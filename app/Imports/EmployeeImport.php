@@ -33,89 +33,120 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             }
         }
 
-        // Clean any existing '-' emails in database that might violate uniqueness
-        DB::table('karyawan')->where('email', '-')->update(['email' => null]);
+        DB::transaction(function () use ($rows, $defaultDeptId, $isAdmin) {
+            // Clean any existing '-' emails in database that might violate uniqueness
+            DB::table('karyawan')->where('email', '-')->update(['email' => null]);
 
-        $seenEmails = [];
-
-        foreach ($rows as $row) {
-            $npk = $this->getRowValue($row, ['npk', 'no_induk', 'nomor_induk', 'nip']);
-            if (! $npk) {
-                continue;
-            }
-
-            $rawEmail = $this->getRowValue($row, ['email', 'alamat_email', 'e_mail']);
-            $email = ($rawEmail !== null && trim((string) $rawEmail) !== '' && trim((string) $rawEmail) !== '-')
-                ? trim((string) $rawEmail)
-                : null;
-
-            $karyawan = Karyawan::where('npk', $npk)->first();
-
-            if ($email !== null) {
-                $isDuplicateInDb = Karyawan::where('email', $email)
-                    ->when($karyawan, fn ($q) => $q->where('id', '!=', $karyawan->id))
-                    ->exists();
-
-                if ($isDuplicateInDb || in_array(strtolower($email), $seenEmails, true)) {
-                    $email = null;
-                } else {
-                    $seenEmails[] = strtolower($email);
+            // Pre-process rows: collect all valid incoming emails from the import file
+            $incomingEmails = [];
+            foreach ($rows as $row) {
+                $rawEmail = $this->getRowValue($row, ['email', 'alamat_email', 'e_mail', 'mail', 'alamat_e_mail', 'email_karyawan']);
+                if ($rawEmail !== null) {
+                    $cleaned = strtolower(trim((string) $rawEmail));
+                    if ($cleaned !== '' && $cleaned !== '-' && filter_var($cleaned, FILTER_VALIDATE_EMAIL)) {
+                        $incomingEmails[] = $cleaned;
+                    }
                 }
             }
 
-            $rawDept = $this->getRowValue($row, ['departemen', 'departement', 'department', 'dept', 'nama_departemen', 'divisi']);
-            $rawJabatan = $this->getRowValue($row, ['jabatan', 'position', 'posisi', 'nama_jabatan', 'role_jabatan']);
-            $nama = $this->getRowValue($row, ['nama', 'nama_lengkap', 'name', 'employee_name']);
-            $tglLahir = $this->getRowValue($row, ['tanggal_lahir', 'tgl_lahir', 'birth_date', 'tanggal_lahir_yyyy_mm_dd']);
-            $masukKerja = $this->getRowValue($row, ['masuk_kerja', 'tgl_masuk', 'tanggal_masuk', 'lama_bekerja', 'join_date']);
-            $pendidikan = $this->getRowValue($row, ['pendidikan', 'education', 'tingkat_pendidikan']);
-            $kontak = $this->getRowValue($row, ['kontak', 'no_hp', 'no_telepon', 'telepon', 'phone', 'contact']);
-            $grade = $this->getRowValue($row, ['grade', 'golongan']);
-            $iq = $this->getRowValue($row, ['iq']);
-            $readiness = $this->getRowValue($row, ['readiness', 'kesiapan']);
-            $disc = $this->getRowValue($row, ['disc']);
-            $hav = $this->getRowValue($row, ['hav']);
-
-            $deptId = $this->resolveDepartmentId($rawDept, $karyawan?->department_id ?? $defaultDeptId, $isAdmin);
-            $posId = $this->resolvePositionId($rawJabatan, $karyawan?->position_id, $isAdmin);
-
-            if ($karyawan) {
-                // Update existing employee (skip grade, iq, dll since they are manual)
-                $karyawan->update([
-                    'nama' => $nama ?? $karyawan->nama,
-                    'position_id' => $posId,
-                    'department_id' => $deptId,
-                    'tanggal_lahir' => $tglLahir !== null ? $this->parseDate($tglLahir) : $karyawan->tanggal_lahir,
-                    'masuk_kerja' => $masukKerja !== null ? $this->parseDate($masukKerja) : $karyawan->masuk_kerja,
-                    'pendidikan' => $pendidikan ?? $karyawan->pendidikan,
-                    'kontak' => $kontak ?? $karyawan->kontak,
-                    'email' => $email ?? ($karyawan->email === '-' ? null : $karyawan->email),
-                    'grade' => $grade ?? $karyawan->grade,
-                    'iq' => $iq !== null ? (int) $iq : $karyawan->iq,
-                    'readiness' => $readiness !== null ? $this->parseReadiness($readiness) : $karyawan->readiness,
-                    'disc' => $disc ?? $karyawan->disc,
-                    'hav' => $hav !== null ? $this->parseHav($hav) : $karyawan->hav,
-                ]);
-            } else {
-                // Create new with defaults for manual fields
-                Karyawan::create([
-                    'npk' => $npk,
-                    'nama' => $nama ?? 'Tanpa Nama',
-                    'position_id' => $posId,
-                    'department_id' => $deptId,
-                    'tanggal_lahir' => $this->parseDate($tglLahir) ?? now()->format('Y-m-d'),
-                    'masuk_kerja' => $this->parseDate($masukKerja) ?? now()->format('Y-m-d'),
-                    'pendidikan' => $pendidikan ?? '-',
-                    'kontak' => $kontak ?? '-',
-                    'email' => $email,
-                    'grade' => $grade ?? '-',
-                    'iq' => $iq !== null ? (int) $iq : 0,
-                    'readiness' => $this->parseReadiness($readiness),
-                    'disc' => $disc ?? '-',
-                    'hav' => $this->parseHav($hav),
-                ]);
+            // Temporarily set to null any matching emails in the database so swapping emails across employees
+            // (e.g. employee A gets employee B's email) does not trigger duplicate unique constraints
+            // or get incorrectly ignored as duplicate.
+            if (! empty($incomingEmails)) {
+                DB::table('karyawan')->whereIn('email', array_unique($incomingEmails))->update(['email' => null]);
             }
-        }
+
+            $seenEmails = [];
+
+            foreach ($rows as $row) {
+                $rawNpk = $this->getRowValue($row, ['npk', 'no_induk', 'nomor_induk', 'nip']);
+                if ($rawNpk === null || trim((string) $rawNpk) === '') {
+                    continue;
+                }
+                $npk = trim((string) $rawNpk);
+
+                $rawEmail = $this->getRowValue($row, ['email', 'alamat_email', 'e_mail', 'mail', 'alamat_e_mail', 'email_karyawan']);
+                $cleanedEmail = $rawEmail !== null ? strtolower(trim((string) $rawEmail)) : null;
+
+                $email = null;
+                $shouldClearEmail = false;
+
+                if ($cleanedEmail !== null && $cleanedEmail !== '') {
+                    if ($cleanedEmail === '-') {
+                        $shouldClearEmail = true;
+                    } elseif (filter_var($cleanedEmail, FILTER_VALIDATE_EMAIL)) {
+                        if (! in_array($cleanedEmail, $seenEmails, true)) {
+                            $email = $cleanedEmail;
+                            $seenEmails[] = $cleanedEmail;
+                        }
+                    }
+                }
+
+                $karyawan = Karyawan::where('npk', $npk)->first();
+                if (! $karyawan && is_numeric($npk)) {
+                    $karyawan = Karyawan::whereRaw('CAST(npk AS UNSIGNED) = ?', [(int) $npk])->first();
+                }
+
+                $rawDept = $this->getRowValue($row, ['departemen', 'departement', 'department', 'dept', 'nama_departemen', 'divisi']);
+                $rawJabatan = $this->getRowValue($row, ['jabatan', 'position', 'posisi', 'nama_jabatan', 'role_jabatan']);
+                $nama = $this->getRowValue($row, ['nama', 'nama_lengkap', 'name', 'employee_name']);
+                $tglLahir = $this->getRowValue($row, ['tanggal_lahir', 'tgl_lahir', 'birth_date', 'tanggal_lahir_yyyy_mm_dd']);
+                $masukKerja = $this->getRowValue($row, ['masuk_kerja', 'tgl_masuk', 'tanggal_masuk', 'lama_bekerja', 'join_date']);
+                $pendidikan = $this->getRowValue($row, ['pendidikan', 'education', 'tingkat_pendidikan']);
+                $kontak = $this->getRowValue($row, ['kontak', 'no_hp', 'no_telepon', 'telepon', 'phone', 'contact']);
+                $grade = $this->getRowValue($row, ['grade', 'golongan']);
+                $iq = $this->getRowValue($row, ['iq']);
+                $readiness = $this->getRowValue($row, ['readiness', 'kesiapan']);
+                $disc = $this->getRowValue($row, ['disc']);
+                $hav = $this->getRowValue($row, ['hav']);
+
+                $deptId = $this->resolveDepartmentId($rawDept, $karyawan?->department_id ?? $defaultDeptId, $isAdmin);
+                $posId = $this->resolvePositionId($rawJabatan, $karyawan?->position_id, $isAdmin);
+
+                if ($karyawan) {
+                    $updateData = [
+                        'nama' => $nama ?? $karyawan->nama,
+                        'position_id' => $posId,
+                        'department_id' => $deptId,
+                        'tanggal_lahir' => $tglLahir !== null ? $this->parseDate($tglLahir) : $karyawan->tanggal_lahir,
+                        'masuk_kerja' => $masukKerja !== null ? $this->parseDate($masukKerja) : $karyawan->masuk_kerja,
+                        'pendidikan' => $pendidikan ?? $karyawan->pendidikan,
+                        'kontak' => $kontak ?? $karyawan->kontak,
+                        'grade' => $grade ?? $karyawan->grade,
+                        'iq' => $iq !== null ? (int) $iq : $karyawan->iq,
+                        'readiness' => $readiness !== null ? $this->parseReadiness($readiness) : $karyawan->readiness,
+                        'disc' => $disc ?? $karyawan->disc,
+                        'hav' => $hav !== null ? $this->parseHav($hav) : $karyawan->hav,
+                    ];
+
+                    if ($email !== null) {
+                        $updateData['email'] = $email;
+                    } elseif ($shouldClearEmail) {
+                        $updateData['email'] = null;
+                    }
+
+                    $karyawan->update($updateData);
+                } else {
+                    // Create new with defaults for manual fields
+                    Karyawan::create([
+                        'npk' => $npk,
+                        'nama' => $nama ?? 'Tanpa Nama',
+                        'position_id' => $posId,
+                        'department_id' => $deptId,
+                        'tanggal_lahir' => $this->parseDate($tglLahir) ?? now()->format('Y-m-d'),
+                        'masuk_kerja' => $this->parseDate($masukKerja) ?? now()->format('Y-m-d'),
+                        'pendidikan' => $pendidikan ?? '-',
+                        'kontak' => $kontak ?? '-',
+                        'email' => $email,
+                        'grade' => $grade ?? '-',
+                        'iq' => $iq !== null ? (int) $iq : 0,
+                        'readiness' => $this->parseReadiness($readiness),
+                        'disc' => $disc ?? '-',
+                        'hav' => $this->parseHav($hav),
+                    ]);
+                }
+            }
+        });
     }
 
     /**
