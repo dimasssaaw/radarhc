@@ -21,12 +21,32 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             }
         }
 
+        // Clean any existing '-' emails in database that might violate uniqueness
+        DB::table('karyawan')->where('email', '-')->update(['email' => null]);
+
+        $seenEmails = [];
+
         foreach ($rows as $row) {
             if (! isset($row['npk'])) {
                 continue;
             }
 
+            $rawEmail = isset($row['email']) ? trim((string) $row['email']) : '';
+            $email = ($rawEmail !== '' && $rawEmail !== '-') ? $rawEmail : null;
+
             $karyawan = Karyawan::where('npk', $row['npk'])->first();
+
+            if ($email !== null) {
+                $isDuplicateInDb = Karyawan::where('email', $email)
+                    ->when($karyawan, fn ($q) => $q->where('id', '!=', $karyawan->id))
+                    ->exists();
+
+                if ($isDuplicateInDb || in_array(strtolower($email), $seenEmails, true)) {
+                    $email = null;
+                } else {
+                    $seenEmails[] = strtolower($email);
+                }
+            }
 
             if ($karyawan) {
                 // Update existing employee (skip grade, iq, dll since they are manual)
@@ -38,12 +58,12 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                     'masuk_kerja' => isset($row['masuk_kerja']) ? $this->parseDate($row['masuk_kerja']) : $karyawan->masuk_kerja,
                     'pendidikan' => $row['pendidikan'] ?? $karyawan->pendidikan,
                     'kontak' => $row['kontak'] ?? $karyawan->kontak,
-                    'email' => $row['email'] ?? $karyawan->email,
+                    'email' => $email ?? ($karyawan->email === '-' ? null : $karyawan->email),
                     'grade' => $row['grade'] ?? $karyawan->grade,
                     'iq' => isset($row['iq']) ? (int) $row['iq'] : $karyawan->iq,
                     'readiness' => isset($row['readiness']) ? $this->parseReadiness($row['readiness']) : $karyawan->readiness,
                     'disc' => $row['disc'] ?? $karyawan->disc,
-                    'hav' => $row['hav'] ?? $karyawan->hav,
+                    'hav' => isset($row['hav']) ? $this->parseHav($row['hav']) : $karyawan->hav,
                 ]);
             } else {
                 // Create new with defaults for manual fields
@@ -56,12 +76,12 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                     'masuk_kerja' => $this->parseDate($row['masuk_kerja'] ?? null) ?? now()->format('Y-m-d'),
                     'pendidikan' => $row['pendidikan'] ?? '-',
                     'kontak' => $row['kontak'] ?? '-',
-                    'email' => $row['email'] ?? '-',
+                    'email' => $email,
                     'grade' => $row['grade'] ?? '-',
                     'iq' => isset($row['iq']) ? (int) $row['iq'] : 0,
                     'readiness' => $this->parseReadiness($row['readiness'] ?? null),
                     'disc' => $row['disc'] ?? '-',
-                    'hav' => $row['hav'] ?? 'potential',
+                    'hav' => $this->parseHav($row['hav'] ?? null),
                 ]);
             }
         }
@@ -69,7 +89,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow
 
     private function parseReadiness($value)
     {
-        if (empty($value)) {
+        if (empty($value) || trim((string) $value) === '-') {
             return 'not_ready';
         }
         $val = trim($value);
@@ -77,18 +97,34 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             return strtoupper($val).' ready';
         }
 
-        return $val;
+        $valid = ['R1 ready', 'R2 ready', 'R3 ready', 'R4 ready', 'R5 ready', 'not_ready'];
+
+        return in_array($val, $valid, true) ? $val : 'not_ready';
+    }
+
+    private function parseHav($value): string
+    {
+        $valid = ['star', 'high potential', 'potential', 'excellent career person', 'career person', 'problem employee', 'deadwood'];
+        if (empty($value) || trim((string) $value) === '-') {
+            return 'potential';
+        }
+
+        $val = strtolower(trim((string) $value));
+
+        return in_array($val, $valid, true) ? $val : 'potential';
     }
 
     private function parseDate($value)
     {
-        if (empty($value)) {
+        if (empty($value) || trim((string) $value) === '-') {
             return null;
         }
         if (is_numeric($value)) {
             return Date::excelToDateTimeObject($value)->format('Y-m-d');
         }
 
-        return date('Y-m-d', strtotime($value));
+        $timestamp = strtotime($value);
+
+        return $timestamp ? date('Y-m-d', $timestamp) : null;
     }
 }
