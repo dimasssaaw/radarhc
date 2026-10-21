@@ -21,6 +21,11 @@ class EmployeeImport implements ToCollection, WithHeadingRow
      */
     private array $resolvedPosCache = [];
 
+    /**
+     * @var array<int, string>
+     */
+    public array $warnings = [];
+
     public function collection(Collection $rows): void
     {
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
@@ -40,23 +45,20 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             // Pre-process rows: collect all valid incoming emails from the import file
             $incomingEmails = [];
             foreach ($rows as $row) {
-                $rawEmail = $this->getRowValue($row, ['email', 'alamat_email', 'e_mail', 'mail', 'alamat_e_mail', 'email_karyawan']);
-                if ($rawEmail !== null) {
-                    $cleaned = strtolower(trim((string) $rawEmail));
-                    if ($cleaned !== '' && $cleaned !== '-' && filter_var($cleaned, FILTER_VALIDATE_EMAIL)) {
-                        $incomingEmails[] = $cleaned;
-                    }
+                $rawEmail = $this->getEmailRowValue($row);
+                $cleaned = $this->cleanAndValidateEmail($rawEmail);
+                if ($cleaned !== null) {
+                    $incomingEmails[] = $cleaned;
                 }
             }
 
             // Temporarily set to null any matching emails in the database so swapping emails across employees
             // (e.g. employee A gets employee B's email) does not trigger duplicate unique constraints
-            // or get incorrectly ignored as duplicate.
             if (! empty($incomingEmails)) {
                 DB::table('karyawan')->whereIn('email', array_unique($incomingEmails))->update(['email' => null]);
             }
 
-            $seenEmails = [];
+            $seenEmails = []; // format: [email => npk]
 
             foreach ($rows as $row) {
                 $rawNpk = $this->getRowValue($row, ['npk', 'no_induk', 'nomor_induk', 'nip']);
@@ -65,21 +67,23 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                 }
                 $npk = trim((string) $rawNpk);
 
-                $rawEmail = $this->getRowValue($row, ['email', 'alamat_email', 'e_mail', 'mail', 'alamat_e_mail', 'email_karyawan']);
-                $cleanedEmail = $rawEmail !== null ? strtolower(trim((string) $rawEmail)) : null;
+                $rawEmail = $this->getEmailRowValue($row);
+                $isDash = $rawEmail !== null && trim((string) $rawEmail) === '-';
+                $validEmail = $this->cleanAndValidateEmail($rawEmail);
 
                 $email = null;
-                $shouldClearEmail = false;
+                $shouldClearEmail = $isDash;
 
-                if ($cleanedEmail !== null && $cleanedEmail !== '') {
-                    if ($cleanedEmail === '-') {
-                        $shouldClearEmail = true;
-                    } elseif (filter_var($cleanedEmail, FILTER_VALIDATE_EMAIL)) {
-                        if (! in_array($cleanedEmail, $seenEmails, true)) {
-                            $email = $cleanedEmail;
-                            $seenEmails[] = $cleanedEmail;
-                        }
+                if ($validEmail !== null) {
+                    if (! isset($seenEmails[$validEmail])) {
+                        $email = $validEmail;
+                        $seenEmails[$validEmail] = $npk;
+                    } else {
+                        $this->warnings[] = "Email '{$validEmail}' pada NPK {$npk} diabaikan karena duplikat dengan NPK {$seenEmails[$validEmail]}.";
                     }
+                } elseif ($rawEmail !== null && ! $isDash && trim((string) $rawEmail) !== '') {
+                    $cleanRaw = trim((string) $rawEmail);
+                    $this->warnings[] = "Format email '{$cleanRaw}' pada NPK {$npk} tidak valid sehingga dikosongkan.";
                 }
 
                 $karyawan = Karyawan::where('npk', $npk)->first();
@@ -113,7 +117,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                         'pendidikan' => $pendidikan ?? $karyawan->pendidikan,
                         'kontak' => $kontak ?? $karyawan->kontak,
                         'grade' => $grade ?? $karyawan->grade,
-                        'iq' => $iq !== null ? (int) $iq : $karyawan->iq,
+                        'iq' => $iq !== null && trim((string) $iq) !== '' ? (int) $iq : $karyawan->iq,
                         'readiness' => $readiness !== null ? $this->parseReadiness($readiness) : $karyawan->readiness,
                         'disc' => $disc ?? $karyawan->disc,
                         'hav' => $hav !== null ? $this->parseHav($hav) : $karyawan->hav,
@@ -133,13 +137,13 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                         'nama' => $nama ?? 'Tanpa Nama',
                         'position_id' => $posId,
                         'department_id' => $deptId,
-                        'tanggal_lahir' => $this->parseDate($tglLahir) ?? now()->format('Y-m-d'),
-                        'masuk_kerja' => $this->parseDate($masukKerja) ?? now()->format('Y-m-d'),
+                        'tanggal_lahir' => $this->parseDate($tglLahir) ?? null,
+                        'masuk_kerja' => $this->parseDate($masukKerja) ?? null,
                         'pendidikan' => $pendidikan ?? '-',
                         'kontak' => $kontak ?? '-',
                         'email' => $email,
                         'grade' => $grade ?? '-',
-                        'iq' => $iq !== null ? (int) $iq : 0,
+                        'iq' => $iq !== null && trim((string) $iq) !== '' ? (int) $iq : null,
                         'readiness' => $this->parseReadiness($readiness),
                         'disc' => $disc ?? '-',
                         'hav' => $this->parseHav($hav),
@@ -147,6 +151,96 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                 }
             }
         });
+    }
+
+    /**
+     * Retrieve email column value supporting exact and fuzzy column names.
+     *
+     * @param  Collection|array<string, mixed>  $row
+     */
+    private function getEmailRowValue(Collection|array $row): mixed
+    {
+        $keys = [
+            'email', 'alamat_email', 'e_mail', 'mail', 'alamat_e_mail', 'email_karyawan',
+            'email_address', 'surel', 'alamat_surel', 'email_kantor', 'email_perusahaan',
+            'work_email', 'electronic_mail', 'kontak_email',
+        ];
+
+        $val = $this->getRowValue($row, $keys);
+        if ($val !== null) {
+            return $val;
+        }
+
+        // Fuzzy match: check if any header contains 'email' or 'surel'
+        $allKeys = $row instanceof Collection ? $row->keys() : array_keys($row);
+        foreach ($allKeys as $k) {
+            $cleanK = strtolower(trim((string) $k));
+            if (str_contains($cleanK, 'email') || str_contains($cleanK, 'surel') || $cleanK === 'mail') {
+                $possibleVal = $row instanceof Collection ? $row->get($k) : ($row[$k] ?? null);
+                if ($possibleVal !== null && trim((string) $possibleVal) !== '') {
+                    return $possibleVal;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Clean and validate incoming email string.
+     */
+    private function cleanAndValidateEmail(mixed $rawVal): ?string
+    {
+        if ($rawVal === null) {
+            return null;
+        }
+
+        $val = (string) $rawVal;
+
+        // 1. Remove non-breaking spaces (\u00A0, \xC2\xA0, chr(160)), zero-width spaces, and control characters
+        $val = str_replace(["\xc2\xa0", "\xa0", "\u{00a0}", "\u{200b}", "\u{200c}", "\u{200d}", "\u{feff}"], ' ', $val);
+
+        // 2. Trim regular spaces and control characters
+        $val = trim($val, " \t\n\r\0\x0B");
+
+        if ($val === '' || $val === '-') {
+            return null;
+        }
+
+        // 3. Remove "mailto:" prefix if present
+        if (stripos($val, 'mailto:') === 0) {
+            $val = trim(substr($val, 7));
+        }
+
+        // 4. If multiple emails are provided (separated by ;, /, ,, |, or spaces), take the first valid one
+        if (preg_match('/[;,\/\|\s]/', $val)) {
+            $parts = preg_split('/[;,\/\|\s]+/', $val);
+            if ($parts) {
+                foreach ($parts as $part) {
+                    $cleanedPart = trim($part, " \t\n\r\0\x0B.,;:'\"`");
+                    if ($cleanedPart !== '' && filter_var($cleanedPart, FILTER_VALIDATE_EMAIL)) {
+                        $val = $cleanedPart;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 5. Trim any trailing dots, commas, or quotes (e.g. budi@company.com.)
+        $val = rtrim($val, " .,;:'\"`");
+
+        // 6. Fix common typos like "@gmail,com" -> "@gmail.com"
+        if (preg_match('/@([a-zA-Z0-9.-]+),([a-zA-Z]{2,})$/', $val)) {
+            $val = (string) preg_replace('/@([a-zA-Z0-9.-]+),([a-zA-Z]{2,})$/', '@$1.$2', $val);
+        }
+
+        // 7. Validate with filter_var
+        $val = strtolower($val);
+        if (filter_var($val, FILTER_VALIDATE_EMAIL)) {
+            return $val;
+        }
+
+        return null;
     }
 
     /**

@@ -47,14 +47,14 @@
 
                     <!-- Tanggal Lahir -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Lahir <span class="text-red-500">*</span></label>
-                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tanggal_lahir') border-red-500 @enderror">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Lahir</label>
+                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tanggal_lahir') border-red-500 @enderror">
                     </div>
 
                     <!-- Lama Bekerja -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Mulai Bekerja <span class="text-red-500">*</span></label>
-                        <input type="date" name="lama_bekerja" value="{{ old('lama_bekerja') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('lama_bekerja') border-red-500 @enderror">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Mulai Bekerja</label>
+                        <input type="date" name="lama_bekerja" value="{{ old('lama_bekerja') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('lama_bekerja') border-red-500 @enderror">
                     </div>
 
                     <!-- Jabatan -->
@@ -70,9 +70,9 @@
                     
                     <!-- Readiness -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Kaderisasi <span class="text-red-500">*</span></label>
-                        <select name="readiness" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('readiness') border-red-500 @enderror">
-                            <option value="">Pilih Status</option>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Kaderisasi</label>
+                        <select name="readiness" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('readiness') border-red-500 @enderror">
+                            <option value="">Pilih Status (Opsional)</option>
                             <option value="R1 ready" {{ in_array(old('readiness'), ['R1', 'R1 ready']) ? 'selected' : '' }}>R1</option>
                             <option value="R2 ready" {{ in_array(old('readiness'), ['R2', 'R2 ready']) ? 'selected' : '' }}>R2</option>
                             <option value="R3 ready" {{ in_array(old('readiness'), ['R3', 'R3 ready']) ? 'selected' : '' }}>R3</option>
@@ -90,20 +90,20 @@
 
                     <!-- Pendidikan -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pendidikan <span class="text-red-500">*</span></label>
-                        <input type="text" name="pendidikan" value="{{ old('pendidikan') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('pendidikan') border-red-500 @enderror" placeholder="cth. S1 Sistem Informasi">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pendidikan</label>
+                        <input type="text" name="pendidikan" value="{{ old('pendidikan') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('pendidikan') border-red-500 @enderror" placeholder="cth. S1 Sistem Informasi">
                     </div>
 
                     <!-- Kontak -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kontak (No HP) <span class="text-red-500">*</span></label>
-                        <input type="text" name="kontak" value="{{ old('kontak') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('kontak') border-red-500 @enderror" placeholder="cth. 08123456789">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kontak (No HP)</label>
+                        <input type="text" name="kontak" value="{{ old('kontak') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('kontak') border-red-500 @enderror" placeholder="cth. 08123456789">
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
-                        <input type="email" name="email" value="{{ old('email') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('email') border-red-500 @enderror" placeholder="cth. email@company.com">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+                        <input type="email" name="email" value="{{ old('email') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('email') border-red-500 @enderror" placeholder="cth. email@company.com">
                     </div>
 
                     <!-- Departemen -->
@@ -121,27 +121,27 @@
 
                     <!-- Grade -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Grade <span class="text-red-500">*</span></label>
-                        <input type="text" name="grade" value="{{ old('grade') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('grade') border-red-500 @enderror" placeholder="cth. A1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Grade</label>
+                        <input type="text" name="grade" value="{{ old('grade') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('grade') border-red-500 @enderror" placeholder="cth. A1">
                     </div>
 
                     <!-- IQ -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Skor IQ <span class="text-red-500">*</span></label>
-                        <input type="number" name="iq" value="{{ old('iq') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('iq') border-red-500 @enderror" placeholder="cth. 120">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Skor IQ</label>
+                        <input type="number" name="iq" value="{{ old('iq') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('iq') border-red-500 @enderror" placeholder="cth. 120">
                     </div>
 
                     <!-- DISC -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">DISC <span class="text-red-500">*</span></label>
-                        <input type="text" name="disc" value="{{ old('disc') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('disc') border-red-500 @enderror" placeholder="cth. D/I/S/C">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">DISC</label>
+                        <input type="text" name="disc" value="{{ old('disc') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('disc') border-red-500 @enderror" placeholder="cth. D/I/S/C">
                     </div>
 
                     <!-- HAV -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">HAV <span class="text-red-500">*</span></label>
-                        <select name="hav" required class="drop-up w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('hav') border-red-500 @enderror">
-                            <option value="">Pilih HAV</option>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">HAV</label>
+                        <select name="hav" class="drop-up w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('hav') border-red-500 @enderror">
+                            <option value="">Pilih HAV (Opsional)</option>
                             <option value="star" {{ old('hav') == 'star' ? 'selected' : '' }}>Star</option>
                             <option value="high potential" {{ old('hav') == 'high potential' ? 'selected' : '' }}>High potential</option>
                             <option value="potential" {{ old('hav') == 'potential' ? 'selected' : '' }}>Potential</option>

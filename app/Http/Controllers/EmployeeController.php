@@ -133,22 +133,22 @@ class EmployeeController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'npk' => 'required|string|unique:karyawan',
             'nama' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'tanggal_lahir' => 'required|date',
-            'pendidikan' => 'required|string',
-            'kontak' => 'required|string|min:10',
-            'email' => 'required|email|unique:karyawan',
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
-            'grade' => 'required|string',
-            'lama_bekerja' => 'required|date',
-            'iq' => 'required|integer',
-            'readiness' => 'required|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready,R1,R2,R3,R4,R5',
-            'disc' => 'required|string',
-            'hav' => 'required|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'tanggal_lahir' => 'nullable|date',
+            'lama_bekerja' => 'nullable|date',
+            'pendidikan' => 'nullable|string',
+            'kontak' => 'nullable|string',
+            'email' => 'nullable|email|unique:karyawan',
+            'grade' => 'nullable|string',
+            'iq' => 'nullable|integer',
+            'readiness' => 'nullable|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready,R1,R2,R3,R4,R5',
+            'disc' => 'nullable|string',
+            'hav' => 'nullable|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
         ]);
 
-        if (in_array($validated['readiness'], ['R1', 'R2', 'R3', 'R4', 'R5'])) {
+        if (! empty($validated['readiness']) && in_array($validated['readiness'], ['R1', 'R2', 'R3', 'R4', 'R5'], true)) {
             $validated['readiness'] .= ' ready';
         }
 
@@ -158,8 +158,18 @@ class EmployeeController extends Controller implements HasMiddleware
             $validated['foto'] = '/HRG/'.$path;
         }
 
-        $validated['masuk_kerja'] = $validated['lama_bekerja'];
+        $validated['tanggal_lahir'] = $validated['tanggal_lahir'] ?? null;
+        $validated['masuk_kerja'] = $validated['lama_bekerja'] ?? null;
         unset($validated['lama_bekerja']);
+
+        $validated['pendidikan'] = $validated['pendidikan'] ?? '-';
+        $validated['kontak'] = $validated['kontak'] ?? '-';
+        $validated['email'] = ! empty($validated['email']) ? $validated['email'] : null;
+        $validated['grade'] = $validated['grade'] ?? '-';
+        $validated['iq'] = isset($validated['iq']) && $validated['iq'] !== '' ? (int) $validated['iq'] : null;
+        $validated['readiness'] = ! empty($validated['readiness']) ? $validated['readiness'] : 'not_ready';
+        $validated['disc'] = $validated['disc'] ?? '-';
+        $validated['hav'] = ! empty($validated['hav']) ? $validated['hav'] : 'potential';
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
@@ -272,22 +282,22 @@ class EmployeeController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'npk' => 'required|string|unique:karyawan,npk,'.$employee->id,
             'nama' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'tanggal_lahir' => 'required|date',
-            'pendidikan' => 'required|string',
-            'kontak' => 'required|string|min:10',
-            'email' => 'required|email|unique:karyawan,email,'.$employee->id,
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
-            'grade' => 'required|string',
-            'lama_bekerja' => 'required|date',
-            'iq' => 'required|integer',
-            'readiness' => 'required|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready,R1,R2,R3,R4,R5',
-            'disc' => 'required|string',
-            'hav' => 'required|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'tanggal_lahir' => 'nullable|date',
+            'lama_bekerja' => 'nullable|date',
+            'pendidikan' => 'nullable|string',
+            'kontak' => 'nullable|string',
+            'email' => 'nullable|email|unique:karyawan,email,'.$employee->id,
+            'grade' => 'nullable|string',
+            'iq' => 'nullable|integer',
+            'readiness' => 'nullable|in:R1 ready,R2 ready,R3 ready,R4 ready,R5 ready,not_ready,R1,R2,R3,R4,R5',
+            'disc' => 'nullable|string',
+            'hav' => 'nullable|in:star,high potential,potential,excellent career person,career person,problem employee,deadwood',
         ]);
 
-        if (in_array($validated['readiness'], ['R1', 'R2', 'R3', 'R4', 'R5'])) {
+        if (! empty($validated['readiness']) && in_array($validated['readiness'], ['R1', 'R2', 'R3', 'R4', 'R5'], true)) {
             $validated['readiness'] .= ' ready';
         }
 
@@ -305,8 +315,17 @@ class EmployeeController extends Controller implements HasMiddleware
             $validated['foto'] = '/HRG/'.$path;
         }
 
-        $validated['masuk_kerja'] = $validated['lama_bekerja'];
+        $validated['masuk_kerja'] = $validated['lama_bekerja'] ?? $employee->masuk_kerja;
         unset($validated['lama_bekerja']);
+
+        $validated['email'] = ! empty($validated['email']) ? $validated['email'] : null;
+        $validated['pendidikan'] = $validated['pendidikan'] ?? $employee->pendidikan ?? '-';
+        $validated['kontak'] = $validated['kontak'] ?? $employee->kontak ?? '-';
+        $validated['grade'] = $validated['grade'] ?? $employee->grade ?? '-';
+        $validated['iq'] = isset($validated['iq']) && $validated['iq'] !== '' ? (int) $validated['iq'] : $employee->iq;
+        $validated['readiness'] = ! empty($validated['readiness']) ? $validated['readiness'] : ($employee->readiness ?: 'not_ready');
+        $validated['disc'] = $validated['disc'] ?? $employee->disc ?? '-';
+        $validated['hav'] = ! empty($validated['hav']) ? $validated['hav'] : ($employee->hav ?: 'potential');
 
         $employee->update($validated);
 
@@ -348,9 +367,20 @@ class EmployeeController extends Controller implements HasMiddleware
         ]);
 
         try {
-            Excel::import(new EmployeeImport, $request->file('file'));
+            $import = new EmployeeImport;
+            Excel::import($import, $request->file('file'));
 
-            return back()->with('success', 'Data karyawan berhasil diimpor!');
+            $message = 'Data karyawan berhasil diimpor!';
+            if (! empty($import->warnings)) {
+                $uniqueWarnings = array_values(array_unique($import->warnings));
+                $sampleWarnings = array_slice($uniqueWarnings, 0, 3);
+                $message .= ' Catatan: '.implode(' | ', $sampleWarnings);
+                if (count($uniqueWarnings) > 3) {
+                    $message .= ' (dan '.(count($uniqueWarnings) - 3).' catatan lainnya)';
+                }
+            }
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mengimpor data: '.$e->getMessage());
         }
