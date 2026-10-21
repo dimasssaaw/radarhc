@@ -13,7 +13,7 @@
     <div style="background-color: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 25px;">
         <h2 style="margin-top: 0; color: #9a3412;">Halo, {{ $user->name }}!</h2>
         
-        <p>Admin SORA baru saja melakukan reset pada password Anda. Berikut adalah informasi login Anda yang baru:</p>
+        <p>Permintaan reset password akun SORA Anda telah berhasil diproses. Berikut adalah informasi login Anda yang baru:</p>
         
         <div style="background-color: #fff; padding: 15px; border-radius: 6px; border: 1px dashed #fb923c; margin: 20px 0;">
             <p style="margin: 5px 0;"><strong>URL Login:</strong> <a href="{{ url('/login') }}" style="color: #ea580c;">{{ url('/login') }}</a></p>

@@ -280,17 +280,22 @@
             <h1 style="color: var(--btn-color); margin-bottom: 10px;">Welcome to SORA</h1>
             <span style="margin-bottom: 20px; color: #64748b;">Sign in to continue your Employee Journey</span>
             
+            @if (session('status'))
+                <div style="background-color: rgba(34, 197, 94, 0.15); color: #15803d; border: 1px solid rgba(34, 197, 94, 0.3); padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; text-align: left; width: 100%;">
+                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> {{ session('status') }}
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="alert-error" style="color: red; margin-bottom: 15px; font-size: 14px;">
                     {{ $errors->first() }}
                 </div>
             @endif
 
-
             <input type="text" name="npk" value="{{ old('npk') }}" placeholder="NPK (Nomor Pokok Karyawan)" required autofocus />
             
             <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
-            <a href="#" style="font-size: 12px; color: #4a4a4a; text-decoration: none; margin-top: 10px;">Forgot your password?</a>
+            <a href="{{ route('password.request') }}" style="font-size: 12px; color: #0284c7; text-decoration: none; margin-top: 10px; font-weight: 500;">Forgot your password?</a>
 
             <button type="submit">Sign In</button>
         </form>

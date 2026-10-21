@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssessmentReportController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\DashboardController;
@@ -30,6 +31,9 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/', [LoginController::class, 'create'])->name('login');
     Route::get('/login', [LoginController::class, 'create']);
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email')->middleware('throttle:5,1');
 });
 
 Route::middleware('auth')->group(function (): void {
