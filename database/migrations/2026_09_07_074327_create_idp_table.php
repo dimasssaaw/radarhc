@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('id_karyawan')->constrained('karyawan')->cascadeOnDelete();
             $table->string('tahun')->nullable();
             $table->string('periode')->nullable();
-            $table->enum('status_idp', ['pending', 'completed', 'cancelled'])->nullable();
+            $table->enum('status_idp', ['in_progress', 'completed', 'pending'])->nullable()->default('in_progress');
             $table->string('mentor')->nullable();
-            $table->string('development')->nullable();
+            $table->text('development')->nullable();
             $table->date('target')->nullable();
             $table->date('monitoring')->nullable();
             $table->date('final')->nullable();
