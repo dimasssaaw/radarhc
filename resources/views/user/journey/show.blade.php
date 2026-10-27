@@ -12,7 +12,7 @@
         </div>
     </div>
     <div class="flex items-center gap-3">
-        <a href="{{ route('user-journey.pdf', $karyawan->id) }}" target="_blank" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-[#0ea5e9] text-white rounded-lg shadow-sm hover:-translate-y-0.5 hover:bg-[#0284c7] hover:shadow-[0_4px_10px_rgb(14,165,233,0.3)] transition-all duration-300">
+        <a href="{{ route('user-journey.pdf', $karyawan->id) }}" onclick="exportPdfWithCurrentFilters(event, '{{ route('user-journey.pdf', $karyawan->id) }}')" target="_blank" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-[#0ea5e9] text-white rounded-lg shadow-sm hover:-translate-y-0.5 hover:bg-[#0284c7] hover:shadow-[0_4px_10px_rgb(14,165,233,0.3)] transition-all duration-300">
             <i class="fas fa-print"></i> Print to PDF
         </a>
         <a href="{{ route('user-journey.index') }}" class="btn-3d px-4 py-2 text-sm font-medium flex items-center gap-2 bg-white text-gray-700 border border-gray-200 rounded-lg shadow-sm hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgb(0,0,0,0.08)] transition-all duration-300">
@@ -308,18 +308,136 @@
     </div>
 
     <!-- Assessment Summary -->
-    <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col h-full relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5">
+    @php
+        $assessmentReports = $karyawan->assessmentReports->sortByDesc('tahun')->sortByDesc('periode')->sortByDesc('id')->values();
         
-        <!-- Efek Background Hiasan -->
-        <div class="flex items-center gap-3 mb-6 relative z-10 border-b border-gray-50 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50">
-                <i class="fas fa-chart-pie text-lg"></i>
+        $assessmentItems = $assessmentReports->mapWithKeys(function ($r, $index) {
+            $periodLabel = '';
+            if ($r->tahun && $r->periode) {
+                $periodLabel = $r->tahun . ' - Periode ' . $r->periode;
+            } elseif ($r->tahun) {
+                $periodLabel = 'Tahun ' . $r->tahun;
+            } elseif ($r->periode) {
+                $periodLabel = 'Periode ' . $r->periode;
+            } else {
+                $periodLabel = 'Sesi #' . $r->id;
+            }
+
+            $scores = [
+                (float) ($r->kb_kecerdasan_umum ?? 0),
+                (float) ($r->sk_sistematika_kerja ?? 0),
+                (float) ($r->kp_kepemimpinan ?? 0),
+                (float) ($r->ms_planning_controlling ?? 0),
+                (float) ($r->kp_integritas ?? 0),
+            ];
+            $filteredScores = array_filter($scores, fn($s) => $s > 0);
+            $avg = count($filteredScores) > 0 ? round(array_sum($filteredScores) / count($filteredScores), 1) : 0.0;
+
+            return [(string) $r->id => [
+                'id' => $r->id,
+                'label' => $periodLabel,
+                'tahun' => $r->tahun ?? '-',
+                'periode' => $r->periode ?? null,
+                'avg' => number_format($avg, 1),
+                'avg_raw' => $avg,
+                'general_intelligence' => (float) ($r->kb_kecerdasan_umum ?? 0),
+                'work_systematics' => (float) ($r->sk_sistematika_kerja ?? 0),
+                'integrity' => (float) ($r->kp_integritas ?? 0),
+                'leadership' => (float) ($r->kp_kepemimpinan ?? 0),
+                'has_score' => count($filteredScores) > 0,
+            ]];
+        });
+
+        $firstReportId = $assessmentReports->first()?->id ? (string) $assessmentReports->first()->id : '';
+    @endphp
+
+    <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col h-full relative transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5"
+         x-data="{
+            open: false,
+            selectedId: '{{ $firstReportId }}',
+            items: {{ json_encode($assessmentItems) }},
+            init() {
+                window.selectedAssessmentId = this.selectedId;
+                this.$watch('selectedId', val => window.selectedAssessmentId = val);
+            },
+            get current() {
+                return this.items[this.selectedId] || null;
+            },
+            get avg() {
+                return this.current ? this.current.avg_raw : 0;
+            },
+            selectPeriod(id) {
+                this.selectedId = id;
+                this.open = false;
+            }
+         }">
+        
+        <!-- Header Card: Rapi 1 Baris Horizontal -->
+        <div class="flex justify-between items-center mb-6 relative z-30 border-b border-gray-50 pb-4">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50 shrink-0">
+                    <i class="fas fa-chart-pie text-lg"></i>
+                </div>
+                <div class="truncate">
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider truncate">
+                        Assessment Summary <span x-text="current && current.tahun !== '-' ? '(' + current.tahun + ')' : ''">{{ $assessmentReports->first()?->tahun ? '('.$assessmentReports->first()->tahun.')' : '' }}</span>
+                    </h2>
+                    <p class="text-[11px] text-gray-500 font-medium truncate">Employee performance score summary</p>
+                </div>
             </div>
-            <div>
-                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                    Assessment Summary {{ $activeReport ? '('.$activeReport->tahun.')' : '' }}
-                </h2>
-                <p class="text-[11px] text-gray-500 font-medium">Employee performance score summary</p>
+
+            <!-- Custom Dropdown Periode (Sesuai Konsep Sistem RadarHC) -->
+            <div class="flex items-center gap-2 shrink-0">
+                @if($assessmentReports->count() > 0)
+                    <div class="relative inline-block text-left" @click.outside="open = false">
+                        <button type="button" 
+                                @click="open = !open" 
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
+                            <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                            <span x-text="current?.label || '{{ $assessmentItems->first()['label'] ?? 'Pilih Periode' }}'">
+                                {{ $assessmentItems->first()['label'] ?? 'Pilih Periode' }}
+                            </span>
+                            <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                        </button>
+
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-1.5 z-50"
+                             style="display: none;">
+                            <div class="space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
+                                @foreach($assessmentItems as $id => $item)
+                                    <button type="button" 
+                                            @click="selectPeriod('{{ $id }}')"
+                                            class="w-full text-left px-3 py-2 text-xs rounded-md flex items-center justify-between gap-3 transition-colors cursor-pointer"
+                                            :class="selectedId === '{{ $id }}' ? 'bg-[#e0f2fe] text-[#0284c7] font-semibold' : 'text-gray-700 hover:bg-gray-50 font-medium'">
+                                        <span class="whitespace-nowrap">{{ $item['label'] }}</span>
+                                        <i x-show="selectedId === '{{ $id }}'" class="fas fa-check text-[10px] text-[#0284c7]"></i>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="relative inline-block text-left" @click.outside="open = false">
+                        <button type="button" 
+                                @click="open = !open" 
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
+                            <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                            <span>Pilih Periode</span>
+                            <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" 
+                             class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
+                             style="display: none;">
+                            <span class="text-xs text-gray-400 italic">Belum ada riwayat asesmen</span>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -327,34 +445,23 @@
             
             <!-- Area Rata-Rata Skor Kiri -->
             <div class="w-full md:w-5/12 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm h-full">
-                @php
-                    if($activeReport) {
-                        $keyScores = [
-                            $activeReport->kb_kecerdasan_umum ?? 0, 
-                            $activeReport->sk_sistematika_kerja ?? 0,
-                            $activeReport->kp_kepemimpinan ?? 0,
-                            $activeReport->ms_planning_controlling ?? 0,
-                            $activeReport->kp_integritas ?? 0
-                        ];
-                        $avgScore = count($keyScores) > 0 ? round(array_sum($keyScores) / count($keyScores), 1) : 0;
-                    } else {
-                        $avgScore = 0.0;
-                    }
-                @endphp
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Average Score</p>
                 <div class="text-6xl font-black text-gray-800 tracking-tight drop-shadow-sm mb-1">
-                    {{ number_format($avgScore, 1) }}<span class="text-2xl text-gray-400 font-bold">/5</span>
+                    <span x-text="current?.avg || '0.0'">{{ $assessmentItems->first()['avg'] ?? '0.0' }}</span><span class="text-2xl text-gray-400 font-bold">/5</span>
                 </div>
                 
-                @if($avgScore >= 4)
+                <template x-if="avg >= 4">
                     <div class="mt-3 text-[11px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm"><i class="fas fa-star text-emerald-500"></i> Excellent</div>
-                @elseif($avgScore >= 3)
+                </template>
+                <template x-if="avg >= 3 && avg < 4">
                     <div class="mt-3 text-[11px] font-bold text-sky-700 bg-sky-100 border border-sky-200 px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm"><i class="fas fa-thumbs-up text-sky-500"></i> Good</div>
-                @elseif($avgScore > 0)
+                </template>
+                <template x-if="avg > 0 && avg < 3">
                     <div class="mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm"><i class="fas fa-exclamation-triangle text-amber-500"></i> Needs Improvement</div>
-                @else
+                </template>
+                <template x-if="!current || avg <= 0">
                     <div class="mt-3 text-[11px] font-bold text-gray-600 bg-gray-100 border border-gray-200 px-4 py-1.5 rounded-full uppercase tracking-widest shadow-sm">No Data</div>
-                @endif
+                </template>
             </div>
 
             <!-- Detail Skor (Progress Bars) Kanan -->
@@ -364,10 +471,10 @@
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
                         <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">General Intelligence</span>
-                        <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->kb_kecerdasan_umum ?? 0, 1) }}</span>
+                        <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.general_intelligence).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['general_intelligence'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
-                        <div class="bg-sky-500 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: {{ (($activeReport->kb_kecerdasan_umum ?? 0) / 5) * 100 }}%"></div>
+                        <div class="bg-sky-500 h-full rounded-full transition-all duration-1000 shadow-sm" :style="'width: ' + (current ? ((current.general_intelligence / 5) * 100) : 0) + '%'" style="width: {{ ((($assessmentItems->first()['general_intelligence'] ?? 0) / 5) * 100) }}%"></div>
                     </div>
                 </div>
 
@@ -375,10 +482,10 @@
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
                         <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Work Systematics</span>
-                        <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->sk_sistematika_kerja ?? 0, 1) }}</span>
+                        <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.work_systematics).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['work_systematics'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
-                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: {{ (($activeReport->sk_sistematika_kerja ?? 0) / 5) * 100 }}%"></div>
+                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000 shadow-sm" :style="'width: ' + (current ? ((current.work_systematics / 5) * 100) : 0) + '%'" style="width: {{ ((($assessmentItems->first()['work_systematics'] ?? 0) / 5) * 100) }}%"></div>
                     </div>
                 </div>
 
@@ -386,10 +493,10 @@
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
                         <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Integrity</span>
-                        <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->kp_integritas ?? 0, 1) }}</span>
+                        <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.integrity).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['integrity'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
-                        <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: {{ (($activeReport->kp_integritas ?? 0) / 5) * 100 }}%"></div>
+                        <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000 shadow-sm" :style="'width: ' + (current ? ((current.integrity / 5) * 100) : 0) + '%'" style="width: {{ ((($assessmentItems->first()['integrity'] ?? 0) / 5) * 100) }}%"></div>
                     </div>
                 </div>
 
@@ -397,10 +504,10 @@
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
                         <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Leadership</span>
-                        <span class="text-sm font-black text-gray-900">{{ number_format($activeReport->kp_kepemimpinan ?? 0, 1) }}</span>
+                        <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.leadership).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['leadership'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
-                        <div class="bg-amber-500 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: {{ (($activeReport->kp_kepemimpinan ?? 0) / 5) * 100 }}%"></div>
+                        <div class="bg-amber-500 h-full rounded-full transition-all duration-1000 shadow-sm" :style="'width: ' + (current ? ((current.leadership / 5) * 100) : 0) + '%'" style="width: {{ ((($assessmentItems->first()['leadership'] ?? 0) / 5) * 100) }}%"></div>
                     </div>
                 </div>
 
@@ -411,37 +518,147 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- IDP Summary & Radar Chart -->
-    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 flex flex-col h-full">
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 flex flex-col h-full z-20">
         
         @php
-            $activeIdp = $karyawan->idps->sortByDesc('created_at')->first();
+            // Helper closure to check if an IDP has actual assessment scores
+            $hasScore = function($idp) {
+                if (!$idp || !$idp->penilaian) return false;
+                $scores = [
+                    $idp->penilaian->head_managing_change, $idp->penilaian->head_empowerment, $idp->penilaian->head_fostering_teamwork,
+                    $idp->penilaian->head_analysis_decision, $idp->penilaian->head_planning_controlling, $idp->penilaian->head_integrity_ethics,
+                    $idp->penilaian->head_excellence, $idp->penilaian->head_compassion, $idp->penilaian->head_humility,
+                    $idp->penilaian->staff_leads_courageously, $idp->penilaian->staff_coach_develop, $idp->penilaian->staff_teamwork,
+                    $idp->penilaian->staff_trouble_shooting, $idp->penilaian->staff_customer_satisfaction, $idp->penilaian->staff_cross_functional,
+                    $idp->penilaian->staff_quality_focus, $idp->penilaian->staff_continuous_improvement, $idp->penilaian->staff_planning_monitoring,
+                    $idp->penilaian->staff_personal_integrity, $idp->penilaian->staff_drive_for_result, $idp->penilaian->staff_learning,
+                    $idp->penilaian->unit_directiveness, $idp->penilaian->unit_monitoring, $idp->penilaian->unit_teamwork,
+                    $idp->penilaian->unit_quality_customer, $idp->penilaian->unit_continuous_improvement, $idp->penilaian->unit_personal_integrity,
+                ];
+                foreach ($scores as $s) {
+                    if (!is_null($s) && $s !== '' && (float)$s > 0) return true;
+                }
+                return false;
+            };
+
+            // Find first IDP that has scores, or fallback to the latest IDP
+            $idpWithScore = $karyawan->idps->first($hasScore);
+            $activeIdp = $idpWithScore ?? $karyawan->idps->sortByDesc('created_at')->first();
+            $activeLabel = $activeIdp ? ($activeIdp->tahun . ($activeIdp->periode ? ' (P' . $activeIdp->periode . ')' : '')) : 'Pilih Periode';
         @endphp
 
-        <!-- Efek Background Hiasan -->
-        <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-sky-50 rounded-full opacity-60 blur-3xl pointer-events-none"></div>
+        <!-- Efek Background Hiasan (dibatasi di dalam container rounded) -->
+        <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+            <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-sky-50 rounded-full opacity-60 blur-3xl"></div>
+        </div>
 
-        <!-- Header Card -->
-        <div class="flex justify-between items-start mb-4 relative z-10 border-b border-gray-50 pb-4">
-            <div class="flex items-center gap-3">
+        <!-- Header Card: Rapi 1 Baris Horizontal -->
+        <div class="flex justify-between items-center mb-4 relative z-30 border-b border-gray-50 pb-4">
+            <div class="flex items-center gap-3 min-w-0">
                 <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 shadow-sm border border-sky-100/50 shrink-0">
                     <i class="fas fa-bullseye text-lg"></i>
                 </div>
-                <div>
-                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">IDP Summary</h2>
-                    <p class="text-[11px] text-gray-500 font-medium">Progress & Competency Mapping</p>
+                <div class="truncate">
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider truncate">IDP Summary</h2>
+                    <p class="text-[11px] text-gray-500 font-medium truncate">Progress & Competency Mapping</p>
                 </div>
             </div>
             
-            <!-- Badge dengan pulsing dot -->
-            @if($activeIdp)
-            <span class="bg-emerald-100 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 mt-0.5 shrink-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active
-            </span>
-            @else
-            <span class="bg-gray-100 border border-gray-200 text-gray-500 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 mt-0.5 shrink-0">
-                No Data
-            </span>
-            @endif
+            <div class="flex items-center gap-2 shrink-0">
+                @if($karyawan->idps->count() > 1)
+                <!-- Custom Dropdown Periode (Sesuai Konsep Sistem RadarHC) -->
+                <div x-data="{
+                    open: false,
+                    selectedId: '{{ $activeIdp?->id }}',
+                    selectedLabel: '{{ $activeLabel }}',
+                    init() {
+                        window.selectedIdpId = this.selectedId;
+                        this.$watch('selectedId', val => window.selectedIdpId = val);
+                    },
+                    selectPeriod(id, label) {
+                        this.selectedId = id;
+                        this.selectedLabel = label;
+                        window.selectedIdpId = id;
+                        this.open = false;
+                        if (typeof window.switchIdpPeriod === 'function') {
+                            window.switchIdpPeriod(id);
+                        }
+                    }
+                }" class="relative inline-block text-left" @click.outside="open = false">
+                    <!-- Trigger Button (Sesuai Standar UI Sistem) -->
+                    <button type="button" 
+                        @click="open = !open" 
+                        class="inline-flex items-center gap-2 px-3 py-1 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
+                        <span x-text="selectedLabel">{{ $activeLabel }}</span>
+                        <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+
+                    <!-- Floating Dropdown Menu (Clean & Sesuai Tom Select Sistem) -->
+                    <div x-show="open" 
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 top-full mt-1.5 min-w-[230px] bg-white rounded-lg shadow-xl border border-gray-100 p-1.5 z-50"
+                        style="display: none;">
+                        
+                        <div class="space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
+                            @foreach($karyawan->idps as $idp)
+                                @php
+                                    $idpLabel = ($idp->tahun ?? '-') . ($idp->periode ? ' (P' . $idp->periode . ')' : '');
+                                    $isCompleted = ($idp->status_idp === 'completed');
+                                @endphp
+                                <button type="button" 
+                                    @click="selectPeriod('{{ $idp->id }}', '{{ $idpLabel }}')"
+                                    class="w-full text-left px-3 py-2 text-xs rounded-md flex items-center justify-between gap-3 transition-colors cursor-pointer"
+                                    :class="selectedId == '{{ $idp->id }}' ? 'bg-[#e0f2fe] text-[#0284c7] font-semibold' : 'text-gray-700 hover:bg-gray-50 font-medium'">
+                                    <span class="whitespace-nowrap">{{ $idp->tahun ?? '-' }}{{ $idp->periode ? ' (Periode ' . $idp->periode . ')' : '' }}</span>
+                                    @if($isCompleted)
+                                        <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                            Completed
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                            In Progress
+                                        </span>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                @elseif($activeIdp)
+                <!-- Jika hanya ada 1 data IDP, tampilkan label periode rapi -->
+                <span class="text-[11px] font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg">
+                    Tahun {{ $activeIdp->tahun ?? '-' }}{{ $activeIdp->periode ? ' - Periode ' . $activeIdp->periode : '' }}
+                </span>
+                @endif
+
+                <!-- Dynamic Status Badge Container -->
+                <div id="idpStatusBadgeContainer">
+                    @if($activeIdp)
+                        @if($activeIdp->status_idp === 'completed')
+                            <span class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Completed
+                            </span>
+                        @elseif($activeIdp->status_idp === 'in_progress')
+                            <span class="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span> In Progress
+                            </span>
+                        @else
+                            <span class="bg-emerald-100 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active
+                            </span>
+                        @endif
+                    @else
+                        <span class="bg-gray-100 border border-gray-200 text-gray-500 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                            No Data
+                        </span>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <!-- Area Konten IDP -->
@@ -449,7 +666,29 @@
             <!-- Chart -->
             <div class="w-full h-72 flex items-center justify-center relative bg-gray-50/50 rounded-xl border border-gray-100/50 p-2">
                 <canvas id="radarChart" style="width: 100%; height: 100%;"></canvas>
-            </div>   
+            </div>
+
+            @if($activeIdp)
+            <!-- Info Footer IDP (Mentor, Rata-rata Skor, dan Link Detail) -->
+            <div class="mt-3 flex items-center justify-between text-xs text-gray-500 px-1">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-gray-400">Mentor:</span>
+                    <span id="idpMentorText" class="font-semibold text-gray-700">{{ $activeIdp->mentor ?? '-' }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="idpScoreAvg" class="font-bold text-sky-600 text-xs"></span>
+                    <a id="idpDetailLink" href="{{ route('user-idp.show', $activeIdp->id) }}" class="text-xs text-sky-600 hover:text-sky-800 hover:underline inline-flex items-center gap-1 font-medium transition-colors">
+                        <span>Detail IDP</span>
+                        <i class="fas fa-chevron-right text-[9px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alert bila belum dinilai (otomatis tampil/hilang saat ganti pilihan di dropdown) -->
+            <div id="idpEmptyAlert" class="mt-2 text-center py-2 px-3 text-xs bg-amber-50 text-amber-700 border border-amber-200/60 rounded-xl transition-all duration-300 {{ $hasScore($activeIdp) ? 'hidden' : '' }}">
+                <i class="fas fa-info-circle mr-1 text-amber-500"></i> Penilaian IDP pada periode ini belum diisi.
+            </div>
+            @endif
         </div>
     </div>
 
@@ -764,79 +1003,205 @@
 
 <!-- Mentoring & Coaching Section (Matrix & GROW Model) -->
 @php
-    $latestMentoring = \App\Models\Mentoring::where('id_karyawan', $karyawan->id)->latest()->first();
-    $comp = $latestMentoring->competency ?? null;
-    $comm = $latestMentoring->commitment ?? null;
-    
-    $activeBox = null;
-    if ($comp === 'Rendah' && $comm === 'Tinggi') $activeBox = 'TL';
-    if ($comp === 'Rendah' && $comm === 'Rendah') $activeBox = 'TR';
-    if ($comp === 'Tinggi' && $comm === 'Tinggi') $activeBox = 'BL';
-    if ($comp === 'Tinggi' && $comm === 'Rendah') $activeBox = 'BR';
+    $mentorings = \App\Models\Mentoring::where('id_karyawan', $karyawan->id)
+        ->orderByDesc('tahun')
+        ->orderByDesc('periode')
+        ->orderByDesc('id')
+        ->get();
 
-    $isTL = ($activeBox === 'TL');
-    $isTR = ($activeBox === 'TR');
-    $isBL = ($activeBox === 'BL');
-    $isBR = ($activeBox === 'BR');
+    $mentoringItems = $mentorings->mapWithKeys(function ($m, $index) {
+        $comp = $m->competency;
+        $comm = $m->commitment;
+        $box = null;
+       if ($comp === 'Rendah' && $comm === 'Tinggi') $box = 'BR';
+        elseif ($comp === 'Rendah' && $comm === 'Rendah') $box = 'BL';
+        elseif ($comp === 'Tinggi' && $comm === 'Tinggi') $box = 'TR';
+        elseif ($comp === 'Tinggi' && $comm === 'Rendah') $box = 'TL';
+
+        $periodLabel = '';
+        if ($m->tahun && $m->periode) {
+            $periodLabel = $m->tahun . ' - Periode ' . $m->periode;
+        } elseif ($m->tahun) {
+            $periodLabel = 'Tahun ' . $m->tahun;
+        } elseif ($m->periode) {
+            $periodLabel = 'Periode ' . $m->periode;
+        } else {
+            $periodLabel = 'Sesi #' . $m->id;
+        }
+
+
+        $hasGrow = (bool) ($m->grow_goals || $m->grow_realitas || $m->grow_options || $m->grow_wrap_up || $m->grow_insight);
+
+        return [(string) $m->id => [
+            'id' => $m->id,
+            'label' => $periodLabel,
+            'tahun' => $m->tahun,
+            'periode' => $m->periode,
+            'competency' => $comp,
+            'commitment' => $comm,
+            'box' => $box,
+            'mentor' => $m->mentor ?? '-',
+            'grow_goals' => $m->grow_goals,
+            'grow_realitas' => $m->grow_realitas,
+            'grow_options' => $m->grow_options,
+            'grow_wrap_up' => $m->grow_wrap_up,
+            'grow_insight' => $m->grow_insight,
+            'has_grow' => $hasGrow,
+            'url' => route('user-mentoring.show', $m->id),
+        ]];
+    });
+
+    $firstMentoringId = $mentorings->first()?->id ? (string) $mentorings->first()->id : '';
 @endphp
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
+     x-data="{
+        selectedId: '{{ $firstMentoringId }}',
+        items: {{ json_encode($mentoringItems) }},
+        init() {
+            window.selectedMentoringId = this.selectedId;
+            this.$watch('selectedId', val => window.selectedMentoringId = val);
+        },
+        get current() {
+            return this.items[this.selectedId] || null;
+        },
+        get activeBox() {
+            return this.current ? this.current.box : null;
+        }
+     }">
     <!-- Mentoring & Coaching Matrix -->
     <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
         <div class="flex-1 flex flex-col">
-            <h2 class="text-lg font-bold text-gray-900 mb-4 sm:mb-5">Mentoring & Coaching Matrix</h2>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-5">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-lg font-bold text-gray-900">Mentoring & Coaching Matrix</h2>
+                    </div>
+                    <div class="flex items-center gap-3 mt-1.5 text-xs" x-show="current" x-cloak>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-gray-400">Competency:</span>
+                            <span class="font-bold px-2 py-0.5 rounded text-[11px]"
+                                  :class="current?.competency === 'Tinggi' ? 'bg-emerald-100 text-emerald-800' : (current?.competency === 'Rendah' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500')"
+                                  x-text="current?.competency ? (current.competency === 'Tinggi' ? 'High' : 'Low') : '-'"></span>
+                        </div>
+                        <span class="text-gray-300">•</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-gray-400">Commitment:</span>
+                            <span class="font-bold px-2 py-0.5 rounded text-[11px]"
+                                  :class="current?.commitment === 'Tinggi' ? 'bg-emerald-100 text-emerald-800' : (current?.commitment === 'Rendah' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500')"
+                                  x-text="current?.commitment ? (current.commitment === 'Tinggi' ? 'High' : 'Low') : '-'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 self-start sm:self-center">
+                    @if($mentorings->count() > 0)
+                        <!-- Custom Dropdown Periode (Sesuai Konsep Sistem RadarHC) -->
+                        <div x-data="{ open: false }" class="relative inline-block text-left" @click.outside="open = false">
+                            <!-- Trigger Button (Sesuai Standar UI Sistem) -->
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
+                                <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                                <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}'">
+                                    {{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}
+                                </span>
+                                <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                            </button>
+
+                            <!-- Floating Dropdown Menu (Clean & Sesuai Tom Select Sistem) -->
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-1.5 z-50"
+                                 style="display: none;">
+                                <div class="space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
+                                    @foreach($mentoringItems as $id => $item)
+                                        <button type="button" 
+                                                @click="selectedId = '{{ $id }}'; open = false"
+                                                class="w-full text-left px-3 py-2 text-xs rounded-md flex items-center justify-between gap-3 transition-colors cursor-pointer"
+                                                :class="selectedId === '{{ $id }}' ? 'bg-[#e0f2fe] text-[#0284c7] font-semibold' : 'text-gray-700 hover:bg-gray-50 font-medium'">
+                                            <span class="whitespace-nowrap">{{ $item['label'] }}</span>
+                                            <i x-show="selectedId === '{{ $id }}'" class="fas fa-check text-[10px] text-[#0284c7]"></i>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div x-data="{ open: false }" class="relative inline-block text-left" @click.outside="open = false">
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
+                                <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                                <span>Pilih Periode</span>
+                                <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                            </button>
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
+                                 style="display: none;">
+                                <span class="text-xs text-gray-400 italic">Belum ada riwayat mentoring</span>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
             
             <div class="w-full rounded-2xl overflow-hidden grid grid-cols-2 shadow-xs border border-gray-100 font-extrabold text-xs sm:text-[13px] tracking-wider text-white flex-1 min-h-[360px] sm:min-h-[400px] lg:min-h-[420px]">
                 <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
-                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isTL) ? 'opacity-30' : 'opacity-100' }} {{ $isTL ? 'z-10' : '' }}"
-                    style="{{ $isTL 
-                        ? 'background: linear-gradient(135deg, #fde065 0%, #facd42 60%, #f3c332 100%); box-shadow: 3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #7c5c00;' 
-                        : 'background-color: #facd42; color: #8a6800;' }}">
-                    @if($isTL)
-                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                    @endif
-                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">DIRECTING - MODERATE</div>
-                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">MENTORING - MODERATE</div>
-                    <div class="relative z-10" style="{{ $isTL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : '' }}">COACHING - MODERATE</div>
+               <div class="relative flex flex-col justify-center items-center text-center px-2 sm:px-4 py-5 sm:py-7 space-y-2 sm:space-y-2.5 whitespace-nowrap transition-all duration-300"
+                    :class="(activeBox && activeBox !== 'TL') ? 'opacity-30 bg-[#facd42] text-[#8a6800]' : 'opacity-100 z-10'"
+                    :style="activeBox === 'TL' ? 'background: linear-gradient(135deg, #fde065 0%, #facd42 60%, #f3c332 100%); box-shadow: 3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #7c5c00;' : 'background-color: #facd42; color: #8a6800;'">
+                    <div x-show="activeBox === 'TL'" class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10" :style="activeBox === 'TL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : ''">DIRECTING - MODERATE</div>
+                    <div class="relative z-10" :style="activeBox === 'TL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : ''">MENTORING - MODERATE</div>
+                    <div class="relative z-10" :style="activeBox === 'TL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6);' : ''">COACHING - MODERATE</div>
                 </div>
                 
                 <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
-                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 text-white space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isTR) ? 'opacity-30' : 'opacity-100' }} {{ $isTR ? 'z-10' : '' }}"
-                    style="{{ $isTR 
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 text-white space-y-2 sm:space-y-2.5 transition-all duration-300"
+                     :class="(activeBox && activeBox !== 'TR') ? 'opacity-30 bg-[#4485f5]' : 'opacity-100 z-10'"
+                     :style="activeBox === 'TR' 
                         ? 'background: linear-gradient(135deg, #5390f7 0%, #4485f5 60%, #397ceb 100%); box-shadow: -3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08);' 
-                        : 'background-color: #4485f5;' }}">
-                    @if($isTR)
-                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                    @endif
-                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - LOW</div>
-                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - LOW</div>
-                    <div class="relative z-10" style="{{ $isTR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - LOW</div>
+                        : 'background-color: #4485f5;'">
+                    <div x-show="activeBox === 'TR'" class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10" :style="activeBox === 'TR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : ''">DIRECTING - LOW</div>
+                    <div class="relative z-10" :style="activeBox === 'TR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : ''">MENTORING - LOW</div>
+                    <div class="relative z-10" :style="activeBox === 'TR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : ''">COACHING - HIGH</div>
                 </div>
                 
                 <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
-                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isBL) ? 'opacity-30' : 'opacity-100' }} {{ $isBL ? 'z-10' : '' }}"
-                    style="{{ $isBL 
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 space-y-2 sm:space-y-2.5 transition-all duration-300"
+                     :class="(activeBox && activeBox !== 'BL') ? 'opacity-30 bg-[#78c87f] text-[#144918]' : 'opacity-100 z-10'"
+                     :style="activeBox === 'BL' 
                         ? 'background: linear-gradient(135deg, #87d38e 0%, #78c87f 60%, #6abd72 100%); box-shadow: 3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #144918;' 
-                        : 'background-color: #78c87f; color: #144918;' }}">
-                    @if($isBL)
-                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                    @endif
-                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">DIRECTING - HIGH</div>
-                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">MENTORING - HIGH</div>
-                    <div class="relative z-10" style="{{ $isBL ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : '' }}">COACHING - HIGH</div>
+                        : 'background-color: #78c87f; color: #144918;'">
+                    <div x-show="activeBox === 'BL'" class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10" :style="activeBox === 'BL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : ''">DIRECTING - HIGH</div>
+                    <div class="relative z-10" :style="activeBox === 'BL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : ''">MENTORING - HIGH</div>
+                    <div class="relative z-10" :style="activeBox === 'BL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5);' : ''">COACHING - LOW</div>
                 </div>
                 
                 <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
-                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 text-white space-y-2 sm:space-y-2.5 transition-all duration-300 {{ ($activeBox && !$isBR) ? 'opacity-30' : 'opacity-100' }} {{ $isBR ? 'z-10' : '' }}"
-                    style="{{ $isBR 
+                <div class="relative flex flex-col justify-center items-center text-center p-5 sm:p-7 text-white space-y-2 sm:space-y-2.5 transition-all duration-300"
+                     :class="(activeBox && activeBox !== 'BR') ? 'opacity-30 bg-[#f05051]' : 'opacity-100 z-10'"
+                     :style="activeBox === 'BR' 
                         ? 'background: linear-gradient(135deg, #f75d5e 0%, #f05051 60%, #e84546 100%); box-shadow: -3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08);' 
-                        : 'background-color: #f05051;' }}">
-                    @if($isBR)
-                        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                    @endif
-                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">DIRECTING - MODERATE</div>
-                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">MENTORING - HIGH</div>
-                    <div class="relative z-10" style="{{ $isBR ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : '' }}">COACHING - MODERATE</div>
+                        : 'background-color: #f05051;'">
+                    <div x-show="activeBox === 'BR'" class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10" :style="activeBox === 'BR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : ''">DIRECTING - MODERATE</div>
+                    <div class="relative z-10" :style="activeBox === 'BR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : ''">MENTORING - HIGH</div>
+                    <div class="relative z-10" :style="activeBox === 'BR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25);' : ''">COACHING - MODERATE</div>
                 </div>
             </div>
         </div>
@@ -845,19 +1210,92 @@
     <!-- GROW Model -->
     <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200 flex flex-col justify-between h-full">
         <div class="flex-1 flex flex-col justify-between gap-3">
+            <!-- Header Card: Title & Dropdown Periode (Synced with Mentoring Matrix) -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+                            <i class="fas fa-seedling text-sm"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-gray-900">GROW Model</h2>
+                    </div>
+                </div>
+
+                <!-- Custom Dropdown Periode (Sesuai Konsep Sistem RadarHC - Synced dengan Mentoring Matrix) -->
+                <div class="flex items-center gap-2 self-start sm:self-center">
+                    @if($mentorings->count() > 0)
+                        <div x-data="{ open: false }" class="relative inline-block text-left" @click.outside="open = false">
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
+                                <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                                <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}'">
+                                    {{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}
+                                </span>
+                                <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                            </button>
+
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-1.5 z-50"
+                                 style="display: none;">
+                                <div class="space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
+                                    @foreach($mentoringItems as $id => $item)
+                                        <button type="button" 
+                                                @click="selectedId = '{{ $id }}'; open = false"
+                                                class="w-full text-left px-3 py-2 text-xs rounded-md flex items-center justify-between gap-3 transition-colors cursor-pointer"
+                                                :class="selectedId === '{{ $id }}' ? 'bg-[#e0f2fe] text-[#0284c7] font-semibold' : 'text-gray-700 hover:bg-gray-50 font-medium'">
+                                            <span class="whitespace-nowrap">{{ $item['label'] }}</span>
+                                            <i x-show="selectedId === '{{ $id }}'" class="fas fa-check text-[10px] text-[#0284c7]"></i>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div x-data="{ open: false }" class="relative inline-block text-left" @click.outside="open = false">
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
+                                <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                                <span>Pilih Periode</span>
+                                <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                            </button>
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
+                                 style="display: none;">
+                                <span class="text-xs text-gray-400 italic">Belum ada riwayat mentoring</span>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Top Yellow Header Bar -->
             <div class="w-full bg-[#fbbf24] text-gray-900 font-extrabold text-sm sm:text-base py-3 sm:py-3.5 px-4 rounded-xl text-center tracking-wider shadow-xs uppercase flex items-center justify-center min-h-[48px] sm:min-h-[52px] select-none shrink-0">
                 GROW MODEL
             </div>
 
-            @if($latestMentoring && ($latestMentoring->grow_goals || $latestMentoring->grow_realitas || $latestMentoring->grow_options || $latestMentoring->grow_wrap_up || $latestMentoring->grow_insight))
+            <!-- GROW Model Items (Selalu tampil walau data kosong) -->
+            <div class="space-y-3 flex-1 flex flex-col justify-between">
                 <!-- Goals -->
                 <div class="flex items-stretch rounded-xl overflow-hidden shadow-xs flex-1 min-h-[48px] sm:min-h-[52px]">
                     <div class="bg-[#059669] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
                         GOALS
                     </div>
-                    <div class="bg-[#d1fae5] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_goals ?: '' }}">
-                        <div class="my-auto w-full">{{ $latestMentoring->grow_goals ?: '-' }}</div>
+                    <div class="bg-[#d1fae5] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" :title="current?.grow_goals || ''">
+                        <div class="my-auto w-full" x-text="current?.grow_goals || '-'"></div>
                     </div>
                 </div>
 
@@ -866,8 +1304,8 @@
                     <div class="bg-[#3b82f6] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
                         REALITY
                     </div>
-                    <div class="bg-[#dbeafe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_realitas ?: '' }}">
-                        <div class="my-auto w-full">{{ $latestMentoring->grow_realitas ?: '-' }}</div>
+                    <div class="bg-[#dbeafe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" :title="current?.grow_realitas || ''">
+                        <div class="my-auto w-full" x-text="current?.grow_realitas || '-'"></div>
                     </div>
                 </div>
 
@@ -876,8 +1314,8 @@
                     <div class="bg-[#8b5cf6] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
                         OPTIONS
                     </div>
-                    <div class="bg-[#ede9fe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_options ?: '' }}">
-                        <div class="my-auto w-full">{{ $latestMentoring->grow_options ?: '-' }}</div>
+                    <div class="bg-[#ede9fe] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" :title="current?.grow_options || ''">
+                        <div class="my-auto w-full" x-text="current?.grow_options || '-'"></div>
                     </div>
                 </div>
 
@@ -886,8 +1324,8 @@
                     <div class="bg-[#ef4444] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
                         WRAP UP
                     </div>
-                    <div class="bg-[#fee2e2] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_wrap_up ?: '' }}">
-                        <div class="my-auto w-full">{{ $latestMentoring->grow_wrap_up ?: '-' }}</div>
+                    <div class="bg-[#fee2e2] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" :title="current?.grow_wrap_up || ''">
+                        <div class="my-auto w-full" x-text="current?.grow_wrap_up || '-'"></div>
                     </div>
                 </div>
 
@@ -896,26 +1334,16 @@
                     <div class="bg-[#f97316] text-white font-extrabold text-xs sm:text-sm tracking-wider w-28 sm:w-32 py-2.5 px-3 flex items-center justify-center shrink-0 uppercase select-none">
                         INSIGHT
                     </div>
-                    <div class="bg-[#ffedd5] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" title="{{ $latestMentoring->grow_insight ?: '' }}">
-                        <div class="my-auto w-full">{{ $latestMentoring->grow_insight ?: '-' }}</div>
+                    <div class="bg-[#ffedd5] px-6 py-2.5 text-gray-800 flex-1 min-w-0 text-sm font-semibold flex items-center leading-snug break-words whitespace-pre-line max-h-24 sm:max-h-28 overflow-y-auto custom-scrollbar" :title="current?.grow_insight || ''">
+                        <div class="my-auto w-full" x-text="current?.grow_insight || '-'"></div>
                     </div>
                 </div>
-            @else
-                <div class="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 text-center my-auto min-h-[280px]">
-                    <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl mb-2">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <p class="text-xs font-semibold text-gray-700">No GROW Model data available</p>
-                    <p class="text-[11px] text-gray-400 mt-0.5">Enter mentoring session to fill Goals, Reality, Options, Wrap Up, & Insight.</p>
-                    <a href="{{ auth()->check() && strtolower((string) auth()->user()->role) === 'admin' ? route('mentoring.show-employee', $karyawan->id) : route('user-mentoring.show-employee', $karyawan->id) }}" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg transition-colors shadow-sm">
-                        <i class="fas fa-plus text-[10px]"></i> Open Mentoring Session
-                    </a>
-                </div>
-            @endif
+            </div>
         </div>
 
         <div class="mt-6 pt-1 flex justify-end shrink-0">
-            <a href="{{ auth()->check() && strtolower((string) auth()->user()->role) === 'admin' ? route('mentoring.show-employee', $karyawan->id) : route('user-mentoring.show-employee', $karyawan->id) }}" class="text-xs font-bold text-[#0ea5e9] hover:text-[#0284c7] inline-flex items-center gap-1.5 transition-colors group">
+            <a :href="current?.url || '{{ route('user-mentoring.show-employee', $karyawan->id) }}'" 
+               class="text-xs font-bold text-[#0ea5e9] hover:text-[#0284c7] inline-flex items-center gap-1.5 transition-colors group">
                 <span>Mentoring Details</span>
                 <i class="fas fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform"></i>
             </a>
@@ -1375,25 +1803,24 @@
             
             const ctx = radarCanvas.getContext('2d');
             
-            @php
-                $activeIdp = $karyawan->idps->sortByDesc('created_at')->first();
-            @endphp
-            
             const jabatan = @json(strtolower(trim($karyawan->position?->nama_jabatan ?? '')));
             
-            @if($activeIdp)
-            const penilaianStr = @json($activeIdp->penilaian);
-            let penilaian = null;
-            try {
-                if (penilaianStr) penilaian = typeof penilaianStr === 'string' ? JSON.parse(penilaianStr) : penilaianStr;
-            } catch(e) {}
-            @else
-            let penilaian = null;
-            @endif
-
-            let currentData = [];
-            let chartLabels = [];
-            let targetData = [];
+            // Map all IDP history with their penilaian data
+            const idpHistory = {
+                @foreach($karyawan->idps as $idp)
+                "{{ $idp->id }}": {
+                    id: {{ $idp->id }},
+                    tahun: @json($idp->tahun ?? '-'),
+                    periode: @json($idp->periode ? 'Periode ' . $idp->periode : ''),
+                    status: @json(strtolower($idp->status_idp ?? 'pending')),
+                    statusLabel: @json(ucwords(str_replace('_', ' ', $idp->status_idp ?? 'Pending'))),
+                    mentor: @json($idp->mentor ?? '-'),
+                    detailUrl: @json(route('user-idp.show', $idp->id)),
+                    hasPenilaian: {{ $hasScore($idp) ? 'true' : 'false' }},
+                    penilaian: @json($idp->penilaian)
+                },
+                @endforeach
+            };
 
             function parseScore(val) {
                 if (val === null || val === undefined || val === '') return 0;
@@ -1401,27 +1828,59 @@
                 return isNaN(parsed) ? 0 : parsed;
             }
 
-            if (jabatan === 'head' || jabatan === 'section head') {
-                chartLabels = ['Managing Change', 'Empowerment', 'Fostering Teamwork', 'Analysis & Decision Making', 'Planning & Controlling', 'Integrity & Ethics', 'Excellence', 'Compassion', 'Humility'];
-                const dbKeys = ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'];
+            // Define competency models
+            const competencyModels = {
+                head: {
+                    labels: ['Managing Change', 'Empowerment', 'Fostering Teamwork', 'Analysis & Decision Making', 'Planning & Controlling', 'Integrity & Ethics', 'Excellence', 'Compassion', 'Humility'],
+                    dbKeys: ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'],
+                    target: Array(9).fill(4)
+                },
+                staff: {
+                    labels: ['Leads Courageously', 'Coach & Develop Others', 'Teamwork', 'Trouble Shooting', 'Customer Satisfaction', 'Cross Functional Capability', 'Quality Focus', 'Continuous Improvement', 'Planning Monitoring', 'Personal Integrity', 'Drive For Result', 'Learning'],
+                    dbKeys: ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'],
+                    target: Array(12).fill(4)
+                },
+                unit: {
+                    labels: ['Directiveness', 'Monitoring', 'Teamwork', 'Quality & Customer Focus', 'Continuous Improvement', 'Personal Integrity'],
+                    dbKeys: ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'],
+                    target: Array(6).fill(4)
+                }
+            };
+
+            function resolveModel(penilaianObj) {
+                // If penilaian specifically has filled scores in a category, use that category
+                if (penilaianObj) {
+                    if (competencyModels.head.dbKeys.some(k => parseScore(penilaianObj[k]) > 0)) return 'head';
+                    if (competencyModels.staff.dbKeys.some(k => parseScore(penilaianObj[k]) > 0)) return 'staff';
+                    if (competencyModels.unit.dbKeys.some(k => parseScore(penilaianObj[k]) > 0)) return 'unit';
+                }
+                // Fallback based on employee position
+                if (jabatan === 'department head' || jabatan === 'section head' || jabatan === 'group head' || (jabatan.includes('head') && !jabatan.includes('unit'))) {
+                    return 'head';
+                } else if (jabatan.includes('staff')) {
+                    return 'staff';
+                } else {
+                    return 'unit';
+                }
+            }
+
+            function calculateScores(penilaianObj, dbKeys) {
+                let scores = [];
+                let total = 0;
+                let count = 0;
                 dbKeys.forEach(key => { 
-                    currentData.push(penilaian ? parseScore(penilaian[key]) : 0); 
-                    targetData.push(4); 
+                    const score = penilaianObj ? parseScore(penilaianObj[key]) : 0;
+                    scores.push(score);
+                    if (score > 0) {
+                        total += score;
+                        count++;
+                    }
                 });
-            } else if (jabatan === 'staff') {
-                chartLabels = ['Leads Courageously', 'Coach & Develop Others', 'Teamwork', 'Trouble Shooting', 'Customer Satisfaction', 'Cross Functional Capability', 'Quality Focus', 'Continuous Improvement', 'Planning Monitoring', 'Personal Integrity', 'Drive For Result', 'Learning'];
-                const dbKeys = ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'];
-                dbKeys.forEach(key => { 
-                    currentData.push(penilaian ? parseScore(penilaian[key]) : 0); 
-                    targetData.push(4); 
-                });
-            } else {
-                chartLabels = ['Directiveness', 'Monitoring', 'Teamwork', 'Quality & Customer Focus', 'Continuous Improvement', 'Personal Integrity'];
-                const dbKeys = ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'];
-                dbKeys.forEach(key => { 
-                    currentData.push(penilaian ? parseScore(penilaian[key]) : 0); 
-                    targetData.push(4); 
-                });
+                return {
+                    scores: scores,
+                    avg: count > 0 ? (total / count).toFixed(1) : '0.0',
+                    hasScore: count > 0
+                };
             }
 
             function getMultilineLabel(key) {
@@ -1444,31 +1903,47 @@
                 return key;
             }
 
-            const formattedLabels = chartLabels.map(getMultilineLabel);
+            const initialIdpId = "{{ $activeIdp?->id }}";
+            const initialIdp = idpHistory[initialIdpId] || null;
+            const initialModelKey = resolveModel(initialIdp ? initialIdp.penilaian : null);
+            const initialModel = competencyModels[initialModelKey];
+            const initialResult = calculateScores(initialIdp ? initialIdp.penilaian : null, initialModel.dbKeys);
+
+            // Update average score in UI on initial load
+            const initialAvgEl = document.getElementById('idpScoreAvg');
+            if (initialAvgEl) {
+                initialAvgEl.textContent = parseFloat(initialResult.avg) > 0 ? `Rata-rata: ${initialResult.avg}/5` : '';
+            }
 
             radarCanvas.chartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: formattedLabels,
+                    labels: initialModel.labels.map(getMultilineLabel),
                     datasets: [{
                         label: 'Current Score',
-                        data: currentData,
+                        data: initialResult.scores,
                         fill: true,
-                        backgroundColor: 'rgba(14, 165, 233, 0.2)', // Sky blue
+                        backgroundColor: 'rgba(14, 165, 233, 0.25)', // Sky blue with opacity
                         borderColor: 'rgb(14, 165, 233)',
+                        borderWidth: 2,
+                        pointRadius: 4,
                         pointBackgroundColor: 'rgb(14, 165, 233)',
                         pointBorderColor: '#fff',
+                        pointHoverRadius: 6,
                         pointHoverBackgroundColor: '#fff',
                         pointHoverBorderColor: 'rgb(14, 165, 233)'
                     }, {
                         label: 'Target (4.0)',
-                        data: targetData,
+                        data: initialModel.target,
                         fill: true,
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)', // Emerald
+                        backgroundColor: 'rgba(16, 185, 129, 0.08)', // Emerald
                         borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1.5,
                         borderDash: [5, 5],
+                        pointRadius: 3,
                         pointBackgroundColor: 'rgb(16, 185, 129)',
                         pointBorderColor: '#fff',
+                        pointHoverRadius: 5,
                         pointHoverBackgroundColor: '#fff',
                         pointHoverBorderColor: 'rgb(16, 185, 129)'
                     }]
@@ -1476,17 +1951,19 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    elements: { line: { borderWidth: 2 } },
+                    elements: { line: { tension: 0.1 } },
                     scales: {
                         r: {
-                            angleLines: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
-                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            min: 0,
+                            max: 5,
                             suggestedMin: 0,
                             suggestedMax: 5,
+                            angleLines: { display: true, color: 'rgba(0, 0, 0, 0.06)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.06)' },
                             ticks: { display: false, stepSize: 1 },
                             pointLabels: {
                                 font: { size: 9, family: "'Inter', sans-serif", weight: '600' },
-                                color: '#64748b'
+                                color: '#475569'
                             }
                         }
                     },
@@ -1496,6 +1973,87 @@
                     }
                 }
             });
+
+            // Function to dynamically switch active IDP period and update chart + UI
+            
+        window.exportPdfWithCurrentFilters = function(event, baseUrl) {
+            event.preventDefault();
+            const params = new URLSearchParams();
+            if (window.selectedAssessmentId) params.set('assessment_id', window.selectedAssessmentId);
+            if (window.selectedIdpId) params.set('idp_id', window.selectedIdpId);
+            if (window.selectedMentoringId) params.set('mentoring_id', window.selectedMentoringId);
+            const finalUrl = baseUrl + (params.toString() ? '?' + params.toString() : '');
+            window.open(finalUrl, '_blank');
+        };
+
+            window.switchIdpPeriod = function(selectedId) {
+                window.selectedIdpId = selectedId;
+                const idp = idpHistory[selectedId];
+                if (!idp) return;
+
+                const modelKey = resolveModel(idp.penilaian);
+                const model = competencyModels[modelKey];
+                const res = calculateScores(idp.penilaian, model.dbKeys);
+                
+                // Update radar chart dataset & labels smoothly
+                if (radarCanvas && radarCanvas.chartInstance) {
+                    radarCanvas.chartInstance.data.labels = model.labels.map(getMultilineLabel);
+                    radarCanvas.chartInstance.data.datasets[0].data = res.scores;
+                    radarCanvas.chartInstance.data.datasets[1].data = model.target;
+                    radarCanvas.chartInstance.update();
+                }
+
+                // Update Mentor text
+                const mentorEl = document.getElementById('idpMentorText');
+                if (mentorEl) mentorEl.textContent = idp.mentor || '-';
+
+                // Update Average Score text
+                const avgScoreEl = document.getElementById('idpScoreAvg');
+                if (avgScoreEl) {
+                    avgScoreEl.textContent = parseFloat(res.avg) > 0 ? `Rata-rata: ${res.avg}/5` : '';
+                }
+
+                // Update Detail Link
+                const detailLink = document.getElementById('idpDetailLink');
+                if (detailLink) {
+                    detailLink.href = idp.detailUrl;
+                }
+
+                // Update Status Badge
+                const badgeContainer = document.getElementById('idpStatusBadgeContainer');
+                if (badgeContainer) {
+                    if (idp.status === 'completed') {
+                        badgeContainer.innerHTML = `<span class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Completed
+                        </span>`;
+                    } else if (idp.status === 'in_progress') {
+                        badgeContainer.innerHTML = `<span class="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span> In Progress
+                        </span>`;
+                    } else {
+                        badgeContainer.innerHTML = `<span class="bg-sky-50 border border-sky-200 text-sky-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> ${idp.statusLabel.toUpperCase()}
+                        </span>`;
+                    }
+                }
+
+                // Update Notice if no penilaian
+                const alertEl = document.getElementById('idpEmptyAlert');
+                if (alertEl) {
+                    if (!res.hasScore) {
+                        alertEl.classList.remove('hidden');
+                    } else {
+                        alertEl.classList.add('hidden');
+                    }
+                }
+            };
+
+            const idpSelector = document.getElementById('idpSelector');
+            if (idpSelector) {
+                idpSelector.addEventListener('change', function() {
+                    window.switchIdpPeriod(this.value);
+                });
+            }
         };
 
         // Initialize immediately if script is executed normally

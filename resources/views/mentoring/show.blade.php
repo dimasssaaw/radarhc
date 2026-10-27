@@ -5,14 +5,18 @@
 <div class="mb-6 flex justify-between items-end">
     <div>
         <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
-            <a href="{{ route('mentoring.index') }}" class="hover:text-gray-700 transition-colors">Mentoring</a>
+            <a href="{{ route('mentoring.index') }}" class="hover:text-gray-700 transition-colors">Mentoring Data</a>
             <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
-            <span class="text-gray-900 font-medium">Mentoring Details</span>
+            @if(isset($mentoring->id_karyawan))
+                <a href="{{ route('mentoring.show-employee', $mentoring->id_karyawan) }}" class="hover:text-gray-700 transition-colors">Employee Mentoring</a>
+                <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
+            @endif
+            <span class="text-gray-900 font-medium">Detail Mentoring Plan</span>
         </div>
     </div>
     <div class="flex gap-3">
-        <a href="{{ route('mentoring.index') }}" class="bg-white shadow-[0_2px_4px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.1)] border border-gray-100 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-gray-700">
-            <i class="fas fa-arrow-left text-gray-400"></i> Back
+        <a href="{{ isset($mentoring->id_karyawan) ? route('mentoring.show-employee', $mentoring->id_karyawan) : route('mentoring.index') }}" class="bg-[#0ea5e9] hover:bg-[#0284c7] shadow-sm hover:shadow-md rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-white">
+            <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
 </div>
@@ -496,7 +500,7 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
                             <select name="status_mentoring" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border" >
                                 <option value="" {{ empty($mentoring->status_mentoring) ? 'selected' : '' }}>-</option>
-                                <option value="pending" {{ ($mentoring->status_mentoring ?? '') == 'pending' ? 'selected' : '' }}>In Progress</option>
+                                <option value="in_progress" {{ in_array($mentoring->status_mentoring ?? '', ['in_progress', 'pending']) ? 'selected' : '' }}>In Progress</option>
                                 <option value="completed" {{ ($mentoring->status_mentoring ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
                             </select>
                         </div>

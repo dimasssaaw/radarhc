@@ -1,18 +1,31 @@
-@extends(strtolower(auth()->user()->role ?? '') === 'admin' ? 'assessment_report.index' : 'user.assessment_report.index')
+@extends(
+    (request('employee_id') || isset($employee)) && isset($employee)
+        ? (strtolower(auth()->user()->role ?? '') === 'admin' ? 'assessment_report.employee' : 'user.assessment_report.employee')
+        : (strtolower(auth()->user()->role ?? '') === 'admin' ? 'assessment_report.index' : 'user.assessment_report.index')
+)
 
 @push('modals')
+@php
+    $targetEmpId = request('employee_id') ?? ($employee->id ?? $report->id_karyawan);
+    $fallbackUrl = $targetEmpId
+        ? (strtolower(auth()->user()->role ?? '') === 'admin' ? route('assessment-report.show-employee', $targetEmpId) : route('user-assessment-report.show-employee', $targetEmpId))
+        : (strtolower(auth()->user()->role ?? '') === 'admin' ? route('assessment-report.index') : route('user-assessment-report.index'));
+    $closeUrl = request('redirect_to') ?: $fallbackUrl;
+@endphp
 <!-- Full screen modal overlay -->
-<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 sm:p-6">
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <a href="{{ $closeUrl }}" class="fixed inset-0 transition-opacity" aria-hidden="true"></a>
+
     <!-- Modal Card -->
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] flex flex-col overflow-hidden animate-fade-in-up">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] flex flex-col overflow-hidden animate-fade-in-up relative z-10">
         
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">Edit Assessment Report</h2>
+                <h2 class="text-xl font-bold text-gray-900" id="modal-title">Edit Assessment Report</h2>
                 <p class="text-sm text-gray-500 mt-1">Ubah data assessment untuk karyawan</p>
             </div>
-            <a href="{{ request('redirect_to') ?? (strtolower(auth()->user()->role ?? '') === 'admin' ? route('assessment-report.index') : route('user-assessment-report.index')) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <a href="{{ $closeUrl }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
             </a>
         </div>
@@ -35,6 +48,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- We still submit the id_karyawan as hidden so it doesn't get lost -->
             <input type="hidden" name="id_karyawan" value="{{ $report->id_karyawan }}">
+            <input type="hidden" name="redirect_to" value="{{ $closeUrl }}">
 
             <!-- Nama Karyawan -->
             <div class="md:col-span-2">
@@ -234,7 +248,7 @@
 
         <!-- Footer -->
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
-            <a href="{{ request('redirect_to') ?? (strtolower(auth()->user()->role ?? '') === 'admin' ? route('assessment-report.index') : route('user-assessment-report.index')) }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
+            <a href="{{ $closeUrl }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
                 Batal
             </a>
             <button type="submit" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">

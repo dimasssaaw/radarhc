@@ -116,7 +116,7 @@
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($emp->nama) }}&background=random" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             @endif
                             <div>
-                                <div class="font-semibold text-gray-900 group-hover:text-[#0ea5e9] transition-colors">{{ $emp->nama }}</div>
+                                <a href="{{ route('user-assessment-report.show-employee', $emp->id) }}" class="font-semibold text-gray-900 group-hover:text-[#06b6d4] transition-colors hover:underline">{{ $emp->nama }}</a>
                                 <div class="text-xs text-gray-500">{{ $emp->email ?? '-' }}</div>
                             </div>
                         </div>
@@ -155,22 +155,9 @@
                     </td>
                     <td class="px-5 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            <a href="{{ route('user-assessment-report.show', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat Report">
+                            <a href="{{ route('user-assessment-report.show-employee', $emp->id) }}" class="text-gray-400 hover:text-cyan-600 p-1.5 rounded-md hover:bg-cyan-50 transition-colors" title="Lihat Riwayat Assessment">
                                 <i class="fas fa-eye w-4"></i>
                             </a>
-                            @if($emp->assessmentReports->count() > 0)
-                                @can('edit_assessment')
-                                <a href="{{ route('assessment-report.edit', $emp->assessmentReports->last()->id) }}" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit Assessment">
-                                    <i class="fas fa-edit w-4"></i>
-                                </a>
-                                @endcan
-                            @else
-                                @can('tambah_assessment')
-                                <a href="{{ route('assessment-report.create', ['employee_id' => $emp->id]) }}" class="text-gray-400 hover:text-emerald-600 p-1.5 rounded-md hover:bg-emerald-50 transition-colors" title="Tambah Assessment Baru">
-                                    <i class="fas fa-file-medical w-4"></i>
-                                </a>
-                                @endcan
-                            @endif
                         </div>
                     </td>
                 </tr>

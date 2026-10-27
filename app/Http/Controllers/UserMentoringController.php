@@ -58,21 +58,28 @@ class UserMentoringController extends Controller
 
     public function show(Request $request, $id)
     {
-        $karyawan = Karyawan::with(['department', 'mentorings' => function ($q) {
-            $q->latest();
-        }])->findOrFail($id);
+        $mentoring = Mentoring::with('karyawan.department')->find($id);
+        if ($mentoring) {
+            $karyawan = $mentoring->karyawan;
+        } else {
+            $karyawan = Karyawan::with(['department', 'mentorings' => fn ($q) => $q->latest()])->findOrFail($id);
+            if ($request->has('mentoring_id')) {
+                $mentoring = $karyawan->mentorings->where('id', $request->mentoring_id)->first();
+            }
+            if (! $mentoring) {
+                $mentoring = $karyawan->mentorings->first();
+            }
+            if ($mentoring) {
+                $mentoring->karyawan = $karyawan;
+            }
+        }
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+            if (! $userKaryawan || ! $karyawan || $karyawan->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Akses tidak diizinkan untuk departemen lain.');
             }
-        }
-
-        $mentoring = $karyawan->mentorings->first();
-        if ($mentoring) {
-            $mentoring->karyawan = $karyawan;
         }
 
         return view('user.mentoring.show', compact('karyawan', 'mentoring'));
@@ -80,19 +87,18 @@ class UserMentoringController extends Controller
 
     public function showEmployee($employee_id)
     {
-        $karyawan = Karyawan::findOrFail($employee_id);
+        $employee = Karyawan::with(['department', 'position', 'mentorings'])->findOrFail($employee_id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Akses tidak diizinkan untuk departemen lain.');
             }
         }
 
-        $mentoring = Mentoring::where('id_karyawan', $employee_id)->latest()->first() ?? new Mentoring;
-        $mentoring->karyawan = $karyawan;
+        $mentorings = $employee->mentorings()->orderBy('tahun', 'desc')->get();
 
-        return view('user.mentoring.show', compact('mentoring', 'karyawan'));
+        return view('user.mentoring.employee', compact('employee', 'mentorings'));
     }
 }

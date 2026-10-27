@@ -68,11 +68,12 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'department',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {
-                $q->latest('tahun');
+                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
             'idps' => function ($q) {
                 $q->latest();
             },
+            'idps.penilaian',
             'trainings',
             'certifications',
             'scarf',
@@ -101,32 +102,70 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
         return view('journey.show', compact('karyawan', 'activeReport', 'trainings', 'perjalananKarirs', 'departments'));
     }
 
-    public function exportPdf($id)
+    public function exportPdf(Request $request, $id)
     {
         $karyawan = Karyawan::with([
             'department',
             'position',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {
-                $q->latest('tahun');
+                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
             'idps' => function ($q) {
-                $q->latest();
+                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
+            'idps.penilaian',
             'trainings',
             'certifications',
             'scarf',
             'viaCharacters',
             'strengths',
-            'mentorings',
+            'mentorings' => function ($q) {
+                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
+            },
         ])->findOrFail($id);
 
-        $activeReport = $karyawan->assessmentReports->first();
+        // 1. Assessment Report (prioritaskan request parameter atau ambil data teratas)
+        $assessmentId = $request->query('assessment_id');
+        $activeReport = $assessmentId
+            ? $karyawan->assessmentReports->firstWhere('id', $assessmentId)
+            : $karyawan->assessmentReports->first();
+
+        // 2. IDP (prioritaskan request parameter atau cari yang memiliki nilai penilaian)
+        $idpId = $request->query('idp_id');
+        if ($idpId) {
+            $activeIdp = $karyawan->idps->firstWhere('id', $idpId);
+        } else {
+            $activeIdp = $karyawan->idps->first(function ($item) {
+                $p = $item->penilaian;
+                if (! $p) {
+                    return false;
+                }
+                $arr = is_array($p) ? $p : (is_object($p) ? (method_exists($p, 'toArray') ? $p->toArray() : (array) $p) : json_decode($p, true));
+                if (! $arr) {
+                    return false;
+                }
+                foreach ($arr as $k => $v) {
+                    if (is_numeric($v) && (float) $v > 0 && ! in_array($k, ['id', 'id_idp', 'id_karyawan', 'id_penilain'])) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }) ?? $karyawan->idps->first();
+        }
+
+        // 3. Mentoring (prioritaskan request parameter atau ambil data teratas)
+        $mentoringId = $request->query('mentoring_id');
+        $latestMentoring = $mentoringId
+            ? $karyawan->mentorings->firstWhere('id', $mentoringId)
+            : $karyawan->mentorings->first();
+
         $trainings = $karyawan->trainings;
         $perjalananKarirs = $karyawan->perjalananKarirs->sortBy('tahun_karir');
         $departments = Department::orderBy('nama_departemen', 'asc')->get();
 
-        return view('journey.pdf', compact('karyawan', 'activeReport', 'trainings', 'perjalananKarirs', 'departments'));
+        return view('journey.pdf', compact('karyawan', 'activeReport', 'activeIdp', 'latestMentoring', 'trainings', 'perjalananKarirs', 'departments'));
     }
 
     public function store(Request $request)

@@ -5,13 +5,17 @@
 <div class="mb-6 flex justify-between items-end">
     <div>
         <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
-            <a href="{{ route('idp.index') }}" class="hover:text-gray-700 transition-colors">IDP</a>
+            <a href="{{ route('idp.index') }}" class="hover:text-gray-700 transition-colors">IDP Data</a>
             <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
+            @if(isset($Idp->id_karyawan))
+                <a href="{{ route('idp.show-employee', $Idp->id_karyawan) }}" class="hover:text-gray-700 transition-colors">Employee IDP</a>
+                <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
+            @endif
             <span class="text-gray-900 font-medium">Detail Individual Development Plan</span>
         </div>
     </div>
     <div class="flex gap-3">
-        <a href="{{ route('idp.index') }}" class="bg-[#0ea5e9] hover:bg-[#0284c7] shadow-sm hover:shadow-md rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-white">
+        <a href="{{ isset($Idp->id_karyawan) ? route('idp.show-employee', $Idp->id_karyawan) : route('idp.index') }}" class="bg-[#0ea5e9] hover:bg-[#0284c7] shadow-sm hover:shadow-md rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-white">
             <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
@@ -684,6 +688,7 @@
 @endpush
 
 @endsection
+
 
 
 

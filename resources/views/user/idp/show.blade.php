@@ -7,15 +7,45 @@
         <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
             <a href="{{ route('user-idp.index') }}" class="hover:text-gray-700 transition-colors">IDP</a>
             <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
+            @if(isset($Idp->id_karyawan))
+                <a href="{{ route('user-idp.show-employee', $Idp->id_karyawan) }}" class="hover:text-gray-700 transition-colors">{{ $Idp->karyawan->nama ?? 'Employee' }}</a>
+                <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
+            @endif
             <span class="text-gray-900 font-medium">Detail Individual Development Plan</span>
         </div>
     </div>
     <div class="flex gap-3">
-        <a href="{{ route('user-idp.index') }}" class="bg-[#0ea5e9] hover:bg-[#0284c7] shadow-sm hover:shadow-md rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-white">
+        <a href="{{ isset($Idp->id_karyawan) ? route('user-idp.show-employee', $Idp->id_karyawan) : route('user-idp.index') }}" class="bg-[#0ea5e9] hover:bg-[#0284c7] shadow-sm hover:shadow-md rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-white">
             <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
 </div>
+
+@if(session('success'))
+<div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+    <div class="flex items-center gap-2.5 text-sm font-medium">
+        <i class="fas fa-check-circle text-emerald-500 text-base"></i>
+        <span>{{ session('success') }}</span>
+    </div>
+    <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 p-1">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="mb-6 bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl shadow-sm animate-fade-in">
+    <div class="flex items-center gap-2.5 text-sm font-bold mb-1">
+        <i class="fas fa-exclamation-triangle text-rose-500 text-base"></i>
+        <span>Terdapat kesalahan saat menyimpan data:</span>
+    </div>
+    <ul class="list-disc pl-8 text-xs space-y-0.5 text-rose-700">
+        @foreach($errors->all() as $err)
+            <li>{{ $err }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
 
 <!-- Employee Profile Header -->
 @include('components.employee-profile-header', ['employee' => $Idp->karyawan])
@@ -44,7 +74,7 @@
                     @endphp
                    
                     
-                    @can('tambah_idp')
+                    @canany(['edit_idp', 'tambah_idp'])
                     @if($Idp->id)
                         <button type="button" x-data @click="$dispatch('open-idp-info-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Edit IDP">
                             <i class="fas fa-pen"></i>
@@ -54,7 +84,7 @@
                             <i class="fas fa-plus"></i>
                         </button>
                     @endif
-                    @endcan
+                    @endcanany
                 </div>
             </div>
             
@@ -536,7 +566,7 @@
                     </button>
                 </div>
                 
-                <form action="{{ $Idp->id ? route('idp.update-penilaian', $Idp->id) : route('idp.update-employee-penilaian', $Idp->karyawan->id) }}" method="POST">
+                <form action="{{ $Idp->id ? route('idp.update-penilaian', $Idp->id) : route('idp.update-employee-penilaian', $Idp->karyawan->id) }}" method="POST" hx-boost="false">
                     @csrf
                     <div class="bg-white px-4 py-3 max-h-[50vh] overflow-y-auto custom-scrollbar">
                         <div class="grid grid-cols-2 gap-x-3 gap-y-3">
@@ -599,7 +629,7 @@
                     </button>
                 </div>
                 
-                <form action="{{ $Idp->id ? route('idp.update-info', $Idp->id) : route('idp.update-employee-info', $Idp->karyawan->id) }}" method="POST">
+                <form action="{{ $Idp->id ? route('idp.update-info', $Idp->id) : route('idp.update-employee-info', $Idp->karyawan->id) }}" method="POST" hx-boost="false">
                     @csrf
                     <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
                         <div>
@@ -655,7 +685,7 @@
                     </button>
                 </div>
                 
-                <form action="{{ $Idp->id ? route('idp.update-jadwal', $Idp->id) : route('idp.update-employee-jadwal', $Idp->karyawan->id) }}" method="POST">
+                <form action="{{ $Idp->id ? route('idp.update-jadwal', $Idp->id) : route('idp.update-employee-jadwal', $Idp->karyawan->id) }}" method="POST" hx-boost="false">
                     @csrf
                     <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
                         <div>

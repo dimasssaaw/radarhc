@@ -1,25 +1,38 @@
-@extends(strtolower(auth()->user()->role ?? '') === 'admin' ? 'idp.index' : 'user.idp.index')
+@extends(
+    request('employee_id') && isset($employee)
+        ? (strtolower(auth()->user()->role ?? '') === 'admin' ? 'idp.employee' : 'user.idp.employee')
+        : (strtolower(auth()->user()->role ?? '') === 'admin' ? 'idp.index' : 'user.idp.index')
+)
 
 @push('modals')
+@php
+    $fallbackUrl = request('employee_id')
+        ? (strtolower(auth()->user()->role ?? '') === 'admin' ? route('idp.show-employee', request('employee_id')) : route('user-idp.show-employee', request('employee_id')))
+        : (strtolower(auth()->user()->role ?? '') === 'admin' ? route('idp.index') : route('user-idp.index'));
+    $closeUrl = request('redirect_to') ?: $fallbackUrl;
+@endphp
+
 <!-- Full screen modal overlay -->
-<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 sm:p-6">
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <a href="{{ $closeUrl }}" class="fixed inset-0 transition-opacity" aria-hidden="true"></a>
+
     <!-- Modal Card -->
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col overflow-hidden animate-fade-in-up">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col overflow-hidden animate-fade-in-up relative z-10">
         
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">Tambah IDP</h2>
+                <h2 class="text-xl font-bold text-gray-900" id="modal-title">Tambah IDP</h2>
                 <p class="text-sm text-gray-500 mt-1">Tambahkan data Individual Development Plan untuk karyawan</p>
             </div>
-            <a href="{{ request('redirect_to') ? request('redirect_to') : route('idp.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <a href="{{ $closeUrl }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
             </a>
         </div>
 
-        <form action="{{ route('idp.store') }}" method="POST" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+        <form action="{{ route('idp.store') }}" method="POST" hx-boost="false" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
             @csrf
-            <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
+            <input type="hidden" name="redirect_to" value="{{ $closeUrl }}">
 
             <!-- Body -->
             <div class="p-6 overflow-y-auto flex-1 bg-white custom-scrollbar">
@@ -36,7 +49,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     @php
                         $selectedEmployeeId = old('id_karyawan', request('employee_id'));
-                        $selectedEmployee = $selectedEmployeeId ? $allEmployees->firstWhere('id', $selectedEmployeeId) : null;
+                        $selectedEmployee = $selectedEmployeeId ? ($employee ?? $allEmployees->firstWhere('id', $selectedEmployeeId)) : null;
                     @endphp
 
                     <input type="hidden" name="id_karyawan" value="{{ $selectedEmployeeId }}">
@@ -68,13 +81,13 @@
                     <!-- Tahun -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tahun</label>
-                        <input type="text" name="tahun" value="{{ old('tahun') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="cth. 2024">
+                        <input type="text" name="tahun" value="{{ old('tahun', date('Y')) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="cth. 2024">
                     </div>
 
                     <!-- Periode -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Periode</label>
-                        <input type="text" name="periode" value="{{ old('periode') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="cth 1 atau 2">
+                        <input type="text" name="periode" value="{{ old('periode', '1') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="cth 1 atau 2">
                     </div>
                      
                     <!-- Mentor -->
@@ -93,9 +106,9 @@
                     </div>
 
                     <!-- Development Area -->
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Development Area</label>
-                        <input type="text" name="development" value="{{ old('development') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Area kompetensi yang dikembangkan">
+                        <textarea name="development" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Area kompetensi yang dikembangkan">{{ old('development') }}</textarea>
                     </div>
 
                     <!-- Target Date -->
@@ -111,7 +124,7 @@
                     </div>
 
                     <!-- Final Date -->
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Final (Selesai)</label>
                         <input type="date" name="final" value="{{ old('final') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                     </div>
@@ -121,7 +134,7 @@
 
         <!-- Footer -->
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
-            <a href="{{ request('redirect_to') ? request('redirect_to') : route('idp.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
+            <a href="{{ $closeUrl }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
                 Batal
             </a>
             <button type="submit" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">

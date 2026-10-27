@@ -155,28 +155,9 @@
                     </td>
                     <td class="px-5 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            @if($emp->mentorings->count() > 0)
-                                <a href="{{ route('user-mentoring.show', $emp->mentorings->last()->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat Mentoring">
-                                    <i class="fas fa-eye w-4"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('user-mentoring.show-employee', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat Mentoring (No data available)">
-                                    <i class="fas fa-eye w-4"></i>
-                                </a>
-                            @endif
-                                @if($emp->mentorings->count() > 0)
-                                    @can('edit_mentoring')
-                                    <a href="{{ route('mentoring.edit', ['mentoring' => $emp->mentorings->last()->id, 'redirect_to' => url()->current()]) }}" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit Mentoring">
-                                        <i class="fas fa-edit w-4"></i>
-                                    </a>
-                                    @endcan
-                                @else
-                                    @can('tambah_mentoring')
-                                    <a href="{{ route('mentoring.create', ['employee_id' => $emp->id, 'redirect_to' => url()->current()]) }}" class="text-gray-400 hover:text-emerald-600 p-1.5 rounded-md hover:bg-emerald-50 transition-colors" title="Tambah Mentoring Baru">
-                                        <i class="fas fa-file-medical w-4"></i>
-                                    </a>
-                                    @endcan
-                                @endif
+                            <a href="{{ route('user-mentoring.show-employee', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat Mentoring">
+                                <i class="fas fa-eye w-4"></i>
+                            </a>
                         </div>
                     </td>
                 </tr>

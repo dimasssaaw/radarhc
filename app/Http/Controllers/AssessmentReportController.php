@@ -14,7 +14,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('can:lihat_assessment', only: ['index', 'show']),
+            new Middleware('can:lihat_assessment', only: ['index', 'show', 'showEmployee']),
             new Middleware('can:tambah_assessment', only: ['create', 'store']),
             new Middleware('can:edit_assessment', only: ['edit', 'update']),
             new Middleware('can:hapus_assessment', only: ['destroy']),
@@ -110,10 +110,21 @@ class AssessmentReportController extends Controller implements HasMiddleware
             ? Karyawan::with('department')->where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
             : Karyawan::with('department')->orderBy('nama')->get();
 
+        $employee = null;
+        $reports = collect();
+        if ($request->filled('employee_id')) {
+            $employee = Karyawan::with(['department', 'position', 'assessmentReports'])->find($request->employee_id);
+            if ($employee) {
+                $reports = $employee->assessmentReports()->orderBy('tahun', 'desc')->get();
+            }
+        }
+
         return view('assessment_report.create', [
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
+            'employee' => $employee,
+            'reports' => $reports,
         ]);
     }
 
@@ -143,6 +154,23 @@ class AssessmentReportController extends Controller implements HasMiddleware
         $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
 
         return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil ditambahkan.');
+    }
+
+    public function showEmployee($employee_id)
+    {
+        $employee = Karyawan::with('assessmentReports')->findOrFail($employee_id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
+        $reports = $employee->assessmentReports()->orderBy('tahun', 'desc')->get();
+
+        return view('assessment_report.employee', compact('employee', 'reports'));
     }
 
     public function show(Request $request, $id)
@@ -225,11 +253,23 @@ class AssessmentReportController extends Controller implements HasMiddleware
             ? Karyawan::with('department')->where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
             : Karyawan::with('department')->orderBy('nama')->get();
 
+        $employee = null;
+        $reports = collect();
+        $targetEmployeeId = $request->input('employee_id', $report->id_karyawan);
+        if ($targetEmployeeId) {
+            $employee = Karyawan::with(['department', 'position', 'assessmentReports'])->find($targetEmployeeId);
+            if ($employee) {
+                $reports = $employee->assessmentReports()->orderBy('tahun', 'desc')->get();
+            }
+        }
+
         return view('assessment_report.edit', [
             'report' => $report,
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
+            'employee' => $employee,
+            'reports' => $reports,
         ]);
     }
 
@@ -274,6 +314,10 @@ class AssessmentReportController extends Controller implements HasMiddleware
         }
 
         $report->delete();
+
+        if (request()->has('redirect_to')) {
+            return redirect(request('redirect_to'))->with('success', 'Data Assessment Report berhasil dihapus.');
+        }
 
         $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
 

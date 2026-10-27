@@ -105,10 +105,21 @@ class MentoringController extends Controller implements HasMiddleware
             ? Karyawan::where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
             : Karyawan::orderBy('nama')->get();
 
+        $employee = null;
+        $mentorings = collect();
+        if ($request->filled('employee_id')) {
+            $employee = Karyawan::with(['department', 'position', 'mentorings'])->find($request->employee_id);
+            if ($employee) {
+                $mentorings = $employee->mentorings()->orderBy('tahun', 'desc')->get();
+            }
+        }
+
         return view('mentoring.create', [
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
+            'employee' => $employee,
+            'mentorings' => $mentorings,
         ]);
     }
 
@@ -119,7 +130,7 @@ class MentoringController extends Controller implements HasMiddleware
             'tahun' => 'nullable|string',
             'periode' => 'nullable|string',
             'project' => 'nullable|string',
-            'status_mentoring' => 'nullable|in:in_progress,completed',
+            'status_mentoring' => 'nullable|in:in_progress,completed,pending,cancelled',
             'mentor' => 'nullable|string',
             'development' => 'nullable|string',
             'target' => 'nullable|date',
@@ -143,7 +154,7 @@ class MentoringController extends Controller implements HasMiddleware
 
         Mentoring::create($validated);
 
-        if ($request->has('redirect_to')) {
+        if ($request->filled('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Mentoring berhasil ditambahkan.');
         }
 
@@ -169,20 +180,19 @@ class MentoringController extends Controller implements HasMiddleware
 
     public function showEmployee($employee_id)
     {
-        $karyawan = Karyawan::findOrFail($employee_id);
+        $employee = Karyawan::with(['department', 'position', 'mentorings'])->findOrFail($employee_id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Akses tidak diizinkan untuk departemen lain.');
             }
         }
 
-        $mentoring = Mentoring::where('id_karyawan', $employee_id)->latest()->first() ?? new Mentoring;
-        $mentoring->karyawan = $karyawan;
+        $mentorings = $employee->mentorings()->orderBy('tahun', 'desc')->get();
 
-        return view('mentoring.show', compact('mentoring'));
+        return view('mentoring.employee', compact('employee', 'mentorings'));
     }
 
     public function edit(Request $request, $id)
@@ -233,11 +243,23 @@ class MentoringController extends Controller implements HasMiddleware
             ? Karyawan::where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
             : Karyawan::orderBy('nama')->get();
 
+        $employee = null;
+        $mentorings = collect();
+        $targetEmployeeId = $request->input('employee_id', $mentoring->id_karyawan);
+        if ($targetEmployeeId) {
+            $employee = Karyawan::with(['department', 'position', 'mentorings'])->find($targetEmployeeId);
+            if ($employee) {
+                $mentorings = $employee->mentorings()->orderBy('tahun', 'desc')->get();
+            }
+        }
+
         return view('mentoring.edit', [
             'mentoring' => $mentoring,
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
+            'employee' => $employee,
+            'mentorings' => $mentorings,
         ]);
     }
 
@@ -248,7 +270,7 @@ class MentoringController extends Controller implements HasMiddleware
             'tahun' => 'nullable|string',
             'periode' => 'nullable|string',
             'project' => 'nullable|string',
-            'status_mentoring' => 'nullable|in:pending,completed,cancelled',
+            'status_mentoring' => 'nullable|in:in_progress,completed,pending,cancelled',
             'mentor' => 'nullable|string',
             'development' => 'nullable|string',
             'target' => 'nullable|date',
@@ -273,7 +295,7 @@ class MentoringController extends Controller implements HasMiddleware
 
         $mentoring->update($validated);
 
-        if ($request->has('redirect_to')) {
+        if ($request->filled('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Mentoring berhasil diperbarui.');
         }
 
@@ -339,7 +361,7 @@ class MentoringController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'tahun' => 'nullable|string',
             'periode' => 'nullable|string',
-            'status_mentoring' => 'nullable|in:pending,completed,cancelled',
+            'status_mentoring' => 'nullable|in:in_progress,completed,pending,cancelled',
             'mentor' => 'nullable|string',
             'development' => 'nullable|string',
             'target' => 'nullable|date',
@@ -363,7 +385,7 @@ class MentoringController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'tahun' => 'nullable|string',
             'periode' => 'nullable|string',
-            'status_mentoring' => 'nullable|in:pending,completed,cancelled',
+            'status_mentoring' => 'nullable|in:in_progress,completed,pending,cancelled',
             'mentor' => 'nullable|string',
             'development' => 'nullable|string',
             'target' => 'nullable|date',
@@ -389,8 +411,9 @@ class MentoringController extends Controller implements HasMiddleware
             'tahun' => 'nullable|string',
             'periode' => 'nullable|string',
             'project' => 'nullable|string',
-            'status_mentoring' => 'nullable|in:pending,completed,cancelled',
+            'status_mentoring' => 'nullable|in:in_progress,completed,pending,cancelled',
             'mentor' => 'nullable|string',
+            'development' => 'nullable|string',
         ]);
 
         $mentoring = Mentoring::findOrFail($id);
@@ -405,8 +428,9 @@ class MentoringController extends Controller implements HasMiddleware
             'tahun' => 'nullable|string',
             'periode' => 'nullable|string',
             'project' => 'nullable|string',
-            'status_mentoring' => 'nullable|in:pending,completed,cancelled',
+            'status_mentoring' => 'nullable|in:in_progress,completed,pending,cancelled',
             'mentor' => 'nullable|string',
+            'development' => 'nullable|string',
         ]);
 
         $mentoring = Mentoring::create(array_merge([

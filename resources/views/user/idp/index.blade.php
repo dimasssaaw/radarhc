@@ -116,7 +116,7 @@
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($emp->nama) }}&background=random" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             @endif
                             <div>
-                                <div class="font-semibold text-gray-900 group-hover:text-[#0ea5e9] transition-colors">{{ $emp->nama }}</div>
+                                <a href="{{ route('user-idp.show-employee', $emp->id) }}" class="font-semibold text-gray-900 hover:text-[#06b6d4] transition-colors">{{ $emp->nama }}</a>
                                 <div class="text-xs text-gray-500">{{ $emp->email ?? '-' }}</div>
                             </div>
                         </div>
@@ -155,15 +155,9 @@
                     </td>
                     <td class="px-5 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            @if($emp->idps->count() > 0)
-                                <a href="{{ route('user-idp.show', $emp->idps->first()->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat IDP">
-                                    <i class="fas fa-eye w-4"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('user-idp.show-employee', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat IDP (No data available)">
-                                    <i class="fas fa-eye w-4"></i>
-                                </a>
-                            @endif
+                            <a href="{{ route('user-idp.show-employee', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat IDP">
+                                <i class="fas fa-eye w-4"></i>
+                            </a>
                             @if($emp->idps->count() > 0)
                                 @can('edit_idp')
                                 <a href="{{ route('idp.edit', ['idp' => $emp->idps->first()->id, 'redirect_to' => url()->current()]) }}" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit IDP">

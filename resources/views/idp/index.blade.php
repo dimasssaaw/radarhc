@@ -97,14 +97,14 @@
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">NPK</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Position</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Department</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Readiness</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Total IDP</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Actions</th>
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-gray-50">
                 
                 @forelse($employees as $emp)
-                <tr class="transition-all duration-300 hover:shadow-[0_4px_15px_rgba(14,165,233,0.15)] hover:-translate-y-0.5 hover:z-10 relative bg-white group border-b-transparent">
+                <tr class="transition-all duration-300 hover:shadow-[0_4px_15px_rgba(6,182,212,0.15)] hover:-translate-y-0.5 hover:z-10 relative bg-white group border-b-transparent">
                     <td class="px-5 py-4 text-center text-gray-500 font-medium">
                         {{ ($employees->currentPage() - 1) * $employees->perPage() + $loop->iteration }}
                     </td>
@@ -116,7 +116,9 @@
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($emp->nama) }}&background=random" alt="Avatar" class="w-9 h-9 rounded-full object-cover shadow-sm">
                             @endif
                             <div>
-                                <div class="font-semibold text-gray-900 group-hover:text-[#0ea5e9] transition-colors">{{ $emp->nama }}</div>
+                                <a href="{{ route('idp.show-employee', $emp->id) }}" class="font-semibold text-gray-900 group-hover:text-[#06b6d4] transition-colors">
+                                    {{ $emp->nama }}
+                                </a>
                                 <div class="text-xs text-gray-500">{{ $emp->email ?? '-' }}</div>
                             </div>
                         </div>
@@ -125,58 +127,16 @@
                     <td class="px-5 py-4 text-center text-gray-600">{{ $emp->position?->nama_jabatan }}</td>
                     <td class="px-5 py-4 text-center text-gray-600">{{ $emp->department ? $emp->department->nama_departemen : '-' }}</td>
                     <td class="px-5 py-4 text-center">
-                        @php
-                            $rawReadiness = $emp->readiness ?? '';
-                            $readinessText = '-';
-                            if ($rawReadiness === 'not_ready') {
-                                $readinessText = 'Not Ready';
-                            } elseif (!empty($rawReadiness)) {
-                                $readinessText = trim(str_ireplace('ready', '', $rawReadiness));
-                            }
-
-                            $readinessStyles = [
-                                'R1' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
-                                'R1 ready' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'border' => 'border-green-200/50', 'dot' => 'bg-green-500'],
-                                'R2' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
-                                'R2 ready' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200/50', 'dot' => 'bg-blue-500'],
-                                'R3' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
-                                'R3 ready' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200/50', 'dot' => 'bg-indigo-500'],
-                                'R4' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
-                                'R4 ready' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200/50', 'dot' => 'bg-purple-500'],
-                                'R5' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
-                                'R5 ready' => ['bg' => 'bg-yellow-50', 'text' => 'text-yellow-700', 'border' => 'border-yellow-200/50', 'dot' => 'bg-yellow-500'],
-                                'not_ready' => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'border' => 'border-red-200/50', 'dot' => 'bg-red-500'],
-                            ];
-                            $style = $readinessStyles[$readinessText] ?? $readinessStyles[$rawReadiness] ?? ['bg' => 'bg-gray-50', 'text' => 'text-gray-700', 'border' => 'border-gray-200/50', 'dot' => 'bg-gray-500'];
-                        @endphp
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium {{ $style['bg'] }} {{ $style['text'] }} border {{ $style['border'] }}">
-                            <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }}"></span> {{ $readinessText }}
+                        <span class="inline-flex items-center justify-center min-w-[24px] px-2 py-1 rounded-md text-xs font-semibold bg-cyan-50 text-[#06b6d4] border border-cyan-200/50">
+                            {{ $emp->idps ? $emp->idps->count() : 0 }}
                         </span>
                     </td>
                     <td class="px-5 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            @if($emp->idps->count() > 0)
-                                <a href="{{ route('idp.show', $emp->idps->first()->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat IDP">
+                    
+                             <a href="{{ route('idp.show-employee', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat IDP">
                                     <i class="fas fa-eye w-4"></i>
                                 </a>
-                            @else
-                                <a href="{{ route('idp.show-employee', $emp->id) }}" class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors" title="Lihat IDP (No data available)">
-                                    <i class="fas fa-eye w-4"></i>
-                                </a>
-                            @endif
-                            @if($emp->idps->count() > 0)
-                                @can('edit_idp')
-                                <a href="{{ route('idp.edit', $emp->idps->first()->id) }}" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit IDP">
-                                    <i class="fas fa-edit w-4"></i>
-                                </a>
-                                @endcan
-                            @else
-                                @can('tambah_idp')
-                                <a href="{{ route('idp.create', ['employee_id' => $emp->id]) }}" class="text-gray-400 hover:text-emerald-600 p-1.5 rounded-md hover:bg-emerald-50 transition-colors" title="Tambah IDP Baru">
-                                    <i class="fas fa-file-medical w-4"></i>
-                                </a>
-                                @endcan
-                            @endif
                         </div>
                     </td>
                 </tr>

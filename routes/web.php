@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('employee-data/template', [EmployeeController::class, 'template'])->name('employee.template');
     Route::post('employee-data/import', [EmployeeController::class, 'import'])->name('employee.import');
+    Route::get('assessment-report/employee/{employee_id}', [AssessmentReportController::class, 'showEmployee'])->name('assessment-report.show-employee');
     Route::resource('assessment-report', AssessmentReportController::class)->names('assessment-report');
     Route::resource('employee-data', EmployeeController::class)->names('employee');
 
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function (): void {
 
     Route::resource('user-management', UserManagementController::class)->names('user-management');
     Route::resource('user-assessment-report', UserAssessmentReportController::class)->only(['index', 'show'])->names('user-assessment-report');
+    Route::get('user-assessment-report/employee/{employee_id}', [UserAssessmentReportController::class, 'showEmployee'])->name('user-assessment-report.show-employee');
     Route::resource('user-mentoring', UserMentoringController::class)->only(['index', 'show'])->names('user-mentoring');
     Route::get('user-mentoring/employee/{employee_id}', [UserMentoringController::class, 'showEmployee'])->name('user-mentoring.show-employee');
     Route::resource('user-idp', UserIdpController::class)->only(['index', 'show'])->names('user-idp');

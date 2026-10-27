@@ -69,19 +69,18 @@ class UserIdpController extends Controller
 
     public function showEmployee($employee_id)
     {
-        $karyawan = Karyawan::findOrFail($employee_id);
+        $employee = Karyawan::with('idps')->findOrFail($employee_id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Akses tidak diizinkan untuk departemen lain.');
             }
         }
 
-        $Idp = Idp::where('id_karyawan', $employee_id)->latest()->first() ?? new Idp;
-        $Idp->karyawan = $karyawan;
+        $idps = $employee->idps()->orderBy('tahun', 'desc')->get();
 
-        return view('user.idp.show', compact('Idp'));
+        return view('user.idp.employee', compact('employee', 'idps'));
     }
 }

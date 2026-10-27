@@ -823,7 +823,7 @@
         $achieveManagerial = ($target_managerial > 0) ? min(100, round(($c_managerial / $target_managerial) * 100)) : 0;
 
         // 5. Mentoring Matrix
-        $latestMentoring = $karyawan->mentorings->sortByDesc('created_at')->first();
+        $latestMentoring = $latestMentoring ?? $karyawan->mentorings->sortByDesc('created_at')->first();
         $comp = $latestMentoring->competency ?? null;
         $comm = $latestMentoring->commitment ?? null;
 
@@ -844,7 +844,7 @@
         $readinessText = !empty($karyawan->readiness) ? ($karyawan->readiness === 'not_ready' ? 'Not Ready' : trim(str_ireplace('ready', '', $karyawan->readiness))) : '-';
 
         // 7. Development Focus Notes
-        $activeIdp = $karyawan->idps->sortByDesc('created_at')->first();
+        $activeIdp = $activeIdp ?? $karyawan->idps->sortByDesc('created_at')->first();
         $devNotes = $activeIdp?->development ?: '-';
         $targetNotes = $activeIdp?->target ?: '-';
         $monitoringNotes = $activeIdp?->monitoring ?: '-';
@@ -1062,7 +1062,7 @@
             <div class="grid-2col" style="margin-bottom: 0;">
                 <!-- Assessment Score Bars -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">5. Ringkasan Skor Assessment {{ $activeReport ? '('.$activeReport->tahun.')' : '' }}</div>
+                    <div class="section-title">5. Ringkasan Skor Assessment {{ $activeReport ? '('.($activeReport->tahun ?? '-').($activeReport->periode ? ' P'.$activeReport->periode : '').')' : '' }}</div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 1px dashed #e2e8f0;">
                         <span style="font-size: 8.2px; color: #64748b; font-weight: 600;">Rata-rata Skor:</span>
                         <span style="font-size: 12px; font-weight: 800; color: #0284c7;">{{ number_format($avgScore, 1) }} <span style="font-size: 8.5px; color: #64748b; font-weight: 600;">/ 5.0</span></span>
@@ -1111,23 +1111,59 @@
 
                 <!-- Radar Chart IDP -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">6. Pemetaan Kompetensi IDP (Radar)</div>
+                    <div class="section-title">6. Pemetaan Kompetensi IDP (Radar) {{ $activeIdp ? '('.($activeIdp->tahun ?? '-').($activeIdp->periode ? ' P'.$activeIdp->periode : '').')' : '' }}</div>
                     <div class="radar-container">
                         @php
-                            $activeIdp = $karyawan->idps->sortByDesc('created_at')->first();
+                            $activeIdp = $activeIdp ?? $karyawan->idps->sortByDesc('created_at')->first();
                             $penilaian = null;
                             if ($activeIdp && $activeIdp->penilaian) {
-                                $penilaian = is_array($activeIdp->penilaian) ? $activeIdp->penilaian : json_decode($activeIdp->penilaian, true);
+                                if (is_array($activeIdp->penilaian)) {
+                                    $penilaian = $activeIdp->penilaian;
+                                } elseif (is_object($activeIdp->penilaian)) {
+                                    $penilaian = method_exists($activeIdp->penilaian, 'toArray') ? $activeIdp->penilaian->toArray() : (array) $activeIdp->penilaian;
+                                } else {
+                                    $penilaian = json_decode($activeIdp->penilaian, true);
+                                }
                             }
 
+                            $competencyModels = [
+                                'head' => [
+                                    'labels' => ['Managing Change', 'Empowerment', 'Teamwork', 'Analysis & Dec.', 'Planning & Ctrl', 'Integrity', 'Excellence', 'Compassion', 'Humility'],
+                                    'dbKeys' => ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'],
+                                ],
+                                'staff' => [
+                                    'labels' => ['Courageous', 'Coach Others', 'Teamwork', 'Troubleshoot', 'Customer Focus', 'Cross Functional', 'Quality Focus', 'Cont. Imprv', 'Plan & Monitor', 'Integrity', 'Result Drive', 'Learning'],
+                                    'dbKeys' => ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'],
+                                ],
+                                'unit' => [
+                                    'labels' => ['Directiveness', 'Monitoring', 'Teamwork', 'Quality Focus', 'Cont. Imprv', 'Integrity'],
+                                    'dbKeys' => ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'],
+                                ],
+                            ];
+
+                            $modelKey = 'unit';
                             $jabatan = strtolower(trim($karyawan->position?->nama_jabatan ?? ''));
-                            if (str_contains($jabatan, 'head') || str_contains($jabatan, 'section')) {
-                                $radarLabels = ['Managing Change', 'Empowerment', 'Teamwork', 'Analysis & Dec.', 'Planning & Ctrl', 'Integrity', 'Excellence'];
-                                $keys = ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence'];
+                            if ($penilaian) {
+                                foreach (['head', 'staff', 'unit'] as $mk) {
+                                    foreach ($competencyModels[$mk]['dbKeys'] as $k) {
+                                        if (!empty($penilaian[$k]) && is_numeric($penilaian[$k]) && (float)$penilaian[$k] > 0) {
+                                            $modelKey = $mk;
+                                            break 2;
+                                        }
+                                    }
+                                }
                             } else {
-                                $radarLabels = ['Directiveness', 'Monitoring', 'Teamwork', 'Quality Focus', 'Cont. Imprv', 'Integrity'];
-                                $keys = ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'];
+                                if (str_contains($jabatan, 'head') || str_contains($jabatan, 'section')) {
+                                    $modelKey = 'head';
+                                } elseif (str_contains($jabatan, 'staff')) {
+                                    $modelKey = 'staff';
+                                } else {
+                                    $modelKey = 'unit';
+                                }
                             }
+
+                            $radarLabels = $competencyModels[$modelKey]['labels'];
+                            $keys = $competencyModels[$modelKey]['dbKeys'];
 
                             $radarScores = [];
                             $hasIdpPenilaian = false;
@@ -1360,7 +1396,7 @@
             <div class="grid-2col" style="margin-bottom: 8px;">
                 <!-- Matrix Mentoring & Coaching -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">11. Mentoring & Coaching Matrix</div>
+                    <div class="section-title">11. Mentoring & Coaching Matrix {{ $latestMentoring ? '('.($latestMentoring->tahun ?? '-').($latestMentoring->periode ? ' P'.$latestMentoring->periode : '').')' : '' }}</div>
                     <div class="matrix-grid">
                         <!-- TL: Yellow / Amber -->
                         <div class="matrix-cell {{ $isTL ? 'active-cell' : 'inactive-cell' }}"
@@ -1406,7 +1442,7 @@
 
                 <!-- GROW Model -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">12. GROW Model</div>
+                    <div class="section-title">12. GROW Model {{ $latestMentoring ? '('.($latestMentoring->tahun ?? '-').($latestMentoring->periode ? ' P'.$latestMentoring->periode : '').')' : '' }}</div>
                     <div class="grow-header">GROW MODEL ACTION PLAN</div>
 
                     <div class="grow-row">

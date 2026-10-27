@@ -106,10 +106,21 @@ class IdpController extends Controller implements HasMiddleware
             ? Karyawan::where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
             : Karyawan::orderBy('nama')->get();
 
+        $employee = null;
+        $idps = collect();
+        if ($request->filled('employee_id')) {
+            $employee = Karyawan::with(['department', 'position', 'idps'])->find($request->employee_id);
+            if ($employee) {
+                $idps = $employee->idps()->orderBy('tahun', 'desc')->get();
+            }
+        }
+
         return view('idp.create', [
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
+            'employee' => $employee,
+            'idps' => $idps,
         ]);
     }
 
@@ -179,7 +190,7 @@ class IdpController extends Controller implements HasMiddleware
         }
         IdpPenilain::create($penilaianData);
 
-        if ($request->has('redirect_to')) {
+        if ($request->filled('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Idp berhasil ditambahkan.');
         }
 
@@ -203,20 +214,19 @@ class IdpController extends Controller implements HasMiddleware
 
     public function showEmployee($employee_id)
     {
-        $karyawan = Karyawan::findOrFail($employee_id);
+        $employee = Karyawan::with('idps')->findOrFail($employee_id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Akses tidak diizinkan untuk departemen lain.');
             }
         }
 
-        $Idp = Idp::where('id_karyawan', $employee_id)->latest()->first() ?? new Idp;
-        $Idp->karyawan = $karyawan;
+        $idps = $employee->idps()->orderBy('tahun', 'desc')->get();
 
-        return view('idp.show', compact('Idp'));
+        return view('idp.employee', compact('employee', 'idps'));
     }
 
     public function edit(Request $request, $id)
@@ -267,11 +277,23 @@ class IdpController extends Controller implements HasMiddleware
             ? Karyawan::where('department_id', $userKaryawan->department_id)->orderBy('nama')->get()
             : Karyawan::orderBy('nama')->get();
 
+        $employee = null;
+        $idps = collect();
+        $targetEmployeeId = $request->input('employee_id', $Idp->id_karyawan);
+        if ($targetEmployeeId) {
+            $employee = Karyawan::with(['department', 'position', 'idps'])->find($targetEmployeeId);
+            if ($employee) {
+                $idps = $employee->idps()->orderBy('tahun', 'desc')->get();
+            }
+        }
+
         return view('idp.edit', [
             'Idp' => $Idp,
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
+            'employee' => $employee,
+            'idps' => $idps,
         ]);
     }
 
@@ -333,7 +355,7 @@ class IdpController extends Controller implements HasMiddleware
 
         $Idp->update($validated);
 
-        if ($request->has('redirect_to')) {
+        if ($request->filled('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Data Idp berhasil diperbarui.');
         }
 

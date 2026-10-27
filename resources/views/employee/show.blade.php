@@ -180,48 +180,194 @@
 </div>
 
 <!-- 5. Mentoring & Coaching Matrix -->
-<div class="bg-white rounded-xl border border-gray-100 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-8 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
-    <h2 class="text-lg font-bold text-gray-900 mb-6">Mentoring & Coaching Matrix</h2>
+@php
+    $mentorings = \App\Models\Mentoring::where('id_karyawan', $employee->id)
+        ->orderByDesc('tahun')
+        ->orderByDesc('periode')
+        ->orderByDesc('id')
+        ->get();
     
-    @php
-        $latestMentoring = \App\Models\Mentoring::where('id_karyawan', $employee->id)->latest()->first();
-        $comp = $latestMentoring->competency ?? null;
-        $comm = $latestMentoring->commitment ?? null;
+    $mentoringItems = $mentorings->mapWithKeys(function ($m, $index) {
+        $comp = $m->competency;
+        $comm = $m->commitment;
+        $box = null;
+        if ($comp === 'Rendah' && $comm === 'Tinggi') $box = 'BR';
+        elseif ($comp === 'Rendah' && $comm === 'Rendah') $box = 'BL';
+        elseif ($comp === 'Tinggi' && $comm === 'Tinggi') $box = 'TR';
+        elseif ($comp === 'Tinggi' && $comm === 'Rendah') $box = 'TL';
+
+        $periodLabel = '';
+        if ($m->tahun && $m->periode) {
+            $periodLabel = $m->tahun . ' - Periode ' . $m->periode;
+        } elseif ($m->tahun) {
+            $periodLabel = 'Tahun ' . $m->tahun;
+        } elseif ($m->periode) {
+            $periodLabel = 'Periode ' . $m->periode;
+        } else {
+            $periodLabel = 'Sesi #' . $m->id;
+        }
         
-        $activeBox = null;
-        if ($comp === 'Rendah' && $comm === 'Tinggi') $activeBox = 'TL';
-        if ($comp === 'Rendah' && $comm === 'Rendah') $activeBox = 'TR';
-        if ($comp === 'Tinggi' && $comm === 'Tinggi') $activeBox = 'BL';
-        if ($comp === 'Tinggi' && $comm === 'Rendah') $activeBox = 'BR';
-    @endphp
+
+        return [(string) $m->id => [
+            'id' => $m->id,
+            'label' => $periodLabel,
+            'tahun' => $m->tahun,
+            'periode' => $m->periode,
+            'competency' => $comp,
+            'commitment' => $comm,
+            'box' => $box,
+            'mentor' => $m->mentor ?? '-',
+            'url' => route('mentoring.show', $m->id),
+        ]];
+    });
+
+    $firstMentoringId = $mentorings->first()?->id ? (string) $mentorings->first()->id : '';
+@endphp
+
+<div class="bg-white rounded-xl border border-gray-100 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-8 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200"
+     x-data="{
+        selectedId: '{{ $firstMentoringId }}',
+        items: {{ json_encode($mentoringItems) }},
+        get current() {
+            return this.items[this.selectedId] || null;
+        },
+        get activeBox() {
+            return this.current ? this.current.box : null;
+        }
+     }">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-bold text-gray-900">Mentoring & Coaching Matrix</h2>
+            </div>
+            
+            <!-- Subtitle info competency & commitment -->
+            <div class="flex items-center gap-3 mt-1.5 text-xs" x-show="current" x-cloak>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-gray-400">Competency:</span>
+                    <span class="font-bold px-2 py-0.5 rounded text-[11px]"
+                          :class="current?.competency === 'Tinggi' ? 'bg-emerald-100 text-emerald-800' : (current?.competency === 'Rendah' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500')"
+                          x-text="current?.competency ? (current.competency === 'Tinggi' ? 'High' : 'Low') : '-'"></span>
+                </div>
+                <span class="text-gray-300">•</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-gray-400">Commitment:</span>
+                    <span class="font-bold px-2 py-0.5 rounded text-[11px]"
+                          :class="current?.commitment === 'Tinggi' ? 'bg-emerald-100 text-emerald-800' : (current?.commitment === 'Rendah' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500')"
+                          x-text="current?.commitment ? (current.commitment === 'Tinggi' ? 'High' : 'Low') : '-'"></span>
+                </div>
+                <template x-if="current?.mentor && current?.mentor !== '-'">
+                    <span class="text-gray-400 text-xs hidden md:inline">&bull; Mentor: <span class="font-semibold text-gray-700" x-text="current.mentor"></span></span>
+                </template>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-center">
+            @if($mentorings->count() > 0)
+                <!-- Custom Dropdown Periode (Sesuai Konsep Sistem RadarHC) -->
+                <div x-data="{ open: false }" class="relative inline-block text-left" @click.outside="open = false">
+                    <!-- Trigger Button (Sesuai Standar UI Sistem) -->
+                    <button type="button" 
+                            @click="open = !open" 
+                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
+                        <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                        <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}'">
+                            {{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}
+                        </span>
+                        <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+
+                    <!-- Floating Dropdown Menu (Clean & Sesuai Tom Select Sistem) -->
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-1.5 z-50"
+                         style="display: none;">
+                        <div class="space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
+                            @foreach($mentoringItems as $id => $item)
+                                <button type="button" 
+                                        @click="selectedId = '{{ $id }}'; open = false"
+                                        class="w-full text-left px-3 py-2 text-xs rounded-md flex items-center justify-between gap-3 transition-colors cursor-pointer"
+                                        :class="selectedId === '{{ $id }}' ? 'bg-[#e0f2fe] text-[#0284c7] font-semibold' : 'text-gray-700 hover:bg-gray-50 font-medium'">
+                                    <span class="whitespace-nowrap">{{ $item['label'] }}</span>
+                                    <i x-show="selectedId === '{{ $id }}'" class="fas fa-check text-[10px] text-[#0284c7]"></i>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div x-data="{ open: false }" class="relative inline-block text-left" @click.outside="open = false">
+                    <button type="button" 
+                            @click="open = !open" 
+                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
+                        <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
+                        <span>Pilih Periode</span>
+                        <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
+                         style="display: none;">
+                        <span class="text-xs text-gray-400 italic">Belum ada riwayat mentoring</span>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
     
-    <div class="w-full rounded-xl overflow-hidden grid grid-cols-2 shadow-sm border border-gray-100 font-bold text-[10px] tracking-wide text-white">
+    <div class="w-full rounded-xl overflow-hidden grid grid-cols-2 shadow-xs border border-gray-100 font-bold text-[10px] tracking-wide text-white">
         <!-- Top Left: Yellow (Comp: Rendah, Comm: Tinggi) -->
-        <div class="bg-[#facd42] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 text-[#8a6800] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERATE</div>
-            <div>MENTORING - MODERATE</div>
-            <div>COACHING - MODERATE</div>
+        <div class="aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-all duration-300"
+             :class="(activeBox && activeBox !== 'TL') ? 'opacity-30 bg-[#facd42] text-[#8a6800]' : 'opacity-100 z-10'"
+             :style="activeBox === 'TL' 
+                ? 'background: linear-gradient(135deg, #fde065 0%, #facd42 60%, #f3c332 100%); box-shadow: 3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #7c5c00;' 
+                : 'background-color: #facd42; color: #8a6800;'">
+            <div class="relative z-10" :style="activeBox === 'TL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6); font-weight: 800;' : ''">DIRECTING - MODERATE</div>
+            <div class="relative z-10" :style="activeBox === 'TL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6); font-weight: 800;' : ''">MENTORING - MODERATE</div>
+            <div class="relative z-10" :style="activeBox === 'TL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.6); font-weight: 800;' : ''">COACHING - MODERATE</div>
         </div>
         
         <!-- Top Right: Blue (Comp: Rendah, Comm: Rendah) -->
-        <div class="bg-[#4485f5] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'TR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - LOW</div>
-            <div>MENTORING - LOW</div>
-            <div>COACHING - LOW</div>
+        <div class="aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-all duration-300"
+             :class="(activeBox && activeBox !== 'TR') ? 'opacity-30 bg-[#4485f5] text-white' : 'opacity-100 z-10'"
+             :style="activeBox === 'TR' 
+                ? 'background: linear-gradient(135deg, #5390f7 0%, #4485f5 60%, #397ceb 100%); box-shadow: -3px 3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08); color: #ffffff;' 
+                : 'background-color: #4485f5; color: #ffffff;'">
+            <div class="relative z-10" :style="activeBox === 'TR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25); font-weight: 800;' : ''">DIRECTING - LOW</div>
+            <div class="relative z-10" :style="activeBox === 'TR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25); font-weight: 800;' : ''">MENTORING - LOW</div>
+            <div class="relative z-10" :style="activeBox === 'TR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25); font-weight: 800;' : ''">COACHING - HIGH</div>
         </div>
         
         <!-- Bottom Left: Green (Comp: Tinggi, Comm: Tinggi) -->
-        <div class="bg-[#78c87f] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 text-[#205724] transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BL') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - HIGH</div>
-            <div>MENTORING - HIGH</div>
-            <div>COACHING - HIGH</div>
+        <div class="aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-all duration-300"
+             :class="(activeBox && activeBox !== 'BL') ? 'opacity-30 bg-[#78c87f] text-[#205724]' : 'opacity-100 z-10'"
+             :style="activeBox === 'BL' 
+                ? 'background: linear-gradient(135deg, #87d38e 0%, #78c87f 60%, #6abd72 100%); box-shadow: 3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #144918;' 
+                : 'background-color: #78c87f; color: #205724;'">
+            <div class="relative z-10" :style="activeBox === 'BL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5); font-weight: 800;' : ''">DIRECTING - HIGH</div>
+            <div class="relative z-10" :style="activeBox === 'BL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5); font-weight: 800;' : ''">MENTORING - HIGH</div>
+            <div class="relative z-10" :style="activeBox === 'BL' ? 'text-shadow: 0 1px 1px rgba(255,255,255,0.5); font-weight: 800;' : ''">COACHING - LOW</div>
         </div>
         
         <!-- Bottom Right: Red/Coral (Comp: Tinggi, Comm: Rendah) -->
-        <div class="bg-[#f05051] aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-opacity duration-300 {{ ($activeBox && $activeBox !== 'BR') ? 'opacity-30' : 'opacity-100' }}">
-            <div>DIRECTING - MODERATE</div>
-            <div>MENTORING - HIGH</div>
-            <div>COACHING - MODERATE</div>
+        <div class="aspect-[2.5/1] flex flex-col justify-center items-center text-center p-4 transition-all duration-300"
+             :class="(activeBox && activeBox !== 'BR') ? 'opacity-30 bg-[#f05051] text-white' : 'opacity-100 z-10'"
+             :style="activeBox === 'BR' 
+                ? 'background: linear-gradient(135deg, #f75d5e 0%, #f05051 60%, #e84546 100%); box-shadow: -3px -3px 12px rgba(0,0,0,0.1), inset 0 1.5px 2px rgba(255,255,255,0.35), inset 0 -1.5px 2px rgba(0,0,0,0.08); color: #ffffff;' 
+                : 'background-color: #f05051; color: #ffffff;'">
+            <div class="relative z-10" :style="activeBox === 'BR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25); font-weight: 800;' : ''">DIRECTING - MODERATE</div>
+            <div class="relative z-10" :style="activeBox === 'BR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25); font-weight: 800;' : ''">MENTORING - HIGH</div>
+            <div class="relative z-10" :style="activeBox === 'BR' ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.25); font-weight: 800;' : ''">COACHING - MODERATE</div>
         </div>
     </div>
 </div>

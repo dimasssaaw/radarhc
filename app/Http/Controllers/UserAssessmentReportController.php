@@ -69,8 +69,33 @@ class UserAssessmentReportController extends Controller
             }
         }
 
-        $activeReport = $karyawan->assessmentReports->first();
+        $activeReport = null;
+        if ($karyawan->assessmentReports->isNotEmpty()) {
+            if ($request->has('report_id')) {
+                $activeReport = $karyawan->assessmentReports->where('id', $request->report_id)->first();
+            }
+            if (! $activeReport) {
+                $activeReport = $karyawan->assessmentReports->first();
+            }
+        }
 
         return view('user.assessment_report.show', compact('karyawan', 'activeReport'));
+    }
+
+    public function showEmployee($employee_id)
+    {
+        $employee = Karyawan::with('assessmentReports')->findOrFail($employee_id);
+
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        if (! $isAdmin) {
+            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
+            if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
+                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+            }
+        }
+
+        $reports = $employee->assessmentReports()->orderBy('tahun', 'desc')->get();
+
+        return view('user.assessment_report.employee', compact('employee', 'reports'));
     }
 }

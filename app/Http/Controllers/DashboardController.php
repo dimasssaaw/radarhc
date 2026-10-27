@@ -158,6 +158,7 @@ class DashboardController extends Controller
                 $empScores = [];
                 $empSum = 0;
                 $empScoresArray = [];
+                $weaknessItems = [];
 
                 foreach ($map as $label => $column) {
                     $val = $record->$column;
@@ -175,6 +176,7 @@ class DashboardController extends Controller
                     $weakestLabel = 'Not Evaluated';
                     $weakestVal = 0;
                     $allWeaknessesStr = 'Not Evaluated';
+                    $weaknessItems = [];
                 } else {
                     usort($empScoresArray, function ($a, $b) {
                         return $a['score'] <=> $b['score'];
