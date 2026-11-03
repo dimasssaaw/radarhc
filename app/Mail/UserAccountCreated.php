@@ -32,7 +32,7 @@ class UserAccountCreated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Informasi Akun Login SORA',
+            subject: 'SORA Account Login Information',
         );
     }
 

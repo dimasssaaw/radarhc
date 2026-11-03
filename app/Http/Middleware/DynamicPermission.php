@@ -48,7 +48,7 @@ class DynamicPermission
 
             // Cek apakah user punya permission tersebut
             if (! auth()->user()->can($permissionName)) {
-                abort(403, "Akses Ditolak. Anda tidak memiliki izin ($permissionName).");
+                abort(403, "Access Denied. You do not have permission ($permissionName).");
             }
         }
 

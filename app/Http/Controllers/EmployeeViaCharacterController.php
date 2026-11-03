@@ -26,7 +26,7 @@ class EmployeeViaCharacterController extends Controller implements HasMiddleware
 
         EmployeeViaCharacter::create($request->all());
 
-        return back()->with('success', 'Data Via Character berhasil ditambahkan.');
+        return back()->with('success', 'Via Character data added successfully.');
     }
 
     public function update(Request $request, $id)
@@ -39,7 +39,7 @@ class EmployeeViaCharacterController extends Controller implements HasMiddleware
         $item = EmployeeViaCharacter::findOrFail($id);
         $item->update($request->only(['overuse_strength', 'underuse_strength']));
 
-        return back()->with('success', 'Data Via Character berhasil diperbarui.');
+        return back()->with('success', 'Via Character data updated successfully.');
     }
 
     public function destroy($id)
@@ -47,6 +47,6 @@ class EmployeeViaCharacterController extends Controller implements HasMiddleware
         $item = EmployeeViaCharacter::findOrFail($id);
         $item->delete();
 
-        return back()->with('success', 'Data Via Character berhasil dihapus.');
+        return back()->with('success', 'Via Character data deleted successfully.');
     }
 }

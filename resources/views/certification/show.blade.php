@@ -62,10 +62,10 @@
         <table class="w-full text-left border-collapse" id="certTable">
             <thead class="text-xs text-gray-500 uppercase bg-gray-50/50">
                 <tr>
-                    <th class="px-6 py-4 font-semibold tracking-wider">Sertifikasi</th>
-                    <th class="px-6 py-4 font-semibold tracking-wider">Penerbit</th>
-                    <th class="px-6 py-4 font-semibold tracking-wider">Terbit</th>
-                    <th class="px-6 py-4 font-semibold tracking-wider">Kedaluwarsa</th>
+                    <th class="px-6 py-4 font-semibold tracking-wider">Certification</th>
+                    <th class="px-6 py-4 font-semibold tracking-wider">Issuer</th>
+                    <th class="px-6 py-4 font-semibold tracking-wider">Issued</th>
+                    <th class="px-6 py-4 font-semibold tracking-wider">Expiry</th>
                     <th class="px-6 py-4 font-semibold tracking-wider">Status</th>
                     <th class="px-6 py-4 font-semibold tracking-wider text-center">File</th>
                     @canany(['edit_certification', 'hapus_certification'])
@@ -89,17 +89,17 @@
                     <td class="px-6 py-4">
                         @if($cert->status_sertifikat === 'aktif')
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:shadow-sm transition-all">
-                                Aktif
+                                Active
                             </span>
                         @else
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:shadow-sm transition-all">
-                                Nonaktif
+                                Inactive
                             </span>
                         @endif
                     </td>
                     <td class="px-6 py-4 text-center">
                         @if($cert->lampiran_sertifikasi)
-                            <a href="{{ $cert->lampiran_sertifikasi }}" target="_blank" class="text-gray-400 hover:text-blue-500 hover:-translate-y-1 hover:drop-shadow-md inline-block transition-all duration-200" title="Lihat Lampiran">
+                            <a href="{{ $cert->lampiran_sertifikasi }}" target="_blank" class="text-gray-400 hover:text-blue-500 hover:-translate-y-1 hover:drop-shadow-md inline-block transition-all duration-200" title="View Attachment">
                                 <i class="fas fa-file-pdf text-lg"></i>
                             </a>
                         @else
@@ -118,10 +118,10 @@
                             
                             <!-- Delete -->
                             @can('hapus_certification')
-                            <form action="{{ route('certification.destroy', $cert->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus sertifikasi ini?');">
+                            <form action="{{ route('certification.destroy', $cert->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this certification?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-600 border border-gray-200 p-1.5 rounded-md hover:bg-red-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5" title="Hapus">
+                                <button type="submit" class="text-gray-400 hover:text-red-600 border border-gray-200 p-1.5 rounded-md hover:bg-red-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5" title="Delete">
                                     <i class="fas fa-trash-alt w-4 text-center"></i>
                                 </button>
                             </form>
@@ -135,8 +135,8 @@
                     <td colspan="{{ (auth()->user()->can('edit_certification') || auth()->user()->can('hapus_certification')) ? 7 : 6 }}" class="px-6 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-certificate text-4xl text-gray-300 mb-3"></i>
-                            <p class="font-medium text-gray-900">Belum ada sertifikasi</p>
-                            <p class="text-xs text-gray-500 mt-1">Tambahkan sertifikasi baru menggunakan tombol di atas.</p>
+                            <p class="font-medium text-gray-900">No certifications yet</p>
+                            <p class="text-xs text-gray-500 mt-1">Add a new certification using the button above.</p>
                         </div>
                     </td>
                 </tr>
@@ -158,8 +158,8 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h3 class="text-xl font-bold text-gray-900" id="modal-title">Tambah Sertifikasi</h3>
-                <p class="text-sm text-gray-500 mt-1">Tambahkan data sertifikasi baru</p>
+                <h3 class="text-xl font-bold text-gray-900" id="modal-title">Add Certification</h3>
+                <p class="text-sm text-gray-500 mt-1">Add new certification data</p>
             </div>
             <button type="button" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-colors" onclick="closeModal('addModal')">
                 <i class="fas fa-times text-lg text-center w-5 h-5 flex items-center justify-center"></i>
@@ -172,37 +172,37 @@
             <!-- Body -->
             <div class="p-6 overflow-y-auto flex-1 bg-white custom-scrollbar space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-gray-600 mb-1.5">Nama Sertifikasi</label>
-                    <input type="text" name="nama_sertifikasi" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200" placeholder="Contoh: Certified Financial Risk Manager (FRM)">
+                    <label class="block text-sm font-bold text-gray-600 mb-1.5">Certification Name</label>
+                    <input type="text" name="nama_sertifikasi" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200" placeholder="e.g. Certified Financial Risk Manager (FRM)">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Penerbit</label>
-                        <input type="text" name="penerbit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200" placeholder="Contoh: GARP">
+                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Issuer</label>
+                        <input type="text" name="penerbit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200" placeholder="e.g. GARP">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-600 mb-1.5">Status</label>
                         <select name="status_sertifikat" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border bg-white font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
-                            <option value="aktif">Aktif</option>
-                            <option value="nonaktif">Nonaktif</option>
+                            <option value="aktif">Active</option>
+                            <option value="nonaktif">Inactive</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Tanggal Terbit</label>
+                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Issue Date</label>
                         <input type="date" name="terbit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Tanggal Kedaluwarsa</label>
+                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Expiry Date</label>
                         <input type="date" name="kadaluarsa" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-bold text-gray-600 mb-1.5">File Sertifikat (PDF atau Gambar)</label>
+                    <label class="block text-sm font-bold text-gray-600 mb-1.5">Certificate File (PDF or Image)</label>
                     <input type="file" name="lampiran_sertifikasi" accept=".pdf,image/*" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border font-medium text-gray-700 bg-white hover:shadow-sm transition-all duration-200">
                 </div>
             </div>
@@ -210,7 +210,7 @@
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <button type="button" class="bg-white py-2 px-5 border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" onclick="closeModal('addModal')">Cancel</button>
-                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Simpan Perubahan</button>
+                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Save Certificate</button>
             </div>
         </form>
     </div>
@@ -224,8 +224,8 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h3 class="text-xl font-bold text-gray-900">Edit Sertifikasi</h3>
-                <p class="text-sm text-gray-500 mt-1">Ubah data sertifikasi karyawan</p>
+                <h3 class="text-xl font-bold text-gray-900">Edit Certification</h3>
+                <p class="text-sm text-gray-500 mt-1">Update employee certification data</p>
             </div>
             <button type="button" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" onclick="closeModal('editModal')">
                 <i class="fas fa-times text-lg flex items-center justify-center w-5 h-5 text-center"></i>
@@ -239,37 +239,37 @@
             <!-- Body -->
             <div class="p-6 overflow-y-auto flex-1 bg-white custom-scrollbar space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-gray-600 mb-1.5">Nama Sertifikasi</label>
+                    <label class="block text-sm font-bold text-gray-600 mb-1.5">Certification Name</label>
                     <input type="text" name="nama_sertifikasi" id="edit_nama" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Penerbit</label>
+                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Issuer</label>
                         <input type="text" name="penerbit" id="edit_penerbit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-600 mb-1.5">Status</label>
                         <select name="status_sertifikat" id="edit_status" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border bg-white font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
-                            <option value="aktif">Aktif</option>
-                            <option value="nonaktif">Nonaktif</option>
+                            <option value="aktif">Active</option>
+                            <option value="nonaktif">Inactive</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Tanggal Terbit</label>
+                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Issue Date</label>
                         <input type="date" name="terbit" id="edit_terbit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Tanggal Kedaluwarsa</label>
+                        <label class="block text-sm font-bold text-gray-600 mb-1.5">Expiry Date</label>
                         <input type="date" name="kadaluarsa" id="edit_kadaluarsa" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border font-medium text-gray-900 hover:shadow-sm transition-all duration-200">
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-bold text-gray-600 mb-1.5">File Sertifikat (PDF atau Gambar)</label>
+                    <label class="block text-sm font-bold text-gray-600 mb-1.5">Certificate File (PDF or Image)</label>
                     <input type="file" name="lampiran_sertifikasi" accept=".pdf,image/*" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border font-medium text-gray-700 bg-white hover:shadow-sm transition-all duration-200">
                 </div>
 
@@ -277,10 +277,10 @@
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 flex flex-col items-center justify-center text-gray-400 overflow-hidden relative hover:shadow-md transition-all duration-200">
                             <i class="fas fa-file-pdf text-2xl"></i>
-                            <a id="current_file_link" href="#" target="_blank" class="absolute inset-0 z-10" title="Lihat File"></a>
+                            <a id="current_file_link" href="#" target="_blank" class="absolute inset-0 z-10" title="View File"></a>
                         </div>
                         <button type="button" onclick="document.getElementById('hapus_lampiran_input').value = '1'; this.closest('#current_file_container').classList.add('hidden');" class="border border-gray-200 text-gray-700 font-bold text-xs px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-                            Hapus File
+                            Delete File
                         </button>
                         <input type="hidden" name="hapus_lampiran" id="hapus_lampiran_input" value="0">
                     </div>
@@ -290,7 +290,7 @@
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <button type="button" class="bg-white py-2 px-5 border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" onclick="closeModal('editModal')">Cancel</button>
-                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Simpan Perubahan</button>
+                <button type="submit" class="bg-[#06b6d4] hover:bg-[#0891b2] text-white py-2 px-5 rounded-lg shadow-sm text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">Save Changes</button>
             </div>
         </form>
     </div>
@@ -307,7 +307,7 @@
                 @csrf
                 <div class="bg-white px-6 pt-5 pb-6">
                     <div class="flex justify-between items-center mb-5">
-                        <h3 class="text-lg leading-6 font-bold text-gray-900">Upload Lampiran Sertifikasi</h3>
+                        <h3 class="text-lg leading-6 font-bold text-gray-900">Upload Certification Attachment</h3>
                         <button type="button" class="text-gray-400 hover:text-gray-500" onclick="closeModal('uploadModal')">
                             <i class="fas fa-times"></i>
                         </button>
@@ -315,7 +315,7 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">File PDF (Maks 10MB) <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PDF File (Max 10MB) <span class="text-red-500">*</span></label>
                             <input type="file" name="file" required accept=".pdf" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm p-2 border">
                         </div>
                     </div>

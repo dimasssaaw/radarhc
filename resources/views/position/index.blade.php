@@ -33,8 +33,8 @@
             <thead class="text-[10px] text-white uppercase bg-[#06b6d4] shadow-md relative z-10">
                 <tr>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center w-16">No</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider">Nama Jabatan</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Jumlah Karyawan</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider">Position Name</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Total Employees</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center w-32">Actions</th>
                 </tr>
             </thead>
@@ -45,7 +45,7 @@
                     <td class="px-5 py-4 font-medium text-gray-800">{{ $pos->nama_jabatan }}</td>
                     <td class="px-5 py-4 text-center">
                         <span class="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                            {{ $pos->karyawan()->count() }} Karyawan
+                            {{ $pos->karyawan()->count() }} Employees
                         </span>
                     </td>
                     <td class="px-5 py-4 text-center">
@@ -53,10 +53,10 @@
                             <button onclick="document.getElementById('editPosModal-{{ $pos->id }}').classList.remove('hidden')" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit">
                                 <i class="fas fa-edit w-4"></i>
                             </button>
-                            <form action="{{ route('position.destroy', $pos->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jabatan ini?');">
+                            <form action="{{ route('position.destroy', $pos->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this position?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Hapus">
+                                <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Delete">
                                     <i class="fas fa-trash-alt w-4"></i>
                                 </button>
                             </form>
@@ -68,8 +68,8 @@
                     <td colspan="4" class="px-5 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-briefcase text-4xl text-gray-300 mb-3"></i>
-                            <p class="font-medium text-gray-900">Belum ada data jabatan</p>
-                            <p class="text-xs text-gray-400 mt-1">Silakan klik tombol Tambah Position</p>
+                            <p class="font-medium text-gray-900">No position data available yet</p>
+                            <p class="text-xs text-gray-400 mt-1">Please click the Add Position button</p>
                         </div>
                     </td>
                 </tr>
@@ -101,9 +101,9 @@
             <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-5 border-b border-gray-100 flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-bold text-gray-900" id="modal-title">
-                        Tambah Jabatan
+                        Add Position
                     </h3>
-                    <p class="text-sm text-gray-500 mt-1">Masukkan nama jabatan baru.</p>
+                    <p class="text-sm text-gray-500 mt-1">Enter new position name.</p>
                 </div>
                 <button type="button" onclick="document.getElementById('addPosModal').classList.add('hidden')" class="bg-gray-50 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none transition-all">
                     <span class="sr-only">Close</span>
@@ -115,8 +115,8 @@
                 @csrf
                 <div class="bg-white px-6 pt-5 pb-6 sm:p-8 sm:pt-6">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Jabatan <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama_jabatan" value="{{ old('nama_jabatan') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border" placeholder="cth. Manager">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Position Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_jabatan" value="{{ old('nama_jabatan') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border" placeholder="e.g. Manager">
                         @error('nama_jabatan')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -124,10 +124,10 @@
                 </div>
                 <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end gap-3 sm:px-8">
                     <button type="button" onclick="document.getElementById('addPosModal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md shadow-sky-500/30 px-6 py-2.5 bg-[#0ea5e9] text-sm font-medium text-white hover:bg-[#0284c7] focus:outline-none transition-all sm:w-auto flex items-center gap-2">
-                        <i class="fas fa-save"></i> Simpan
+                        <i class="fas fa-save"></i> Save
                     </button>
                 </div>
             </form>
@@ -147,9 +147,9 @@
             <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-5 border-b border-gray-100 flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-bold text-gray-900">
-                        Edit Jabatan
+                        Edit Position
                     </h3>
-                    <p class="text-sm text-gray-500 mt-1">Ubah nama jabatan.</p>
+                    <p class="text-sm text-gray-500 mt-1">Modify position name.</p>
                 </div>
                 <button type="button" onclick="document.getElementById('editPosModal-{{ $pos->id }}').classList.add('hidden')" class="bg-gray-50 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none transition-all">
                     <span class="sr-only">Close</span>
@@ -163,8 +163,8 @@
                 <input type="hidden" name="id" value="{{ $pos->id }}">
                 <div class="bg-white px-6 pt-5 pb-6 sm:p-8 sm:pt-6">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Jabatan <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama_jabatan" value="{{ old('nama_jabatan', $pos->nama_jabatan) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border" placeholder="cth. Manager">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Position Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_jabatan" value="{{ old('nama_jabatan', $pos->nama_jabatan) }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border" placeholder="e.g. Manager">
                         @if(old('_method') == 'PUT' && old('id') == $pos->id)
                             @error('nama_jabatan')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -174,10 +174,10 @@
                 </div>
                 <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end gap-3 sm:px-8">
                     <button type="button" onclick="document.getElementById('editPosModal-{{ $pos->id }}').classList.add('hidden')" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md shadow-sky-500/30 px-6 py-2.5 bg-[#0ea5e9] text-sm font-medium text-white hover:bg-[#0284c7] focus:outline-none transition-all sm:w-auto flex items-center gap-2">
-                        <i class="fas fa-save"></i> Perbarui
+                        <i class="fas fa-save"></i> Save Changes
                     </button>
                 </div>
             </form>

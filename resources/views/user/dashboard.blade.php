@@ -12,7 +12,7 @@
     <!-- Status Kaderisasi Anda -->
     <div class="card-3d bg-blue-50 rounded-2xl border border-blue-100 p-6">
         <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xs font-semibold text-gray-500">Status Kaderisasi Anda</h3>
+            <h3 class="text-xs font-semibold text-gray-500">Your Cadre Status</h3>
             <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                 <i class="far fa-file-alt text-sm"></i>
             </div>
@@ -32,7 +32,7 @@
     <!-- Anggota -->
     <div class="card-3d bg-purple-50 rounded-2xl border border-purple-100 p-6">
         <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xs font-semibold text-gray-500">Anggota</h3>
+            <h3 class="text-xs font-semibold text-gray-500">Members</h3>
             <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
                 <i class="fas fa-users text-sm"></i>
             </div>
@@ -43,7 +43,7 @@
     <!-- Sertifikasi -->
     <div class="card-3d bg-orange-50 rounded-2xl border border-orange-100 p-6">
         <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xs font-semibold text-gray-500">Sertifikasi</h3>
+            <h3 class="text-xs font-semibold text-gray-500">Certifications</h3>
             <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
                 <i class="far fa-check-circle text-sm"></i>
             </div>
@@ -54,7 +54,7 @@
     <!-- Kader Siap -->
     <div class="card-3d bg-emerald-50 rounded-2xl border border-emerald-100 p-6">
         <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xs font-semibold text-gray-500">Kader Siap (R3)</h3>
+            <h3 class="text-xs font-semibold text-gray-500">Ready Cadres (R3)</h3>
             <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
                 <i class="far fa-check-circle text-sm"></i>
             </div>
@@ -65,8 +65,8 @@
 
 <div class="card-3d bg-white rounded-2xl border border-gray-100 p-6 overflow-hidden">
     <div class="mb-6">
-        <h2 class="text-lg font-bold text-gray-900">Tim {{ $karyawan->department?->nama_departemen ?? 'Departemen' }}</h2>
-        <p class="text-xs text-gray-500 mt-1">Ringkasan anggota & kepala tim — buka Employee Journey untuk lihat laporan kinerja & roadmap</p>
+        <h2 class="text-lg font-bold text-gray-900">{{ $karyawan->department?->nama_departemen ?? 'Department' }} Team</h2>
+        <p class="text-xs text-gray-500 mt-1">Team members and head summary &mdash; open Employee Journey to view performance reports &amp; roadmap</p>
     </div>
     
         <table class="w-full text-left border-collapse">
@@ -137,7 +137,7 @@
                                     <i class="fas fa-id-card text-sm"></i>
                                 </a>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 shadow-md z-50">
-                                    Lihat Employee Journey
+                                    View Employee Journey
                                     <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-800 rotate-45"></div>
                                 </div>
                             </div>

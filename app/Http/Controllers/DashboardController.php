@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Idp;
 use App\Models\IdpPenilain;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
@@ -95,25 +96,69 @@ class DashboardController extends Controller
             'unit_head_group_head' => ['unit head', 'Unit Head', 'group head', 'Group Head'],
         ];
 
+        // Fetch all distinct years from IDPs that have penilaian data
+        $availableYears = Idp::whereHas('penilaian')
+            ->whereNotNull('tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun')
+            ->toArray();
+
+        // Selected year filter: 'latest' (default) or a specific year
+        $selectedYear = $request->query('idp_year', 'latest');
+
         $IDP_LEVEL_COMPETENCY = [];
         $IDP_LEVEL_EMPLOYEES = [];
 
         foreach ($compMaps as $level => $map) {
             $dbJabatan = $jabatanLookup[$level];
 
-            // Get all idp penilaian for this level, latest first
-            $rawRecords = IdpPenilain::whereHas('idp.karyawan', function ($q) use ($dbJabatan) {
+            // Get idp penilaian for this level, latest first
+            $query = IdpPenilain::whereHas('idp.karyawan', function ($q) use ($dbJabatan) {
                 $q->whereHas('position', function ($qPos) use ($dbJabatan) {
                     $qPos->whereIn('nama_jabatan', $dbJabatan);
                 });
-            })->with('idp.karyawan.department')->orderBy('id', 'desc')->get();
+            })->with(['idp.karyawan.department', 'idp.karyawan.position']);
 
-            // Unique latest record per employee
-            $penilaianRecords = $rawRecords->unique(function ($item) {
+            // Apply year filter if specific year selected
+            if ($selectedYear !== 'latest' && ! empty($selectedYear)) {
+                $query->whereHas('idp', function ($q) use ($selectedYear) {
+                    $q->where('tahun', $selectedYear);
+                });
+            }
+
+            $rawRecords = $query->orderBy('id', 'desc')->get();
+
+            // Prioritize records that actually have filled evaluation scores over empty ones
+            $sortedRecords = $rawRecords->sortByDesc(function ($item) use ($map) {
+                $hasScore = false;
+                foreach ($map as $col) {
+                    if ($item->$col !== null && $item->$col !== '') {
+                        $hasScore = true;
+                        break;
+                    }
+                }
+
+                return ($hasScore ? 1000000 : 0) + $item->id;
+            });
+
+            // Unique record per employee
+            $penilaianRecords = $sortedRecords->unique(function ($item) {
                 return $item->idp ? $item->idp->id_karyawan : $item->id;
             });
 
-            $totalEmployees = $penilaianRecords->count();
+            // Only consider records that have at least one score evaluated
+            $evaluatedRecords = $penilaianRecords->filter(function ($item) use ($map) {
+                foreach ($map as $col) {
+                    if ($item->$col !== null && $item->$col !== '') {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+
+            $totalEmployees = $evaluatedRecords->count();
 
             // Calculate aggregate competency scores
             $compAverages = [];
@@ -121,13 +166,13 @@ class DashboardController extends Controller
             $itemsCount = count($map);
 
             foreach ($map as $label => $column) {
-                $avg = $totalEmployees > 0 ? $penilaianRecords->avg($column) : 0;
+                $avg = $totalEmployees > 0 ? $evaluatedRecords->avg($column) : 0;
                 $compAverages[] = [
                     'label' => $label,
-                    'score' => round($avg, 2),
+                    'score' => round($avg ?? 0, 2),
                     'target' => 5.0,
                 ];
-                $allScoresSum += $avg;
+                $allScoresSum += ($avg ?? 0);
             }
 
             $overallAvg = $itemsCount > 0 ? ($allScoresSum / $itemsCount) : 0;
@@ -149,7 +194,7 @@ class DashboardController extends Controller
 
             // Calculate per employee details
             $employeesList = [];
-            foreach ($penilaianRecords as $record) {
+            foreach ($evaluatedRecords as $record) {
                 $emp = $record->idp ? $record->idp->karyawan : null;
                 if (! $emp) {
                     continue;
@@ -228,6 +273,8 @@ class DashboardController extends Controller
                     'nama' => $emp->nama,
                     'foto' => $emp->foto ? asset('storage/'.$emp->foto) : null,
                     'department' => $emp->department ? $emp->department->nama_departemen : '-',
+                    'tahun' => $record->idp?->tahun,
+                    'periode' => $record->idp?->periode,
                     'average_score' => round($empAvg, 2),
                     'weakest_competency' => $weakestLabel,
                     'weakest_score' => round($weakestVal, 2),
@@ -239,13 +286,178 @@ class DashboardController extends Controller
             $IDP_LEVEL_EMPLOYEES[$level] = $employeesList;
         }
 
-        // Stagnasi Kaderisasi
-        // Stagnasi Kaderisasi
-        // Karyawan yang sudah 2 tahun atau lebih di status yang sama meski telah mengikuti program
-        $stagnasiWarnings = Karyawan::where('updated_at', '<=', now()->subYears(2))
-            ->where(function ($q) {
-                $q->has('idps')->orHas('mentorings')->orHas('trainings')->orHas('assessmentReports');
-            })->with('department')->get();
+        // Stagnasi Kaderisasi: Penilaian tahunan (setahun sekali), kondisi 2 tahun terakhir tidak ada peningkatan nilai & status readiness tidak ada perubahan, serta kendala pada Training/Mentoring
+        $stagnasiWarnings = [];
+        $allEmployees = Karyawan::with([
+            'department',
+            'position',
+            'idps' => function ($q) {
+                $q->with('penilaian')->orderBy('tahun', 'asc');
+            },
+            'assessmentReports' => function ($q) {
+                $q->orderBy('tahun', 'asc');
+            },
+            'mentorings' => function ($q) {
+                $q->orderBy('tahun', 'desc')->orderBy('periode', 'desc')->orderBy('id', 'desc');
+            },
+            'trainings',
+            'riwayatTrainings',
+        ])->get();
+
+        foreach ($allEmployees as $karyawan) {
+            $yearlyScores = [];
+
+            // 1. Dari IDP tahunan
+            foreach ($karyawan->idps as $idp) {
+                if (! empty($idp->tahun) && $idp->penilaian) {
+                    $tahun = (int) $idp->tahun;
+                    $attrs = $idp->penilaian->getAttributes();
+                    $sum = 0;
+                    $cnt = 0;
+                    foreach ($attrs as $col => $val) {
+                        if (! in_array($col, ['id', 'id_idp', 'id_karyawan', 'id_penilain', 'created_at', 'updated_at']) && is_numeric($val) && (float) $val > 0) {
+                            $sum += (float) $val;
+                            $cnt++;
+                        }
+                    }
+                    if ($cnt > 0) {
+                        $yearlyScores[$tahun]['idp'] = round($sum / $cnt, 2);
+                    }
+                }
+            }
+
+            // 2. Dari Assessment Report tahunan
+            foreach ($karyawan->assessmentReports as $ar) {
+                if (! empty($ar->tahun)) {
+                    $tahun = (int) $ar->tahun;
+                    $attrs = $ar->toArray();
+                    $sum = 0;
+                    $cnt = 0;
+                    foreach ($attrs as $col => $val) {
+                        if (! in_array($col, ['id', 'id_karyawan', 'tahun', 'periode', 'provider', 'created_at', 'updated_at']) && is_numeric($val) && (float) $val > 0) {
+                            $sum += (float) $val;
+                            $cnt++;
+                        }
+                    }
+                    if ($cnt > 0) {
+                        $yearlyScores[$tahun]['ar'] = round($sum / $cnt, 2);
+                    }
+                }
+            }
+
+            // Hitung rata-rata penilaian per tahun
+            $yearlyAverages = [];
+            foreach ($yearlyScores as $yr => $types) {
+                $yearlyAverages[$yr] = round(array_sum($types) / count($types), 2);
+            }
+            ksort($yearlyAverages);
+
+            // Evaluasi 2 tahun terakhir penilaian
+            $years = array_keys($yearlyAverages);
+            if (count($years) >= 2) {
+                $prevYear = $years[count($years) - 2];
+                $latestYear = $years[count($years) - 1];
+
+                $prevScore = $yearlyAverages[$prevYear];
+                $latestScore = $yearlyAverages[$latestYear];
+
+                // Kondisi 1: Nilai penilaian 2 tahun terakhir tidak ada peningkatan / stagnan
+                $isScoreStagnant = ($latestScore <= $prevScore);
+
+                // Kondisi 2: Status Readiness tidak ada perubahan saat penilaian dilakukan
+                $rawReadiness = strtolower(trim((string) $karyawan->readiness));
+                $isReadinessStagnant = in_array($rawReadiness, ['not_ready', 'r5 ready', 'r4 ready', 'r3 ready', 'r2 ready', 'r1 ready', '']);
+
+                // Kondisi 3 (Opsi 2): Terdapat kendala pada Program Training ATAU Mentoring
+                // 3a. Evaluasi Training
+                $riwayats = $karyawan->riwayatTrainings;
+                $trainingModel = $karyawan->trainings->first();
+
+                $hasTrainingIssue = false;
+                $trainingReason = '';
+
+                if ($riwayats->isNotEmpty()) {
+                    $hasRemedial = $riwayats->contains('status_training', 'remedial');
+                    $hasIncompleteEva = $riwayats->contains(function ($r) {
+                        return $r->eva1_status !== 'completed' || $r->eva2_status !== 'completed' || $r->eva3_status !== 'completed';
+                    });
+
+                    if ($hasRemedial) {
+                        $hasTrainingIssue = true;
+                        $trainingReason = 'Training Remedial';
+                    } elseif ($hasIncompleteEva) {
+                        $hasTrainingIssue = true;
+                        $trainingReason = 'Evaluasi Training Belum Tuntas';
+                    }
+                }
+
+                // Cek target modul jika ada target
+                if ($trainingModel) {
+                    $targetMandatory = (int) ($trainingModel->target_mandatory ?? 0);
+                    $targetSkill = (int) ($trainingModel->target_skill ?? 0);
+                    $targetManagerial = (int) ($trainingModel->target_managerial ?? 0);
+                    $totalTarget = $targetMandatory + $targetSkill + $targetManagerial;
+
+                    if ($totalTarget > 0) {
+                        $completedCount = $riwayats->filter(function ($r) {
+                            return $r->eva1_status === 'completed' && $r->eva2_status === 'completed' && $r->eva3_status === 'completed';
+                        })->count();
+
+                        if ($completedCount < $totalTarget) {
+                            $hasTrainingIssue = true;
+                            if (empty($trainingReason)) {
+                                $trainingReason = "Target Training {$completedCount}/{$totalTarget}";
+                            }
+                        }
+                    }
+                }
+
+                // 3b. Evaluasi Mentoring
+                $hasMentoringIssue = false;
+                $mentoringReason = '';
+
+                if ($karyawan->mentorings->isNotEmpty()) {
+                    $latestMentoring = $karyawan->mentorings->first(function ($m) {
+                        return ! empty($m->competency) || ! empty($m->commitment);
+                    }) ?? $karyawan->mentorings->first();
+
+                    $comp = $latestMentoring->competency ?? null;
+                    $comm = $latestMentoring->commitment ?? null;
+                    $status = $latestMentoring->status_mentoring ?? null;
+
+                    if ($comp === 'Rendah' && $comm === 'Rendah') {
+                        $hasMentoringIssue = true;
+                        $mentoringReason = 'Mentoring: Rendah-Rendah (Kuadran BL)';
+                    } elseif ($comp === 'Rendah') {
+                        $hasMentoringIssue = true;
+                        $mentoringReason = 'Mentoring: Kompetensi Rendah';
+                    } elseif ($comm === 'Rendah') {
+                        $hasMentoringIssue = true;
+                        $mentoringReason = 'Mentoring: Komitmen Rendah';
+                    } elseif ($status !== 'completed') {
+                        $hasMentoringIssue = true;
+                        $mentoringReason = 'Mentoring Belum Selesai';
+                    }
+                } else {
+                    $hasMentoringIssue = true;
+                    $mentoringReason = 'Belum Ada Mentoring';
+                }
+
+                $hasDevIssue = ($hasTrainingIssue || $hasMentoringIssue);
+
+                if ($isScoreStagnant && $isReadinessStagnant && $hasDevIssue) {
+                    $karyawan->stagnasi_prev_year = $prevYear;
+                    $karyawan->stagnasi_latest_year = $latestYear;
+                    $karyawan->stagnasi_prev_score = $prevScore;
+                    $karyawan->stagnasi_latest_score = $latestScore;
+
+                    $reasons = array_filter([$trainingReason, $mentoringReason]);
+                    $karyawan->stagnasi_indicator = ! empty($reasons) ? implode(' • ', $reasons) : 'Perlu Evaluasi Pembinaan';
+
+                    $stagnasiWarnings[] = $karyawan;
+                }
+            }
+        }
 
         return view('dashboard.index', compact(
             'area',
@@ -257,6 +469,8 @@ class DashboardController extends Controller
             'genZ',
             'genX',
             'havStats',
+            'availableYears',
+            'selectedYear',
             'IDP_LEVEL_COMPETENCY',
             'IDP_LEVEL_EMPLOYEES',
             'stagnasiWarnings'

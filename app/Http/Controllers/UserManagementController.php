@@ -105,10 +105,10 @@ class UserManagementController extends Controller implements HasMiddleware
         try {
             Mail::to($user->email)->send(new UserAccountCreated($user, $rawPassword));
         } catch (\Exception $e) {
-            return redirect()->route('user-management.index')->with('success', 'User berhasil ditambahkan, namun email gagal dikirim (Cek konfigurasi SMTP).');
+            return redirect()->route('user-management.index')->with('success', 'User added successfully, but email failed to send (Check SMTP configuration).');
         }
 
-        return redirect()->route('user-management.index')->with('success', 'User berhasil ditambahkan dan email telah dikirim.');
+        return redirect()->route('user-management.index')->with('success', 'User added successfully and notification email has been sent.');
     }
 
     public function edit($id, Request $request)
@@ -189,13 +189,13 @@ class UserManagementController extends Controller implements HasMiddleware
             try {
                 Mail::to($user_management->email)->send(new UserPasswordReset($user_management, $rawPassword));
 
-                return redirect()->route('user-management.index')->with('success', 'User berhasil diperbarui dan notifikasi password baru telah dikirim ke email karyawan.');
+                return redirect()->route('user-management.index')->with('success', 'User updated successfully and new password notification has been sent to employee\'s email.');
             } catch (\Exception $e) {
-                return redirect()->route('user-management.index')->with('success', 'User berhasil diperbarui, namun email reset password gagal dikirim (Cek konfigurasi SMTP).');
+                return redirect()->route('user-management.index')->with('success', 'User updated successfully, but reset password email failed to send (Check SMTP configuration).');
             }
         }
 
-        return redirect()->route('user-management.index')->with('success', 'User berhasil diperbarui.');
+        return redirect()->route('user-management.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy($id)
@@ -203,6 +203,6 @@ class UserManagementController extends Controller implements HasMiddleware
         $user_management = User::findOrFail($id);
         $user_management->delete();
 
-        return redirect()->route('user-management.index')->with('success', 'User berhasil dihapus.');
+        return redirect()->route('user-management.index')->with('success', 'User deleted successfully.');
     }
 }

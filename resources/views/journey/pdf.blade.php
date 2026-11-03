@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -775,7 +775,7 @@
                     <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                     <rect x="6" y="14" width="12" height="8"></rect>
                 </svg>
-                Cetak / Simpan PDF
+                Print / Save PDF
             </button>
         </div>
     </div>
@@ -787,7 +787,7 @@
             try {
                 $start = \Carbon\Carbon::parse($karyawan->masuk_kerja);
                 $diff = $start->diff(\Carbon\Carbon::now());
-                $masaKerja = ($diff->y > 0 ? $diff->y . ' Tahun ' : '') . $diff->m . ' Bulan';
+                $masaKerja = ($diff->y > 0 ? $diff->y . ' Yrs ' : '') . $diff->m . ' Mos';
             } catch (\Exception $e) {
                 $masaKerja = $karyawan->masuk_kerja;
             }
@@ -859,17 +859,17 @@
             <div class="header">
                 <div class="header-title">
                     <h1>Individual Talent Dossier & Journey Report</h1>
-                    <p>Sistem Manajemen Talenta & Pengembangan Karier • PT Radar Solusi HC</p>
+                    <p>Talent Management & Career Development System &bull; PT Radar Solusi HC</p>
                 </div>
                 <div style="text-align: right;">
                     <span class="badge-confidential">Strictly Confidential</span>
-                    <div style="font-size: 8px; color: #94a3b8; margin-top: 3px;">Dicetak: {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}</div>
+                    <div style="font-size: 8px; color: #94a3b8; margin-top: 3px;">Printed on: {{ \Carbon\Carbon::now()->format('d M Y') }}</div>
                 </div>
             </div>
 
             <!-- 1. Profil Karyawan & Key Talent Metrics -->
             <div class="section-box">
-                <div class="section-title">1. Profil Karyawan </div>
+                <div class="section-title">1. Employee Profile</div>
                 <div class="profile-grid">
                     <div class="avatar-box">
                         @if($karyawan->foto)
@@ -881,7 +881,7 @@
                     <div class="info-col">
                         <table>
                             <tr>
-                                <td class="label">Nama</td>
+                                <td class="label">Name</td>
                                 <td class="val">: {{ $karyawan->nama }}</td>
                             </tr>
                             <tr>
@@ -889,11 +889,11 @@
                                 <td class="val">: {{ $karyawan->npk }}</td>
                             </tr>
                             <tr>
-                                <td class="label">Jabatan</td>
+                                <td class="label">Position</td>
                                 <td class="val">: {{ $karyawan->position?->nama_jabatan ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="label">Departemen</td>
+                                <td class="label">Department</td>
                                 <td class="val">: {{ $karyawan->department?->nama_departemen ?? '-' }}</td>
                             </tr>
                         </table>
@@ -905,15 +905,15 @@
                                 <td class="val">: {{ $karyawan->grade ? 'Grade ' . $karyawan->grade : '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="label">Pendidikan</td>
+                                <td class="label">Education</td>
                                 <td class="val">: {{ $karyawan->pendidikan ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="label">Tgl Masuk</td>
-                                <td class="val">: {{ $karyawan->masuk_kerja ? \Carbon\Carbon::parse($karyawan->masuk_kerja)->translatedFormat('d F Y') : '-' }}</td>
+                                <td class="label">Join Date</td>
+                                <td class="val">: {{ $karyawan->masuk_kerja ? \Carbon\Carbon::parse($karyawan->masuk_kerja)->format('d F Y') : '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="label">Masa Kerja</td>
+                                <td class="label">Length of Service</td>
                                 <td class="val">: {{ $masaKerja }}</td>
                             </tr>
                         </table>
@@ -952,27 +952,27 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#16a34a">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
-                    Keputusan Assessor: {{ $activePk?->keputusan ? strtoupper($activePk->keputusan) : 'BELUM ADA KEPUTUSAN' }}
+                    Assessor Decision: {{ $activePk?->keputusan ? strtoupper($activePk->keputusan) : 'NO DECISION YET' }}
                 </div>
                 <div class="notes">
                     @if($activePk?->catatan_rekomendasi_atasan)
                         "{{ $activePk->catatan_rekomendasi_atasan }}"
                     @else
-                        <span style="color: #94a3b8; font-style: italic;">Belum ada catatan rekomendasi.</span>
+                        <span style="color: #94a3b8; font-style: italic;">No recommendation notes recorded yet.</span>
                     @endif
                 </div>
             </div>
 
             <!-- 3. Rekam Jejak Karier (Timeline Milestones) -->
             <div class="section-box">
-                <div class="section-title">3. Rekam Jejak Posisi & Perjalanan Karier</div>
+                <div class="section-title">3. Position Track Record & Career Journey</div>
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th style="width: 50px; text-align: center;">Tahun</th>
-                            <th style="text-align: center;">Posisi / Jabatan</th>
-                            <th style="text-align: center;">Departemen</th>
-                            <th style="text-align: center;">Tipe Milestone</th>
+                            <th style="width: 50px; text-align: center;">Year</th>
+                            <th style="text-align: center;">Position / Title</th>
+                            <th style="text-align: center;">Department</th>
+                            <th style="text-align: center;">Milestone Type</th>
                             <th style="width: 95px; text-align: center;">Status</th>
                         </tr>
                     </thead>
@@ -987,20 +987,20 @@
                                 @endif
                             </td>
                             <td style="text-align: center;">{{ $pk->department?->nama_departemen ?? '-' }}</td>
-                            <td style="text-align: center;">{{ $pk->tipe_milestone == 'aktif' ? 'Awal Bergabung' : ($pk->tipe_milestone == 'tetap' ? 'Tetap di Posisi' : ucwords($pk->tipe_milestone)) }}</td>
+                            <td style="text-align: center;">{{ $pk->tipe_milestone == 'aktif' ? 'Initial Join' : ($pk->tipe_milestone == 'tetap' ? 'Stay in Role' : ucwords($pk->tipe_milestone)) }}</td>
                             <td style="text-align: center;">
                                 @if($pk->status_pencapaian == 'aktif/tercapai')
-                                    <span class="status-badge status-active">Aktif Saat Ini</span>
+                                    <span class="status-badge status-active">Current Active</span>
                                 @elseif($pk->status_pencapaian == 'proyeksi/target')
-                                    <span class="status-badge status-target">Proyeksi</span>
+                                    <span class="status-badge status-target">Projection</span>
                                 @else
-                                    <span class="status-badge status-done">Tercapai</span>
+                                    <span class="status-badge status-done">Completed</span>
                                 @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; color: #94a3b8; padding: 8px;">Belum ada data rekam jejak karier tercatat.</td>
+                            <td colspan="5" style="text-align: center; color: #94a3b8; padding: 8px;">No career track record recorded yet.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -1009,48 +1009,48 @@
 
             <!-- 4. Kesiapan Pelatihan (Training Evaluation) - Dipindahkan ke Halaman 1 agar layout terisi proporsional -->
             <div class="section-box">
-                <div class="section-title">4. Kesiapan Pelatihan (Training Evaluation)</div>
+                <div class="section-title">4. Training Readiness (Training Evaluation)</div>
                 <table class="custom-table" style="margin-top: 0;">
                     <thead>
                         <tr>
-                            <th>Kategori Training</th>
+                            <th>Training Category</th>
                             <th style="text-align: center; width: 15%;">Target</th>
-                            <th style="text-align: center; width: 15%;">Selesai</th>
-                            <th style="text-align: center; width: 18%;">Pencapaian</th>
+                            <th style="text-align: center; width: 15%;">Completed</th>
+                            <th style="text-align: center; width: 18%;">Achievement</th>
                             <th style="text-align: center; width: 20%;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>Mandatory Training</strong></td>
-                            <td style="text-align: center;">{{ $target_mandatory }} Modul</td>
-                            <td style="text-align: center;">{{ $c_mandatory }} Modul</td>
+                            <td style="text-align: center;">{{ $target_mandatory }} Modules</td>
+                            <td style="text-align: center;">{{ $c_mandatory }} Modules</td>
                             <td style="text-align: center; font-weight: 800; color: #16a34a;">{{ $achieveMandatory }}%</td>
                             <td style="text-align: center;">
                                 <span class="status-badge {{ $achieveMandatory >= 100 ? 'status-active' : 'status-target' }}">
-                                    {{ $achieveMandatory >= 100 ? 'Memenuhi' : 'On Progress' }}
+                                    {{ $achieveMandatory >= 100 ? 'Fulfilled' : 'On Progress' }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td><strong>Skill & Functional Training</strong></td>
-                            <td style="text-align: center;">{{ $target_skill }} Modul</td>
-                            <td style="text-align: center;">{{ $c_skill }} Modul</td>
+                            <td style="text-align: center;">{{ $target_skill }} Modules</td>
+                            <td style="text-align: center;">{{ $c_skill }} Modules</td>
                             <td style="text-align: center; font-weight: 800; color: #0284c7;">{{ $achieveSkill }}%</td>
                             <td style="text-align: center;">
                                 <span class="status-badge {{ $achieveSkill >= 100 ? 'status-active' : 'status-target' }}">
-                                    {{ $achieveSkill >= 100 ? 'Memenuhi' : 'On Progress' }}
+                                    {{ $achieveSkill >= 100 ? 'Fulfilled' : 'On Progress' }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td><strong>Managerial & Leadership Training</strong></td>
-                            <td style="text-align: center;">{{ $target_managerial }} Modul</td>
-                            <td style="text-align: center;">{{ $c_managerial }} Modul</td>
+                            <td style="text-align: center;">{{ $target_managerial }} Modules</td>
+                            <td style="text-align: center;">{{ $c_managerial }} Modules</td>
                             <td style="text-align: center; font-weight: 800; color: #16a34a;">{{ $achieveManagerial }}%</td>
                             <td style="text-align: center;">
                                 <span class="status-badge {{ $achieveManagerial >= 100 ? 'status-active' : 'status-target' }}">
-                                    {{ $achieveManagerial >= 100 ? 'Memenuhi' : 'On Progress' }}
+                                    {{ $achieveManagerial >= 100 ? 'Fulfilled' : 'On Progress' }}
                                 </span>
                             </td>
                         </tr>
@@ -1062,15 +1062,15 @@
             <div class="grid-2col" style="margin-bottom: 0;">
                 <!-- Assessment Score Bars -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">5. Ringkasan Skor Assessment {{ $activeReport ? '('.($activeReport->tahun ?? '-').($activeReport->periode ? ' P'.$activeReport->periode : '').')' : '' }}</div>
+                    <div class="section-title">5. Assessment Score Summary {{ $activeReport ? '('.($activeReport->tahun ?? '-').($activeReport->periode ? ' P'.$activeReport->periode : '').')' : '' }}</div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="font-size: 8.2px; color: #64748b; font-weight: 600;">Rata-rata Skor:</span>
+                        <span style="font-size: 8.2px; color: #64748b; font-weight: 600;">Average Score:</span>
                         <span style="font-size: 12px; font-weight: 800; color: #0284c7;">{{ number_format($avgScore, 1) }} <span style="font-size: 8.5px; color: #64748b; font-weight: 600;">/ 5.0</span></span>
                     </div>
 
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>1. Kecerdasan Umum</span>
+                            <span>1. General Intelligence</span>
                             <span style="color: #0284c7; font-weight: 800;">{{ number_format($kb, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1080,7 +1080,7 @@
 
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>2. Sistematika Kerja</span>
+                            <span>2. Work Systematics</span>
                             <span style="color: #16a34a; font-weight: 800;">{{ number_format($sk, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1090,7 +1090,7 @@
 
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>3. Kepemimpinan</span>
+                            <span>3. Leadership</span>
                             <span style="color: #9333ea; font-weight: 800;">{{ number_format($kp_lead, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1100,7 +1100,7 @@
 
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>4. Integritas</span>
+                            <span>4. Integrity</span>
                             <span style="color: #ea580c; font-weight: 800;">{{ number_format($kp_integ, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1111,7 +1111,7 @@
 
                 <!-- Radar Chart IDP -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">6. Pemetaan Kompetensi IDP (Radar) {{ $activeIdp ? '('.($activeIdp->tahun ?? '-').($activeIdp->periode ? ' P'.$activeIdp->periode : '').')' : '' }}</div>
+                    <div class="section-title">6. IDP Competency Mapping (Radar) {{ $activeIdp ? '('.($activeIdp->tahun ?? '-').($activeIdp->periode ? ' P'.$activeIdp->periode : '').')' : '' }}</div>
                     <div class="radar-container">
                         @php
                             $activeIdp = $activeIdp ?? $karyawan->idps->sortByDesc('created_at')->first();
@@ -1241,7 +1241,7 @@
                             </svg>
                         @else
                             <div style="text-align: center; color: #94a3b8; font-style: italic; font-size: 8.8px; padding: 42px 10px;">
-                                Belum ada data penilaian IDP tercatat.
+                                No IDP assessment data recorded yet.
                             </div>
                         @endif
                     </div>
@@ -1252,7 +1252,7 @@
             <div class="grid-2col" style="margin-top: 6px; margin-bottom: 6px;">
                 <!-- Sertifikasi Kompetensi -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">7. Sertifikasi Kompetensi</div>
+                    <div class="section-title">7. Competency Certifications</div>
                     @forelse($karyawan->certifications->take(2) as $cert)
                     <div class="cert-item">
                         <div class="cert-icon">
@@ -1262,15 +1262,15 @@
                         </div>
                         <div class="cert-info">
                             <div class="cert-title">{{ $cert->nama_sertifikasi }}</div>
-                            <div class="cert-sub">Penerbit: {{ $cert->penerbit }} &bull; Terbit: {{ $cert->terbit ? \Carbon\Carbon::parse($cert->terbit)->format('M Y') : '-' }}</div>
+                            <div class="cert-sub">Issuer: {{ $cert->penerbit }} &bull; Issued: {{ $cert->terbit ? \Carbon\Carbon::parse($cert->terbit)->format('M Y') : '-' }}</div>
                         </div>
                         <span class="status-badge {{ $cert->status_sertifikat == 'aktif' ? 'status-active' : 'status-done' }}">
-                            {{ $cert->status_sertifikat == 'aktif' ? 'Aktif' : 'Expired' }}
+                            {{ $cert->status_sertifikat == 'aktif' ? 'Active' : 'Expired' }}
                         </span>
                     </div>
                     @empty
                     <div style="text-align: center; color: #94a3b8; padding: 10px; font-style: italic;">
-                        Belum ada data sertifikasi tercatat.
+                        No certification data recorded yet.
                     </div>
                     @endforelse
                 </div>
@@ -1336,7 +1336,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="2" style="background: #f8fafc; color: #94a3b8; font-style: italic; text-align: center;">Belum ada data Via Character.</td>
+                                <td colspan="2" style="background: #f8fafc; color: #94a3b8; font-style: italic; text-align: center;">No Via Character data recorded yet.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -1361,7 +1361,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="2" style="background: #f8fafc; color: #94a3b8; font-style: italic; text-align: center;">Belum ada data Strength & Weakness.</td>
+                                <td colspan="2" style="background: #f8fafc; color: #94a3b8; font-style: italic; text-align: center;">No Strength & Weakness data recorded yet.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -1372,8 +1372,8 @@
 
         <!-- Page 1 Footer -->
         <div class="page-footer">
-            <div>Dokumen Resmi Sistem Manajemen Talenta • PT Radar Solusi HC</div>
-            <div class="page-number">Halaman 1 dari 2</div>
+            <div>Official Talent Management Document &bull; PT Radar Solusi HC</div>
+            <div class="page-number">Page 1 of 2</div>
         </div>
     </div>
 
@@ -1403,9 +1403,9 @@
                              style="{{ $isTL 
                                 ? 'background: linear-gradient(135deg, #fde065 0%, #facd42 60%, #f3c332 100%); box-shadow: 2px 2px 8px rgba(0,0,0,0.12), inset 0 1.5px 2px rgba(255,255,255,0.6), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #7c5c00; border: 1.5px solid #eab308;' 
                                 : 'background-color: #facd42; color: #8a6800;' }}">
-                            <div>{{ $isTL ? '✓ ' : '' }}DIRECTING &bull; MODERAT</div>
-                            <div>{{ $isTL ? '✓ ' : '' }}MENTORING &bull; MODERAT</div>
-                            <div>{{ $isTL ? '✓ ' : '' }}COACHING &bull; MODERAT</div>
+                            <div>{{ $isTL ? '✓ ' : '' }}DIRECTING &bull; MODERATE</div>
+                            <div>{{ $isTL ? '✓ ' : '' }}MENTORING &bull; MODERATE</div>
+                            <div>{{ $isTL ? '✓ ' : '' }}COACHING &bull; MODERATE</div>
                         </div>
 
                         <!-- TR: Blue -->
@@ -1413,9 +1413,9 @@
                              style="{{ $isTR 
                                 ? 'background: linear-gradient(135deg, #5390f7 0%, #4485f5 60%, #397ceb 100%); box-shadow: -2px 2px 8px rgba(0,0,0,0.15), inset 0 1.5px 2px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(0,0,0,0.08); color: #ffffff; border: 1.5px solid #2563eb;' 
                                 : 'background-color: #4485f5; color: #ffffff;' }}">
-                            <div>{{ $isTR ? '✓ ' : '' }}DIRECTING &bull; RENDAH</div>
-                            <div>{{ $isTR ? '✓ ' : '' }}MENTORING &bull; RENDAH</div>
-                            <div>{{ $isTR ? '✓ ' : '' }}COACHING &bull; RENDAH</div>
+                            <div>{{ $isTR ? '✓ ' : '' }}DIRECTING &bull; LOW</div>
+                            <div>{{ $isTR ? '✓ ' : '' }}MENTORING &bull; LOW</div>
+                            <div>{{ $isTR ? '✓ ' : '' }}COACHING &bull; LOW</div>
                         </div>
 
                         <!-- BL: Green -->
@@ -1423,9 +1423,9 @@
                              style="{{ $isBL 
                                 ? 'background: linear-gradient(135deg, #87d38e 0%, #78c87f 60%, #6abd72 100%); box-shadow: 2px -2px 8px rgba(0,0,0,0.12), inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.06); color: #144918; border: 1.5px solid #16a34a;' 
                                 : 'background-color: #78c87f; color: #144918;' }}">
-                            <div>{{ $isBL ? '✓ ' : '' }}DIRECTING &bull; TINGGI</div>
-                            <div>{{ $isBL ? '✓ ' : '' }}MENTORING &bull; TINGGI</div>
-                            <div>{{ $isBL ? '✓ ' : '' }}COACHING &bull; TINGGI</div>
+                            <div>{{ $isBL ? '✓ ' : '' }}DIRECTING &bull; HIGH</div>
+                            <div>{{ $isBL ? '✓ ' : '' }}MENTORING &bull; HIGH</div>
+                            <div>{{ $isBL ? '✓ ' : '' }}COACHING &bull; HIGH</div>
                         </div>
 
                         <!-- BR: Red -->
@@ -1433,9 +1433,9 @@
                              style="{{ $isBR 
                                 ? 'background: linear-gradient(135deg, #f75d5e 0%, #f05051 60%, #e84546 100%); box-shadow: -2px -2px 8px rgba(0,0,0,0.15), inset 0 1.5px 2px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(0,0,0,0.08); color: #ffffff; border: 1.5px solid #dc2626;' 
                                 : 'background-color: #f05051; color: #ffffff;' }}">
-                            <div>{{ $isBR ? '✓ ' : '' }}DIRECTING &bull; MODERAT</div>
-                            <div>{{ $isBR ? '✓ ' : '' }}MENTORING &bull; TINGGI</div>
-                            <div>{{ $isBR ? '✓ ' : '' }}COACHING &bull; MODERAT</div>
+                            <div>{{ $isBR ? '✓ ' : '' }}DIRECTING &bull; MODERATE</div>
+                            <div>{{ $isBR ? '✓ ' : '' }}MENTORING &bull; HIGH</div>
+                            <div>{{ $isBR ? '✓ ' : '' }}COACHING &bull; MODERATE</div>
                         </div>
                     </div>
                 </div>
@@ -1451,7 +1451,7 @@
                     </div>
 
                     <div class="grow-row">
-                        <div class="grow-left" style="background: #0284c7;">REALITAS</div>
+                        <div class="grow-left" style="background: #0284c7;">REALITY</div>
                         <div class="grow-right" style="background: #f0f9ff;">{{ $latestMentoring?->grow_realitas ?: '-' }}</div>
                     </div>
 
@@ -1475,8 +1475,8 @@
 
         <!-- Page 2 Footer -->
         <div class="page-footer">
-            <div>Dokumen Resmi Sistem Manajemen Talenta • PT Radar Solusi HC</div>
-            <div class="page-number">Halaman 2 dari 2</div>
+            <div>Official Talent Management Document &bull; PT Radar Solusi HC</div>
+            <div class="page-number">Page 2 of 2</div>
         </div>
     </div>
 

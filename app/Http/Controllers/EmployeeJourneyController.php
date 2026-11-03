@@ -86,7 +86,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -198,7 +198,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'operational_award' => $request->operational_award,
         ]);
 
-        return back()->with('success', 'Perjalanan karir berhasil ditambahkan.');
+        return back()->with('success', 'Career journey added successfully.');
     }
 
     public function update(Request $request, $id)
@@ -232,7 +232,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'operational_award' => $request->operational_award,
         ]);
 
-        return back()->with('success', 'Perjalanan karir berhasil diperbarui.');
+        return back()->with('success', 'Career journey updated successfully.');
     }
 
     public function destroy($id)
@@ -240,7 +240,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
         $pk = PerjalananKarir::findOrFail($id);
         $pk->delete();
 
-        return back()->with('success', 'Perjalanan karir berhasil dihapus.');
+        return back()->with('success', 'Career journey deleted successfully.');
     }
 
     public function storeRecommendation(Request $request, $employee_id)
@@ -267,9 +267,9 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
                 'catatan_rekomendasi_atasan' => $request->catatan_rekomendasi_atasan,
             ]);
 
-            return back()->with('success', 'Kesimpulan & Rekomendasi berhasil disimpan.');
+            return back()->with('success', 'Conclusion & Recommendations saved successfully.');
         }
 
-        return back()->with('error', 'Gagal menyimpan! Belum ada data perjalanan karir untuk karyawan ini.');
+        return back()->with('error', 'Failed to save! No career journey data found for this employee.');
     }
 }

@@ -177,13 +177,13 @@ class EmployeeController extends Controller implements HasMiddleware
             if ($userKaryawan && $userKaryawan->department_id) {
                 $validated['department_id'] = $userKaryawan->department_id;
             } else {
-                abort(403, 'Akses tidak diizinkan.');
+                abort(403, 'Unauthorized access.');
             }
         }
 
         Karyawan::create($validated);
 
-        return redirect()->route('employee.index')->with('success', 'Data Karyawan berhasil ditambahkan.');
+        return redirect()->route('employee.index')->with('success', 'Employee data added successfully.');
     }
 
     /**
@@ -197,7 +197,7 @@ class EmployeeController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -216,7 +216,7 @@ class EmployeeController extends Controller implements HasMiddleware
 
         if (! $isAdmin) {
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -275,7 +275,7 @@ class EmployeeController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -329,7 +329,7 @@ class EmployeeController extends Controller implements HasMiddleware
 
         $employee->update($validated);
 
-        return redirect()->route('employee.index')->with('success', 'Data Karyawan berhasil diperbarui.');
+        return redirect()->route('employee.index')->with('success', 'Employee data updated successfully.');
     }
 
     /**
@@ -343,13 +343,13 @@ class EmployeeController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         $employee->delete();
 
-        return back()->with('success', 'Data Karyawan berhasil dihapus.');
+        return back()->with('success', 'Employee data deleted successfully.');
     }
 
     /**
@@ -370,19 +370,19 @@ class EmployeeController extends Controller implements HasMiddleware
             $import = new EmployeeImport;
             Excel::import($import, $request->file('file'));
 
-            $message = 'Data karyawan berhasil diimpor!';
+            $message = 'Employee data imported successfully!';
             if (! empty($import->warnings)) {
                 $uniqueWarnings = array_values(array_unique($import->warnings));
                 $sampleWarnings = array_slice($uniqueWarnings, 0, 3);
-                $message .= ' Catatan: '.implode(' | ', $sampleWarnings);
+                $message .= ' Notes: '.implode(' | ', $sampleWarnings);
                 if (count($uniqueWarnings) > 3) {
-                    $message .= ' (dan '.(count($uniqueWarnings) - 3).' catatan lainnya)';
+                    $message .= ' (and '.(count($uniqueWarnings) - 3).' more notes)';
                 }
             }
 
             return back()->with('success', $message);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengimpor data: '.$e->getMessage());
+            return back()->with('error', 'Failed to import data: '.$e->getMessage());
         }
     }
 }

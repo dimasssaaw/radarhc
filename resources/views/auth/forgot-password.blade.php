@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupa Password - SORA</title>
+    <title>Forgot Password - SORA</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -165,9 +165,9 @@
         <i class="fas fa-key"></i>
     </div>
 
-    <h1>Lupa Password?</h1>
+    <h1>Forgot Password?</h1>
     <p class="subtitle">
-        Masukkan nomor <strong>NPK</strong> Anda. Sistem akan membuatkan password baru dan langsung mengirimkannya ke alamat email yang terdaftar.
+        Enter your <strong>NPK</strong> number. The system will generate a new password and send it directly to your registered email address.
     </p>
 
     @if ($errors->any())
@@ -176,27 +176,27 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('password.email') }}" onsubmit="document.getElementById('btnSubmit').disabled=true; document.getElementById('btnSubmit').innerText='Mengirim...';">
+    <form method="POST" action="{{ route('password.email') }}" onsubmit="document.getElementById('btnSubmit').disabled=true; document.getElementById('btnSubmit').innerText='Sending...';">
         @csrf
 
         <input 
             type="text" 
             name="npk" 
             value="{{ old('npk') }}" 
-            placeholder="Ketik NPK Anda (cth. 12345)" 
+            placeholder="Enter your NPK (e.g. 12345)" 
             required 
             autofocus 
         />
 
         <button type="submit" id="btnSubmit">
             <i class="fas fa-paper-plane"></i>
-            <span>Kirim Password Baru</span>
+            <span>Send New Password</span>
         </button>
     </form>
 
     <a href="{{ route('login') }}" class="back-link">
         <i class="fas fa-arrow-left"></i>
-        <span>Kembali ke Halaman Login</span>
+        <span>Back to Login</span>
     </a>
 </div>
 

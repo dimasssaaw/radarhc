@@ -25,7 +25,7 @@ class LoginController extends Controller
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
-                ->withErrors(['npk' => 'NPK atau password tidak sesuai.'])
+                ->withErrors(['npk' => 'The provided NPK or password is incorrect.'])
                 ->onlyInput('npk');
         }
 

@@ -32,7 +32,7 @@
             <thead class="text-[10px] text-white uppercase bg-[#06b6d4] shadow-md relative z-10">
                 <tr>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center w-16">No</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider">Nama Role</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider">Role Name</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center w-32">Actions</th>
                 </tr>
             </thead>
@@ -46,10 +46,10 @@
                             <a href="{{ route('role.edit', $role->id) }}" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit">
                                 <i class="fas fa-edit w-4"></i>
                             </a>
-                            <form action="{{ route('role.destroy', $role->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus role ini?');">
+                            <form action="{{ route('role.destroy', $role->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this role?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Hapus">
+                                <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Delete">
                                     <i class="fas fa-trash-alt w-4"></i>
                                 </button>
                             </form>
@@ -61,8 +61,8 @@
                     <td colspan="3" class="px-5 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-user-shield text-4xl text-gray-300 mb-3"></i>
-                            <p class="font-medium text-gray-900">Belum ada data role</p>
-                            <p class="text-xs text-gray-400 mt-1">Silakan klik tombol Tambah Role</p>
+                            <p class="font-medium text-gray-900">No role data available yet</p>
+                            <p class="text-xs text-gray-400 mt-1">Please click the Add Role button</p>
                         </div>
                     </td>
                 </tr>

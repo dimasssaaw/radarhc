@@ -32,7 +32,7 @@ class UserPasswordReset extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Pemberitahuan Reset Password SORA',
+            subject: 'SORA Password Reset Notification',
         );
     }
 

@@ -26,7 +26,7 @@ class EmployeeStrengthController extends Controller implements HasMiddleware
 
         EmployeeStrength::create($request->all());
 
-        return back()->with('success', 'Data Strength & Weakness berhasil ditambahkan.');
+        return back()->with('success', 'Strength & Weakness data added successfully.');
     }
 
     public function update(Request $request, $id)
@@ -39,7 +39,7 @@ class EmployeeStrengthController extends Controller implements HasMiddleware
         $item = EmployeeStrength::findOrFail($id);
         $item->update($request->only(['strength', 'weakness']));
 
-        return back()->with('success', 'Data Strength & Weakness berhasil diperbarui.');
+        return back()->with('success', 'Strength & Weakness data updated successfully.');
     }
 
     public function destroy($id)
@@ -47,6 +47,6 @@ class EmployeeStrengthController extends Controller implements HasMiddleware
         $item = EmployeeStrength::findOrFail($id);
         $item->delete();
 
-        return back()->with('success', 'Data Strength & Weakness berhasil dihapus.');
+        return back()->with('success', 'Strength & Weakness data deleted successfully.');
     }
 }

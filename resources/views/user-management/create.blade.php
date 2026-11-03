@@ -34,18 +34,18 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="space-y-1.5 md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></label>
                         <input type="text" name="name" value="{{ old('name') }}" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
                     </div>
 
                     <div class="space-y-1.5 md:col-span-1">
                         <label class="block text-sm font-medium text-gray-700">NPK <span class="text-red-500">*</span></label>
-                        <input type="text" name="npk" value="{{ old('npk') }}" required placeholder="Nomor Pokok Karyawan" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
+                        <input type="text" name="npk" value="{{ old('npk') }}" required placeholder="Employee ID Number" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
                     </div>
 
                     <div class="space-y-1.5 md:col-span-1">
                         <label class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
-                        <input type="email" name="email" value="{{ old('email') }}" required placeholder="Untuk pengiriman info akun" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
+                        <input type="email" name="email" value="{{ old('email') }}" required placeholder="For account info delivery" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
                     </div>
 
                     <div class="space-y-1.5" x-data="{ 
@@ -81,7 +81,7 @@
                             <button type="button" 
                                     @click="generatePassword()" 
                                     class="text-xs text-[#06b6d4] hover:text-cyan-700 font-semibold flex items-center gap-1 transition-colors px-2 py-0.5 rounded hover:bg-cyan-50">
-                                <i class="fas fa-dice"></i> Generate Acak
+                                <i class="fas fa-dice"></i> Generate Random
                             </button>
                         </div>
                         <div class="relative">
@@ -91,7 +91,7 @@
                                    required 
                                    minlength="8" 
                                    :class="password ? 'font-mono' : ''"
-                                   placeholder="Minimal 8 karakter..." 
+                                   placeholder="Min. 8 characters..." 
                                    class="w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm"
                                    style="padding: 8px 75px 8px 12px;">
                             
@@ -100,26 +100,26 @@
                                         @click="copyPassword()" 
                                         x-show="password && password.length > 0"
                                         class="p-1.5 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all text-xs" 
-                                        title="Salin Password">
+                                        title="Copy Password">
                                     <i :class="copied ? 'fas fa-check text-emerald-500' : 'far fa-copy'"></i>
                                 </button>
                                 <button type="button" 
                                         @click="showPassword = !showPassword" 
                                         class="p-1.5 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all text-xs" 
-                                        title="Lihat / Sembunyikan">
+                                        title="Show / Hide">
                                     <i :class="showPassword ? 'far fa-eye-slash text-[#06b6d4]' : 'far fa-eye'"></i>
                                 </button>
                             </div>
                         </div>
                         <div x-show="copied" x-transition class="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-                            <i class="fas fa-check-circle"></i> Password berhasil disalin ke clipboard!
+                            <i class="fas fa-check-circle"></i> Password copied to clipboard!
                         </div>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-gray-700">Role <span class="text-red-500">*</span></label>
                         <select name="role" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
-                            <option value="">-- Pilih Role --</option>
+                            <option value="">-- Select Role --</option>
                             @foreach($dbRoles as $r)
                                 <option value="{{ $r->name }}" {{ old('role') == $r->name ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
                             @endforeach
@@ -129,21 +129,21 @@
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
                         <select name="status" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
-                            <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                            <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                            <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Active</option>
+                            <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
                     <div class="space-y-3 md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Hak Akses Langsung (Optional)</label>
-                        <p class="text-xs text-gray-500 mb-2">Pilih spesifik aksi apa saja yang boleh dilakukan oleh user ini pada setiap menu.</p>
+                        <label class="block text-sm font-medium text-gray-700">Direct Permissions (Optional)</label>
+                        <p class="text-xs text-gray-500 mb-2">Select specific actions allowed for this user on each menu.</p>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach($permissions->groupBy(fn($p) => explode('_', $p->name)[1] ?? $p->name) as $group => $perms)
                                 <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all hover:border-cyan-200 hover:shadow-sm">
-                                    <h4 class="text-sm font-semibold text-gray-800 capitalize">Menu {{ $group }}</h4>
+                                    <h4 class="text-sm font-semibold text-gray-800 capitalize">{{ ucfirst($group) }} Menu</h4>
                                     <label class="flex items-center gap-2 cursor-pointer shrink-0 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                                         <input type="checkbox" name="permissions[]" value="{{ $group }}" class="rounded text-[#06b6d4] focus:ring-[#06b6d4] border-gray-300 w-4 h-4 cursor-pointer">
-                                        <span class="text-xs text-gray-700 font-medium">Beri Akses</span>
+                                        <span class="text-xs text-gray-700 font-medium">Grant Access</span>
                                     </label>
                                 </div>
                             @endforeach
@@ -156,12 +156,12 @@
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <a href="{{ route('user-management.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
-                    Batal
+                    Cancel
                 </a>
                 <button type="submit" :disabled="isSubmitting" class="bg-[#06b6d4] hover:bg-cyan-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-cyan-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-save" x-show="!isSubmitting"></i>
                     <i class="fas fa-spinner fa-spin" x-show="isSubmitting" style="display: none;"></i>
-                    <span x-text="isSubmitting ? 'Menyimpan...' : 'Simpan User'"></span>
+                    <span x-text="isSubmitting ? 'Saving...' : 'Save User'"></span>
                 </button>
             </div>
         </form>

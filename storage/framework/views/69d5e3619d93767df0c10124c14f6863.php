@@ -5,7 +5,7 @@
         <div class="flex flex-col justify-center items-center min-w-[200px] lg:border-r border-gray-100 lg:pr-8">
             <div class="w-28 h-28 rounded-full bg-cyan-500 border-4 border-white shadow-[0_4px_12px_rgb(0,0,0,0.1)] overflow-hidden mb-4 flex items-center justify-center text-white text-3xl font-bold">
                 <?php if($employee->foto): ?>
-                    <img src="<?php echo e($employee->foto); ?>" alt="Foto" class="w-full h-full object-cover">
+                    <img src="<?php echo e($employee->foto); ?>" alt="Photo" class="w-full h-full object-cover">
                 <?php else: ?>
                     <?php echo e(strtoupper(substr($employee->nama, 0, 2))); ?>
 

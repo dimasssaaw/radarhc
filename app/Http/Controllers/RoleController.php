@@ -41,7 +41,7 @@ class RoleController extends Controller implements HasMiddleware
 
         Role::create(['name' => $validated['name']]);
 
-        return redirect()->route('role.index')->with('success', 'Role berhasil ditambahkan.');
+        return redirect()->route('role.index')->with('success', 'Role added successfully.');
     }
 
     public function show(string $id)
@@ -67,7 +67,7 @@ class RoleController extends Controller implements HasMiddleware
 
         $role->update(['name' => $validated['name']]);
 
-        return redirect()->route('role.index')->with('success', 'Role berhasil diperbarui.');
+        return redirect()->route('role.index')->with('success', 'Role updated successfully.');
     }
 
     public function destroy(string $id)
@@ -77,6 +77,6 @@ class RoleController extends Controller implements HasMiddleware
         // Prevent deletion if used? There is no relation set up yet, but we can just delete
         $role->delete();
 
-        return redirect()->route('role.index')->with('success', 'Role berhasil dihapus.');
+        return redirect()->route('role.index')->with('success', 'Role deleted successfully.');
     }
 }

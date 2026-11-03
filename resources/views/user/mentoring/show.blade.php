@@ -11,7 +11,7 @@
                 <a href="{{ route('user-mentoring.show-employee', $mentoring->id_karyawan) }}" class="hover:text-gray-700 transition-colors">Employee Mentoring</a>
                 <span class="text-xs"><i class="fas fa-chevron-right"></i></span>
             @endif
-            <span class="text-gray-900 font-medium">Detail Mentoring Plan</span>
+            <span class="text-gray-900 font-medium">Mentoring Plan Details</span>
         </div>
     </div>
     <div class="flex gap-3">
@@ -288,7 +288,7 @@
                 <!-- REALITAS -->
                 <div x-data='{ editing: false, value: {{ json_encode($mentoring->grow_realitas ?? "") }}, original: {{ json_encode($mentoring->grow_realitas ?? "") }} }' class="flex flex-col md:flex-row bg-[#dbeafe] rounded-lg overflow-hidden border border-[#bfdbfe] group">
                     <div class="bg-[#3b82f6] text-white font-bold py-4 px-6 md:w-40 flex items-center justify-center tracking-wider shrink-0">
-                        REALITAS
+                        REALITY
                     </div>
                     <div x-show="!editing" @can('edit_mentoring') @click="editing = true; $nextTick(() => $refs.input.focus());" @endcan class="p-4 text-gray-700 flex-1 whitespace-pre-line text-sm text-justify relative cursor-pointer hover:bg-white/40 transition-colors min-h-[56px] flex items-center">
                         <span x-text="value || 'Where are you now?'" :class="!value ? 'text-gray-400 italic' : ''"></span>
@@ -432,7 +432,7 @@
                 
                 <!-- REALITAS -->
                 <div class="bg-[#dbeafe] border border-[#bfdbfe] rounded-lg px-2.5 py-1.5">
-                    <label class="block text-[10px] font-bold text-[#2563eb] mb-0.5">REALITAS (Where are you now?)</label>
+                    <label class="block text-[10px] font-bold text-[#2563eb] mb-0.5">REALITY (Where are you now?)</label>
                     <textarea name="grow_realitas" rows="2" class="w-full border-0 bg-white/80 rounded shadow-sm focus:ring-2 focus:ring-[#2563eb] text-sm text-gray-800 p-1.5 resize-y min-h-[44px]">{{ $mentoring->grow_realitas }}</textarea>
                 </div>
                 

@@ -37,7 +37,7 @@ class DepartmentController extends Controller implements HasMiddleware
 
         Department::create($validated);
 
-        return redirect()->route('department.index')->with('success', 'Departemen berhasil ditambahkan.');
+        return redirect()->route('department.index')->with('success', 'Department added successfully.');
     }
 
     /**
@@ -63,7 +63,7 @@ class DepartmentController extends Controller implements HasMiddleware
 
         $department->update($validated);
 
-        return redirect()->route('department.index')->with('success', 'Departemen berhasil diperbarui.');
+        return redirect()->route('department.index')->with('success', 'Department updated successfully.');
     }
 
     /**
@@ -75,11 +75,11 @@ class DepartmentController extends Controller implements HasMiddleware
 
         // Prevent deletion if employees are still associated with this department
         if ($department->karyawan()->count() > 0) {
-            return redirect()->route('department.index')->with('error', 'Departemen tidak dapat dihapus karena masih ada karyawan yang terkait.');
+            return redirect()->route('department.index')->with('error', 'Department cannot be deleted because there are still employees associated with it.');
         }
 
         $department->delete();
 
-        return redirect()->route('department.index')->with('success', 'Departemen berhasil dihapus.');
+        return redirect()->route('department.index')->with('success', 'Department deleted successfully.');
     }
 }

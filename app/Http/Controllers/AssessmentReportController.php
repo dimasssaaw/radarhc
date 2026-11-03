@@ -139,7 +139,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             $targetKaryawan = Karyawan::find($request->id_karyawan);
             if (! $userKaryawan || ! $targetKaryawan || $targetKaryawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -148,12 +148,12 @@ class AssessmentReportController extends Controller implements HasMiddleware
         AssessmentReport::create($data);
 
         if ($request->has('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Data Assessment Report berhasil ditambahkan.');
+            return redirect($request->redirect_to)->with('success', 'Assessment report data added successfully.');
         }
 
         $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil ditambahkan.');
+        return redirect()->route($indexRoute)->with('success', 'Assessment report data added successfully.');
     }
 
     public function showEmployee($employee_id)
@@ -164,7 +164,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -183,7 +183,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -209,7 +209,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
 
         if (! $isAdmin) {
             if (! $userKaryawan || ! $report->karyawan || $report->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -285,7 +285,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $report->karyawan || $report->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -293,12 +293,12 @@ class AssessmentReportController extends Controller implements HasMiddleware
         $report->update($data);
 
         if ($request->has('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Data Assessment Report berhasil diperbarui.');
+            return redirect($request->redirect_to)->with('success', 'Assessment report data updated successfully.');
         }
 
         $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil diperbarui.');
+        return redirect()->route($indexRoute)->with('success', 'Assessment report data updated successfully.');
     }
 
     public function destroy($id)
@@ -309,18 +309,18 @@ class AssessmentReportController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $report->karyawan || $report->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         $report->delete();
 
         if (request()->has('redirect_to')) {
-            return redirect(request('redirect_to'))->with('success', 'Data Assessment Report berhasil dihapus.');
+            return redirect(request('redirect_to'))->with('success', 'Assessment report data deleted successfully.');
         }
 
         $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Assessment Report berhasil dihapus.');
+        return redirect()->route($indexRoute)->with('success', 'Assessment report data deleted successfully.');
     }
 }

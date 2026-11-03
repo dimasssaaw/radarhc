@@ -37,7 +37,7 @@ class PositionController extends Controller implements HasMiddleware
 
         Position::create($validated);
 
-        return redirect()->route('position.index')->with('success', 'Jabatan berhasil ditambahkan.');
+        return redirect()->route('position.index')->with('success', 'Position added successfully.');
     }
 
     /**
@@ -53,7 +53,7 @@ class PositionController extends Controller implements HasMiddleware
 
         $position->update($validated);
 
-        return redirect()->route('position.index')->with('success', 'Jabatan berhasil diperbarui.');
+        return redirect()->route('position.index')->with('success', 'Position updated successfully.');
     }
 
     /**
@@ -65,11 +65,11 @@ class PositionController extends Controller implements HasMiddleware
 
         // Prevent deletion if employees are still associated with this position
         if ($position->karyawan()->count() > 0) {
-            return redirect()->route('position.index')->with('error', 'Jabatan tidak dapat dihapus karena masih ada karyawan yang terkait.');
+            return redirect()->route('position.index')->with('error', 'Position cannot be deleted because there are still employees associated with it.');
         }
 
         $position->delete();
 
-        return redirect()->route('position.index')->with('success', 'Jabatan berhasil dihapus.');
+        return redirect()->route('position.index')->with('success', 'Position deleted successfully.');
     }
 }

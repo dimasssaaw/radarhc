@@ -101,6 +101,11 @@ class Karyawan extends Model
         return $this->hasMany(Training::class, 'id_karyawan');
     }
 
+    public function riwayatTrainings()
+    {
+        return $this->hasMany(RiwayatTraining::class, 'id_karyawan');
+    }
+
     public function certifications()
     {
         return $this->hasMany(Certification::class, 'id_karyawan');

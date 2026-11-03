@@ -31,7 +31,7 @@
 <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl shadow-sm animate-fade-in">
     <div class="flex items-center gap-2.5 text-sm font-bold mb-1">
         <i class="fas fa-exclamation-triangle text-rose-500 text-base"></i>
-        <span>Terdapat kesalahan saat menyimpan data:</span>
+        <span>There were errors saving the data:</span>
     </div>
     <ul class="list-disc pl-8 text-xs space-y-0.5 text-rose-700">
         @foreach($errors->all() as $err)
@@ -134,9 +134,9 @@
                     <h3 class="idp-tahun text-3xl font-bold text-slate-900 tracking-tight">{{ $report->tahun ?? '-' }}</h3>
                     <p class="idp-periode text-sm text-slate-500 mt-0.5 font-medium">
                         @if($report->periode)
-                            {{ str_starts_with(strtolower($report->periode), 'periode') ? $report->periode : (is_numeric($report->periode) ? 'Periode ' . $report->periode : $report->periode) }}
+                            {{ str_starts_with(strtolower($report->periode), 'periode') ? str_ireplace('periode', 'Period', $report->periode) : (is_numeric($report->periode) ? 'Period ' . $report->periode : $report->periode) }}
                         @else
-                            Tahun
+                            Annual
                         @endif
                     </p>
                 </div>
@@ -161,7 +161,7 @@
                             </svg>
                         </div>
                         <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight">Assessor / Penilai</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight">Assessor / Evaluator</span>
                             <span class="idp-mentor font-semibold text-slate-800 text-sm leading-snug">{{ $report->provider ?? '-' }}</span>
                         </div>
                     </div>
@@ -181,10 +181,10 @@
                 <div class="px-6 py-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                     <!-- Detail Text -->
                     <div class="flex-1 md:pr-10">
-                        <h4 class="text-sm font-semibold text-slate-800 mb-2">Area Penilaian & Ringkasan</h4>
+                        <h4 class="text-sm font-semibold text-slate-800 mb-2">Assessment Area & Summary</h4>
                         @if($isCompleted)
                             <p class="idp-development text-slate-600 text-sm leading-relaxed">
-                                Skor Rata-Rata: <span class="font-bold text-slate-900">{{ number_format($overallAvg, 2) }}</span> / 5.0
+                                Average Score: <span class="font-bold text-slate-900">{{ number_format($overallAvg, 2) }}</span> / 5.0
                                 <span class="text-slate-400 mx-1">•</span>
                                 KB: <span class="font-semibold text-slate-800">{{ !is_null($kbAvg) ? number_format($kbAvg, 1) : '-' }}</span>,
                                 SK: <span class="font-semibold text-slate-800">{{ !is_null($skAvg) ? number_format($skAvg, 1) : '-' }}</span>,
@@ -192,18 +192,18 @@
                                 MS: <span class="font-semibold text-slate-800">{{ !is_null($msAvg) ? number_format($msAvg, 1) : '-' }}</span>
                             </p>
                         @else
-                            <p class="idp-development text-slate-400 text-sm italic">Belum diisi</p>
+                            <p class="idp-development text-slate-400 text-sm italic">Not filled</p>
                         @endif
                     </div>
 
                     <!-- Actions Box -->
                     <div class="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t border-slate-100 md:border-none pt-4 md:pt-0">
-                        <a href="{{ route('assessment-report.show', ['assessment_report' => $employee->id, 'report_id' => $report->id]) }}" class="flex items-center gap-1.5 bg-cyan-50 text-cyan-600 border border-cyan-200 hover:bg-cyan-100 hover:shadow hover:-translate-y-0.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm" title="Lihat & Isi Penilaian Assessment">
+                        <a href="{{ route('assessment-report.show', ['assessment_report' => $employee->id, 'report_id' => $report->id]) }}" class="flex items-center gap-1.5 bg-cyan-50 text-cyan-600 border border-cyan-200 hover:bg-cyan-100 hover:shadow hover:-translate-y-0.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm" title="View & Fill Assessment Evaluation">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
                             </svg>
-                            Penilaian
+                            Evaluation
                         </a>
                         @can('edit_assessment')
                         <a href="{{ route('assessment-report.edit', [$report->id, 'employee_id' => $employee->id, 'redirect_to' => url()->current()]) }}" class="p-2 text-slate-400 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-[#06b6d4] hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 shadow-sm inline-flex items-center justify-center" title="Edit Info Assessment">
@@ -213,11 +213,11 @@
                         </a>
                         @endcan
                         @can('hapus_assessment')
-                        <form action="{{ route('assessment-report.destroy', $report->id) }}" method="POST" hx-boost="false" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data Assessment Report tahun ini?');">
+                        <form action="{{ route('assessment-report.destroy', $report->id) }}" method="POST" hx-boost="false" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this year\'s Assessment Report data?');">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
-                            <button type="submit" class="p-2 text-slate-400 bg-white border border-slate-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 shadow-sm inline-flex items-center justify-center" title="Hapus Assessment">
+                            <button type="submit" class="p-2 text-slate-400 bg-white border border-slate-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 shadow-sm inline-flex items-center justify-center" title="Delete Assessment">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                 </svg>
@@ -232,8 +232,8 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center text-slate-500">
             <div class="flex flex-col items-center justify-center">
                 <i class="fas fa-clipboard-list text-4xl text-slate-300 mb-3"></i>
-                <p class="font-medium text-slate-900">Belum ada Assessment Report</p>
-                <p class="text-xs text-slate-500 mt-1">Tambahkan assessment report baru menggunakan tombol di atas.</p>
+                <p class="font-medium text-slate-900">No Assessment Reports yet</p>
+                <p class="text-xs text-slate-500 mt-1">Add a new assessment report using the button above.</p>
             </div>
         </div>
         @endforelse
@@ -242,8 +242,8 @@
         <div id="noSearchResult" class="hidden bg-white rounded-2xl shadow-sm border border-slate-100 p-10 text-center text-slate-500">
             <div class="flex flex-col items-center justify-center">
                 <i class="fas fa-search text-3xl text-slate-300 mb-2"></i>
-                <p class="font-medium text-slate-900">Tidak ada Assessment yang cocok</p>
-                <p class="text-xs text-slate-400 mt-0.5">Coba cari dengan kata kunci tahun, periode, atau provider lain.</p>
+                <p class="font-medium text-slate-900">No matching Assessment found</p>
+                <p class="text-xs text-slate-400 mt-0.5">Try searching with another keyword for year, period, or provider.</p>
             </div>
         </div>
     </div>

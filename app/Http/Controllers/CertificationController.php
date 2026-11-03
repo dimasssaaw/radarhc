@@ -74,7 +74,7 @@ class CertificationController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -90,7 +90,7 @@ class CertificationController extends Controller implements HasMiddleware
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             $targetEmployee = Karyawan::find($employee_id);
             if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
         $request->validate([
@@ -121,7 +121,7 @@ class CertificationController extends Controller implements HasMiddleware
 
         $certification->save();
 
-        return redirect()->back()->with('success', 'Sertifikasi berhasil ditambahkan');
+        return redirect()->back()->with('success', 'Certification added successfully.');
     }
 
     public function update(Request $request, $id)
@@ -132,7 +132,7 @@ class CertificationController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $certification->karyawan || $certification->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -173,7 +173,7 @@ class CertificationController extends Controller implements HasMiddleware
 
         $certification->save();
 
-        return redirect()->back()->with('success', 'Sertifikasi berhasil diperbarui');
+        return redirect()->back()->with('success', 'Certification updated successfully.');
     }
 
     public function destroy($id)
@@ -184,7 +184,7 @@ class CertificationController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $certification->karyawan || $certification->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -195,7 +195,7 @@ class CertificationController extends Controller implements HasMiddleware
 
         $certification->delete();
 
-        return redirect()->back()->with('success', 'Sertifikasi berhasil dihapus');
+        return redirect()->back()->with('success', 'Certification deleted successfully.');
     }
 
     public function uploadLampiran(Request $request, $id)
@@ -219,6 +219,6 @@ class CertificationController extends Controller implements HasMiddleware
         $certification->lampiran_sertifikasi = '/HRG/'.$path;
         $certification->save();
 
-        return redirect()->back()->with('success', 'Lampiran berhasil diunggah');
+        return redirect()->back()->with('success', 'Attachment uploaded successfully.');
     }
 }

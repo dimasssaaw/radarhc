@@ -31,7 +31,7 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'npk' => ['required', 'string'],
         ], [
-            'npk.required' => 'Nomor NPK wajib diisi.',
+            'npk.required' => 'NPK number is required.',
         ]);
 
         $searchIdentifier = trim($request->input('npk'));
@@ -43,13 +43,13 @@ class ForgotPasswordController extends Controller
 
         if (! $user) {
             return back()
-                ->withErrors(['npk' => 'NPK atau akun tidak ditemukan dalam sistem.'])
+                ->withErrors(['npk' => 'NPK or account not found in the system.'])
                 ->withInput();
         }
 
         if (empty($user->email) || ! filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
             return back()
-                ->withErrors(['npk' => 'Akun dengan NPK '.$user->npk.' belum memiliki email yang terdaftar. Silakan hubungi Administrator HR.'])
+                ->withErrors(['npk' => 'The account with NPK '.$user->npk.' does not have a registered email. Please contact the HR Administrator.'])
                 ->withInput();
         }
 
@@ -63,7 +63,7 @@ class ForgotPasswordController extends Controller
             Mail::to($user->email)->send(new UserPasswordReset($user, $rawPassword));
         } catch (\Throwable $e) {
             return back()
-                ->withErrors(['npk' => 'Gagal mengirim email reset password. Silakan hubungi Administrator HR.'])
+                ->withErrors(['npk' => 'Failed to send password reset email. Please contact the HR Administrator.'])
                 ->withInput();
         }
 
@@ -75,7 +75,7 @@ class ForgotPasswordController extends Controller
 
         return redirect()->route('login')->with(
             'status',
-            'Password baru berhasil dikirim ke email terdaftar Anda ('.$maskedEmail.'). Silakan cek kotak masuk atau folder spam Anda.'
+            'A new password has been successfully sent to your registered email ('.$maskedEmail.'). Please check your inbox or spam folder.'
         );
     }
 }

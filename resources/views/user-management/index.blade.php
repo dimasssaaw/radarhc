@@ -23,7 +23,7 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 text-sm"></i>
             </div>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama atau Role..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Name or Role..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all">
             <button type="submit" class="hidden"></button>
         </div>
 
@@ -68,7 +68,7 @@
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Role</label>
                         <select name="role" onchange="this.form.submit()" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
-                            <option value="">Semua</option>
+                            <option value="">All</option>
                             <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="head" {{ request('role') == 'head' ? 'selected' : '' }}>Department Head</option>
                         </select>
@@ -77,9 +77,9 @@
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Status</label>
                         <select name="status" onchange="this.form.submit()" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
-                            <option value="">Semua</option>
-                            <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                            <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                            <option value="">All</option>
+                            <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Active</option>
+                            <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
                 </div>
@@ -92,12 +92,12 @@
         <table class="w-full text-sm text-left">
             <thead class="text-[10px] text-white uppercase bg-[#06b6d4] shadow-md relative z-10">
                 <tr>
-                    <th scope="col" class="px-6 py-4 font-semibold tracking-wider">Pengguna</th>
+                    <th scope="col" class="px-6 py-4 font-semibold tracking-wider">User</th>
                     <th scope="col" class="px-6 py-4 font-semibold tracking-wider">Username / NPK</th>
                     <th scope="col" class="px-6 py-4 font-semibold tracking-wider">Role</th>
                     <th scope="col" class="px-6 py-4 font-semibold tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 font-semibold tracking-wider">Login Terakhir</th>
-                    <th scope="col" class="px-6 py-4 font-semibold tracking-wider text-center">Aksi</th>
+                    <th scope="col" class="px-6 py-4 font-semibold tracking-wider">Last Login</th>
+                    <th scope="col" class="px-6 py-4 font-semibold tracking-wider text-center">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -110,7 +110,7 @@
                             </div>
                             <div>
                                 <div class="font-bold text-gray-900">{{ $user->name }}</div>
-                                <div class="text-xs text-gray-400">Akun {{ strtolower($user->role ?? 'karyawan') }}</div>
+                                <div class="text-xs text-gray-400">{{ ucfirst($user->role ?? 'Employee') }} Account</div>
                             </div>
                         </div>
                     </td>
@@ -125,18 +125,18 @@
                             </span>
                         @else
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                {{ ucfirst($user->role ?? 'Karyawan') }}
+                                {{ ucfirst($user->role ?? 'Employee') }}
                             </span>
                         @endif
                     </td>
                     <td class="px-6 py-4">
                         @if($user->status === 'aktif')
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                                Aktif
+                                Active
                             </span>
                         @else
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">
-                                Nonaktif
+                                Inactive
                             </span>
                         @endif
                     </td>
@@ -151,7 +151,7 @@
                             </a>
                             @endcan
                             @can('hapus_user')
-                            <form action="{{ route('user-management.destroy', $user->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?');">
+                            <form action="{{ route('user-management.destroy', $user->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-rose-500 transition-colors rounded-lg hover:bg-rose-50">
@@ -167,7 +167,7 @@
                     <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
-                            <p>Tidak ada pengguna ditemukan.</p>
+                            <p>No users found.</p>
                         </div>
                     </td>
                 </tr>

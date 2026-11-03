@@ -37,7 +37,7 @@
 <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl shadow-sm animate-fade-in">
     <div class="flex items-center gap-2.5 text-sm font-bold mb-1">
         <i class="fas fa-exclamation-triangle text-rose-500 text-base"></i>
-        <span>Terdapat kesalahan saat menyimpan data:</span>
+        <span>There were errors saving the data:</span>
     </div>
     <ul class="list-disc pl-8 text-xs space-y-0.5 text-rose-700">
         @foreach($errors->all() as $err)
@@ -80,7 +80,7 @@
                             <i class="fas fa-pen"></i>
                         </button>
                     @else
-                        <button type="button" x-data @click="$dispatch('open-idp-info-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Tambah IDP">
+                        <button type="button" x-data @click="$dispatch('open-idp-info-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Add IDP">
                             <i class="fas fa-plus"></i>
                         </button>
                     @endif
@@ -96,7 +96,7 @@
                             <i class="far fa-calendar-alt text-slate-400 group-hover:text-teal-500 transition-colors"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold tracking-wider text-teal-600/70 uppercase mb-0.5">Tahun</p>
+                            <p class="text-[10px] font-bold tracking-wider text-teal-600/70 uppercase mb-0.5">Year</p>
                             <p class="font-semibold text-gray-900 text-sm group-hover:text-teal-700 transition-colors">{{ $Idp->tahun ?? '-' }}</p>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                             <i class="fas fa-layer-group text-indigo-400 group-hover:text-indigo-600 transition-colors"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold tracking-wider text-teal-600/70 uppercase mb-0.5">Periode</p>
+                            <p class="text-[10px] font-bold tracking-wider text-teal-600/70 uppercase mb-0.5">Period</p>
                             <p class="font-semibold text-gray-900 text-sm group-hover:text-indigo-700 transition-colors">{{ $Idp->periode ?? '-' }}</p>
                         </div>
                     </div>
@@ -153,16 +153,16 @@
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500"></div>
             <div class="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-slate-50/50">
                 <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
-                    <i class="far fa-calendar-check text-sky-500 text-base"></i> Jadwal Review
+                    <i class="far fa-calendar-check text-sky-500 text-base"></i> Review Schedule
                 </h3>
                 <div>
                     @can('edit_idp')
                     @if($Idp->id)
-                        <button type="button" x-data @click="$dispatch('open-jadwal-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Edit Jadwal">
+                        <button type="button" x-data @click="$dispatch('open-jadwal-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Edit Schedule">
                             <i class="fas fa-pen"></i>
                         </button>
                     @else
-                        <button type="button" x-data @click="$dispatch('open-jadwal-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Tambah Jadwal">
+                        <button type="button" x-data @click="$dispatch('open-jadwal-modal')" class="text-[#0ea5e9] hover:bg-sky-50 px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-1.5 focus:outline-none" title="Add Schedule">
                             <i class="fas fa-plus"></i>
                         </button>
                     @endif
@@ -182,7 +182,7 @@
                             <div class="flex items-center justify-between mb-1.5">
                                 <h4 class="text-sm font-bold text-sky-900">Target Setting</h4>
                             </div>
-                            <p class="text-xs text-sky-600/80 font-medium flex items-center gap-1.5"><i class="far fa-clock text-sky-400"></i> {{ $Idp->target ? \Carbon\Carbon::parse($Idp->target)->format('d M Y') : 'Belum diset' }}</p>
+                            <p class="text-xs text-sky-600/80 font-medium flex items-center gap-1.5"><i class="far fa-clock text-sky-400"></i> {{ $Idp->target ? \Carbon\Carbon::parse($Idp->target)->format('d M Y') : 'Not set yet' }}</p>
                         </div>
                     </div>
                     
@@ -195,7 +195,7 @@
                             <div class="flex items-center justify-between mb-1.5">
                                 <h4 class="text-sm font-bold text-sky-900">Monitoring</h4>
                             </div>
-                            <p class="text-xs text-sky-600/80 font-medium flex items-center gap-1.5"><i class="far fa-clock text-sky-400"></i> {{ $Idp->monitoring ? \Carbon\Carbon::parse($Idp->monitoring)->format('d M Y') : 'Belum diset' }}</p>
+                            <p class="text-xs text-sky-600/80 font-medium flex items-center gap-1.5"><i class="far fa-clock text-sky-400"></i> {{ $Idp->monitoring ? \Carbon\Carbon::parse($Idp->monitoring)->format('d M Y') : 'Not set yet' }}</p>
                         </div>
                     </div>
                     
@@ -208,7 +208,7 @@
                             <div class="flex items-center justify-between mb-1.5">
                                 <h4 class="text-sm font-bold text-sky-900 group-hover:text-indigo-700 transition-colors">Final Review</h4>
                             </div>
-                            <p class="text-xs text-sky-600/80 font-medium flex items-center gap-1.5 group-hover:text-sky-700 transition-colors"><i class="far fa-clock text-sky-400 group-hover:text-indigo-300"></i> {{ $Idp->final ? \Carbon\Carbon::parse($Idp->final)->format('d M Y') : 'Belum diset' }}</p>
+                            <p class="text-xs text-sky-600/80 font-medium flex items-center gap-1.5 group-hover:text-sky-700 transition-colors"><i class="far fa-clock text-sky-400 group-hover:text-indigo-300"></i> {{ $Idp->final ? \Carbon\Carbon::parse($Idp->final)->format('d M Y') : 'Not set yet' }}</p>
                         </div>
                     </div>
                 </div>
@@ -238,7 +238,7 @@
                         @if($Idp->penilaian)
                             <i class="fas fa-edit"></i> Edit
                         @else
-                            <i class="fas fa-plus"></i> Tambah
+                            <i class="fas fa-plus"></i> Add
                         @endif
                     </span>
                 </button>
@@ -426,7 +426,7 @@
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Target Maksimal (5.0)',
+                        label: 'Maximum Target (5.0)',
                         data: Array(labels.length).fill(5),
                         backgroundColor: 'transparent',
                         borderColor: '#cbd5e1', // slate-300
@@ -437,7 +437,7 @@
                         fill: false
                     },
                     {
-                        label: 'Skor Aktual',
+                        label: 'Actual Score',
                         data: dataScores,
                         backgroundColor: 'rgba(13, 148, 136, 0.25)', // teal-600 with opacity
                         borderColor: '#0d9488', // teal-600
@@ -582,10 +582,10 @@
                     
                     <div class="bg-gray-50 px-4 py-3 border-t border-gray-100 flex justify-end gap-2">
                         <button type="button" @click="showModal = false" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                            <i class="fas fa-save text-[10px]"></i> Simpan
+                            <i class="fas fa-save text-[10px]"></i> Save
                         </button>
                     </div>
                 </form>
@@ -633,17 +633,17 @@
                     @csrf
                     <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Tahun</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Year</label>
                             <input type="text" name="tahun" value="{{ $Idp->tahun ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Periode</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Period</label>
                             <input type="text" name="periode" value="{{ $Idp->periode ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
                             <select name="status_idp" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border">
-                                <option value="" {{ empty($Idp->status_idp) ? 'selected' : '' }}>-- Pilih Status --</option>
+                                <option value="" {{ empty($Idp->status_idp) ? 'selected' : '' }}>-- Select Status --</option>
                                 <option value="in_progress" {{ ($Idp->status_idp ?? '') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
                                 <option value="completed" {{ ($Idp->status_idp ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
                             </select>
@@ -660,7 +660,7 @@
                     
                     <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                         <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-teal-500 text-sm font-medium text-white hover:bg-teal-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Simpan</button>
+                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-teal-500 text-sm font-medium text-white hover:bg-teal-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
                     </div>
                 </form>
             </div>
@@ -678,7 +678,7 @@
             <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-[360px] border border-gray-100 my-8 flex flex-col mx-auto">
                 <div class="bg-white px-5 pt-4 pb-2.5 sm:px-6 border-b border-gray-100 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900">Jadwal Review</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Review Schedule</h3>
                     </div>
                     <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 p-1 focus:outline-none transition-all">
                         <i class="fas fa-times"></i>
@@ -704,7 +704,7 @@
                     
                     <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                         <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Simpan</button>
+                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
                     </div>
                 </form>
             </div>

@@ -31,6 +31,6 @@ class EmployeeScarfController extends Controller implements HasMiddleware
             $request->only(['status', 'certainty', 'autonomy', 'relatedness', 'fairness'])
         );
 
-        return back()->with('success', 'SCARF Profile berhasil diperbarui.');
+        return back()->with('success', 'SCARF Profile updated successfully.');
     }
 }

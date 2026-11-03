@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,6 @@
     <!-- Flatpickr for custom themed date picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <style>
         /* Tom Select Custom Styles (Match standard form inputs) */
         .ts-wrapper {
@@ -335,11 +334,35 @@
             background-color: #f8fafc;
             color: #0284c7;
         }
+        /* Custom Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
@@ -486,20 +509,20 @@
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="fixed top-20 right-8 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 transition-all">
             <i class="fas fa-check-circle text-xl"></i>
             <div>
-                <h4 class="font-bold text-sm">Berhasil</h4>
+                <h4 class="font-bold text-sm">Success</h4>
                 <p class="text-xs">{{ session('success') }}</p>
             </div>
             <button @click="show = false" class="ml-4 text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
         </div>
         @endif
 
-        @if(session('error') || $errors->any())
+        @if(session('error') || (isset($errors) && $errors->any()))
         <div x-data="{ show: true }" x-show="show" class="fixed top-20 right-8 z-[100] bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-start gap-3 transition-all max-w-sm">
             <i class="fas fa-exclamation-circle text-xl mt-0.5"></i>
             <div>
-                <h4 class="font-bold text-sm">Terjadi Kesalahan</h4>
-                <p class="text-xs mt-1">{{ session('error') ?? 'Ada kesalahan pada formulir yang Anda kirimkan. Silakan periksa kembali.' }}</p>
-                @if($errors->any())
+                <h4 class="font-bold text-sm">Error</h4>
+                <p class="text-xs mt-1">{{ session('error') ?? 'There were errors in the submitted form. Please check again.' }}</p>
+                @if(isset($errors) && $errors->any())
                     <ul class="text-xs mt-2 list-disc pl-4 opacity-90">
                         @foreach($errors->all() as $err)
                             <li>{{ $err }}</li>
@@ -519,6 +542,16 @@
 
     @stack('modals')
     @yield('scripts')
+
+    <!-- Global Floating Tooltip (Outside of cards/overflow containers) -->
+    <div id="system-tooltip" 
+         class="fixed pointer-events-none z-[999999] opacity-0 scale-95 transition-all duration-150 ease-out invisible" 
+         style="top: 0; left: 0;">
+        <div class="relative px-3 py-2 bg-gray-800 text-white text-xs font-medium rounded-lg shadow-xl border border-gray-700/60 max-w-xs leading-relaxed text-left" style="font-size: 11px; line-height: 1.5; color: #f1f5f9;">
+            <div id="system-tooltip-text"></div>
+            <div id="system-tooltip-arrow" class="absolute w-2 h-2 bg-gray-800 rotate-45 border-r border-b border-gray-700/60"></div>
+        </div>
+    </div>
     
     <script>
         function initTomSelect(container) {
@@ -573,8 +606,8 @@
                             let footer = document.createElement('div');
                             footer.className = 'flatpickr-custom-footer';
                             footer.innerHTML = `
-                                <button type="button" class="flatpickr-btn-clear">Hapus</button>
-                                <button type="button" class="flatpickr-btn-today">Hari Ini</button>
+                                <button type="button" class="flatpickr-btn-clear">Clear</button>
+                                <button type="button" class="flatpickr-btn-today">Today</button>
                             `;
                             footer.querySelector('.flatpickr-btn-clear').addEventListener('click', function(e) {
                                 e.preventDefault();
@@ -645,6 +678,109 @@
                 event.detail.shouldSwap = false;
             }
         });
+        // Global System Tooltip Engine (Floats outside of cards/modals/overflows)
+        (function() {
+            let tooltip = document.getElementById('system-tooltip');
+            let tooltipText = document.getElementById('system-tooltip-text');
+            let tooltipArrow = document.getElementById('system-tooltip-arrow');
+            let activeTarget = null;
+
+            function showTooltip(el) {
+                let text = el.getAttribute('data-tooltip') || el.getAttribute('data-title');
+                if (!text && el.hasAttribute('title')) {
+                    text = el.getAttribute('title');
+                    el.setAttribute('data-original-title', text);
+                    el.removeAttribute('title');
+                }
+                if (!text || !text.trim()) return;
+
+                activeTarget = el;
+
+                // Support newlines with <br>
+                if (text.includes('\n')) {
+                    tooltipText.innerHTML = text.replace(/\n/g, '<br>');
+                } else {
+                    tooltipText.textContent = text;
+                }
+
+                tooltip.classList.remove('invisible', 'scale-95');
+                tooltip.classList.add('opacity-0');
+
+                // Measure
+                let targetRect = el.getBoundingClientRect();
+                let tipRect = tooltip.getBoundingClientRect();
+                let gap = 8;
+                let margin = 12;
+
+                let left = targetRect.left + (targetRect.width / 2) - (tipRect.width / 2);
+                if (left < margin) left = margin;
+                if (left + tipRect.width > window.innerWidth - margin) {
+                    left = window.innerWidth - margin - tipRect.width;
+                }
+
+                let top;
+                let isBelow = false;
+                if (targetRect.top - tipRect.height - gap < 10) {
+                    top = targetRect.bottom + gap;
+                    isBelow = true;
+                } else {
+                    top = targetRect.top - tipRect.height - gap;
+                }
+
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+
+                let arrowX = Math.max(10, Math.min(tipRect.width - 16, (targetRect.left + targetRect.width / 2) - left - 4));
+                tooltipArrow.style.left = `${arrowX}px`;
+
+                if (isBelow) {
+                    tooltipArrow.style.top = '-4px';
+                    tooltipArrow.style.bottom = 'auto';
+                    tooltipArrow.style.borderRight = 'none';
+                    tooltipArrow.style.borderBottom = 'none';
+                    tooltipArrow.style.borderLeft = '1px solid rgba(55, 65, 81, 0.6)';
+                    tooltipArrow.style.borderTop = '1px solid rgba(55, 65, 81, 0.6)';
+                } else {
+                    tooltipArrow.style.top = 'auto';
+                    tooltipArrow.style.bottom = '-4px';
+                    tooltipArrow.style.borderLeft = 'none';
+                    tooltipArrow.style.borderTop = 'none';
+                    tooltipArrow.style.borderRight = '1px solid rgba(55, 65, 81, 0.6)';
+                    tooltipArrow.style.borderBottom = '1px solid rgba(55, 65, 81, 0.6)';
+                }
+
+                requestAnimationFrame(() => {
+                    tooltip.classList.remove('opacity-0');
+                    tooltip.classList.add('opacity-100', 'scale-100');
+                });
+            }
+
+            function hideTooltip() {
+                if (!activeTarget) return;
+                activeTarget = null;
+                tooltip.classList.remove('opacity-100', 'scale-100');
+                tooltip.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    if (!activeTarget) tooltip.classList.add('invisible');
+                }, 150);
+            }
+
+            document.addEventListener('mouseover', function(e) {
+                let target = e.target.closest('[data-tooltip], [data-title]');
+                if (target) {
+                    showTooltip(target);
+                }
+            });
+
+            document.addEventListener('mouseout', function(e) {
+                let target = e.target.closest('[data-tooltip], [data-title]');
+                if (target) {
+                    hideTooltip();
+                }
+            });
+
+            window.addEventListener('scroll', hideTooltip, true);
+        })();
     </script>
 </body>
 </html>

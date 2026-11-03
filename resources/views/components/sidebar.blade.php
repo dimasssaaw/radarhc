@@ -131,10 +131,10 @@
                         <a href="{{ route('department.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('department*') ? 'active font-bold' : '' }}"><i class="fas fa-building w-5 text-center text-lg"></i> Department</a>
                         @endcan
                         @can('lihat_jabatan')
-                        <a href="{{ route('position.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('positions*') ? 'active font-bold' : '' }}"><i class="fas fa-briefcase w-5 text-center text-lg"></i> Jabatan</a>
+                        <a href="{{ route('position.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('positions*') ? 'active font-bold' : '' }}"><i class="fas fa-briefcase w-5 text-center text-lg"></i> Positions</a>
                         @endcan
                         @can('lihat_role')
-                        <a href="{{ route('role.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('role*') ? 'active font-bold' : '' }}"><i class="fas fa-user-shield w-5 text-center text-lg"></i> Role User</a>
+                        <a href="{{ route('role.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('role*') ? 'active font-bold' : '' }}"><i class="fas fa-user-shield w-5 text-center text-lg"></i> User Roles</a>
                         @endcan
                     </div>
                 </div>

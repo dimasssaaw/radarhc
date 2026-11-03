@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         // Jika gagal, kembalikan pesan error ke komponen React
         return back()->withErrors([
-            'identifier' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+            'identifier' => 'The provided credentials do not match our records.',
         ])->onlyInput('identifier');
     }
 

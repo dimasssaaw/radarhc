@@ -191,10 +191,10 @@ class IdpController extends Controller implements HasMiddleware
         IdpPenilain::create($penilaianData);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Data Idp berhasil ditambahkan.');
+            return redirect($request->redirect_to)->with('success', 'IDP data added successfully.');
         }
 
-        return redirect()->route('idp.index')->with('success', 'Data Idp berhasil ditambahkan.');
+        return redirect()->route('idp.index')->with('success', 'IDP data added successfully.');
     }
 
     public function show($id)
@@ -205,7 +205,7 @@ class IdpController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -220,7 +220,7 @@ class IdpController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -238,7 +238,7 @@ class IdpController extends Controller implements HasMiddleware
 
         if (! $isAdmin) {
             if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -349,19 +349,19 @@ class IdpController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         $Idp->update($validated);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Data Idp berhasil diperbarui.');
+            return redirect($request->redirect_to)->with('success', 'IDP data updated successfully.');
         }
 
         $indexRoute = $isAdmin ? 'idp.index' : 'user-idp.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Idp berhasil diperbarui.');
+        return redirect()->route($indexRoute)->with('success', 'IDP data updated successfully.');
     }
 
     public function destroy($id)
@@ -372,19 +372,19 @@ class IdpController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $Idp->karyawan || $Idp->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         $Idp->delete();
 
         if (request()->has('redirect_to')) {
-            return redirect(request()->redirect_to)->with('success', 'Data Idp berhasil dihapus.');
+            return redirect(request()->redirect_to)->with('success', 'IDP data deleted successfully.');
         }
 
         $indexRoute = $isAdmin ? 'idp.index' : 'user-idp.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Idp berhasil dihapus.');
+        return redirect()->route($indexRoute)->with('success', 'IDP data deleted successfully.');
     }
 
     public function updateMetrics(Request $request, $id)
@@ -437,7 +437,7 @@ class IdpController extends Controller implements HasMiddleware
             IdpPenilain::create($penilaianData);
         }
 
-        return redirect()->back()->with('success', 'Spider Chart berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Spider Chart updated successfully.');
     }
 
     public function updateEmployeePenilaian(Request $request, $employee_id)
@@ -459,7 +459,7 @@ class IdpController extends Controller implements HasMiddleware
         $penilaianData['id_penilain'] = $Idp->id; // Bypass missing default value
         IdpPenilain::create($penilaianData);
 
-        return redirect()->route('idp.show', $Idp->id)->with('success', 'Spider Chart berhasil diperbarui.');
+        return redirect()->route('idp.show', $Idp->id)->with('success', 'Spider Chart updated successfully.');
     }
 
     public function updateGrow(Request $request, $id)
@@ -475,7 +475,7 @@ class IdpController extends Controller implements HasMiddleware
         $Idp = Idp::findOrFail($id);
         $Idp->update($validated);
 
-        return redirect()->back()->with('success', 'GROW Model berhasil diperbarui.');
+        return redirect()->back()->with('success', 'GROW Model updated successfully.');
     }
 
     public function updateEmployeeGrow(Request $request, $employee_id)
@@ -497,7 +497,7 @@ class IdpController extends Controller implements HasMiddleware
             'grow_insight' => $validated['grow_insight'] ?? null,
         ]);
 
-        return redirect()->back()->with('success', 'GROW Model berhasil diperbarui.');
+        return redirect()->back()->with('success', 'GROW Model updated successfully.');
     }
 
     public function updateInfo(Request $request, $id)
@@ -512,7 +512,7 @@ class IdpController extends Controller implements HasMiddleware
         $Idp = Idp::findOrFail($id);
         $Idp->update($validated);
 
-        return redirect()->back()->with('success', 'IDP Information berhasil diperbarui.');
+        return redirect()->back()->with('success', 'IDP information updated successfully.');
     }
 
     public function updateEmployeeInfo(Request $request, $employee_id)
@@ -527,7 +527,7 @@ class IdpController extends Controller implements HasMiddleware
         $validated['id_karyawan'] = $employee_id;
         Idp::create($validated);
 
-        return redirect()->back()->with('success', 'IDP Information berhasil diperbarui.');
+        return redirect()->back()->with('success', 'IDP information updated successfully.');
     }
 
     public function updateJadwal(Request $request, $id)
@@ -540,7 +540,7 @@ class IdpController extends Controller implements HasMiddleware
         $Idp = Idp::findOrFail($id);
         $Idp->update($validated);
 
-        return redirect()->back()->with('success', 'Jadwal Review berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Review schedule updated successfully.');
     }
 
     public function updateEmployeeJadwal(Request $request, $employee_id)
@@ -553,6 +553,6 @@ class IdpController extends Controller implements HasMiddleware
         $validated['id_karyawan'] = $employee_id;
         Idp::create($validated);
 
-        return redirect()->back()->with('success', 'Jadwal Review berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Review schedule updated successfully.');
     }
 }

@@ -5,7 +5,7 @@
 <div class="mb-6 flex justify-between items-end">
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Employee Journey</h1>
-        <p class="text-sm text-gray-500 mt-1">Lihat perjalanan karir dan perkembangan karyawan</p>
+        <p class="text-sm text-gray-500 mt-1">View career journey and employee development</p>
     </div>
 </div>
 
@@ -16,7 +16,7 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 text-sm"></i>
             </div>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Karyawan..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Employee..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all">
             <button type="submit" class="hidden"></button>
         </div>
         
@@ -59,9 +59,9 @@
                  class="absolute right-0 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-4">
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Departemen</label>
+                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Department</label>
                         <select name="department_id" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0ea5e9]">
-                            <option value="">Semua</option>
+                            <option value="">All</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->nama_departemen }}</option>
                             @endforeach
@@ -69,9 +69,9 @@
                     </div>
                     
                     <div>
-                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Jabatan</label>
+                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Position</label>
                         <select name="jabatan" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0ea5e9]">
-                            <option value="">Semua</option>
+                            <option value="">All</option>
                             <option value="head" {{ request('jabatan') == 'head' ? 'selected' : '' }}>Department Head</option>
                             <option value="group head" {{ request('jabatan') == 'group head' ? 'selected' : '' }}>Group Head</option>
                             <option value="unit head" {{ request('jabatan') == 'unit head' ? 'selected' : '' }}>Unit Head</option>
@@ -80,7 +80,7 @@
                     </div>
                     
                     <button type="submit" class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors">
-                        Terapkan
+                        Apply
                     </button>
                 </div>
             </div>
@@ -93,11 +93,11 @@
             <thead class="text-[10px] text-white uppercase bg-[#06b6d4] shadow-md relative z-10">
                 <tr>
                     <th class="px-5 py-4 font-semibold tracking-wider w-12 text-center">No.</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider">Karyawan</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider">Employee</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">NPK</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Jabatan</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Departemen</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Kaderisasi</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Position</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Department</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Cadre Readiness</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Actions</th>
                 </tr>
             </thead>
@@ -167,7 +167,7 @@
                     <td colspan="7" class="px-5 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                            <p class="font-medium text-gray-900">Belum ada data karyawan</p>
+                            <p class="font-medium text-gray-900">No employee data available</p>
                         </div>
                     </td>
                 </tr>

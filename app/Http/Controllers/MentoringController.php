@@ -148,19 +148,19 @@ class MentoringController extends Controller implements HasMiddleware
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             $targetKaryawan = Karyawan::find($request->id_karyawan);
             if (! $userKaryawan || ! $targetKaryawan || $targetKaryawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         Mentoring::create($validated);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Data Mentoring berhasil ditambahkan.');
+            return redirect($request->redirect_to)->with('success', 'Mentoring data added successfully.');
         }
 
         $indexRoute = $isAdmin ? 'mentoring.index' : 'user-mentoring.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Mentoring berhasil ditambahkan.');
+        return redirect()->route($indexRoute)->with('success', 'Mentoring data added successfully.');
     }
 
     public function show($id)
@@ -171,7 +171,7 @@ class MentoringController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $mentoring->karyawan || $mentoring->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -186,7 +186,7 @@ class MentoringController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -204,7 +204,7 @@ class MentoringController extends Controller implements HasMiddleware
 
         if (! $isAdmin) {
             if (! $userKaryawan || ! $mentoring->karyawan || $mentoring->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -289,19 +289,19 @@ class MentoringController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $mentoring->karyawan || $mentoring->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         $mentoring->update($validated);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Data Mentoring berhasil diperbarui.');
+            return redirect($request->redirect_to)->with('success', 'Mentoring data updated successfully.');
         }
 
         $indexRoute = $isAdmin ? 'mentoring.index' : 'user-mentoring.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Mentoring berhasil diperbarui.');
+        return redirect()->route($indexRoute)->with('success', 'Mentoring data updated successfully.');
     }
 
     public function destroy($id)
@@ -312,19 +312,19 @@ class MentoringController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || ! $mentoring->karyawan || $mentoring->karyawan->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
         $mentoring->delete();
 
         if (request()->has('redirect_to')) {
-            return redirect(request()->redirect_to)->with('success', 'Data Mentoring berhasil dihapus.');
+            return redirect(request()->redirect_to)->with('success', 'Mentoring data deleted successfully.');
         }
 
         $indexRoute = $isAdmin ? 'mentoring.index' : 'user-mentoring.index';
 
-        return redirect()->route($indexRoute)->with('success', 'Data Mentoring berhasil dihapus.');
+        return redirect()->route($indexRoute)->with('success', 'Mentoring data deleted successfully.');
     }
 
     public function updateMetrics(Request $request, $id)
@@ -377,7 +377,7 @@ class MentoringController extends Controller implements HasMiddleware
         $mentoring = Mentoring::findOrFail($id);
         $mentoring->update($validated);
 
-        return redirect()->back()->with('success', 'GROW Model berhasil diperbarui.');
+        return redirect()->back()->with('success', 'GROW Model updated successfully.');
     }
 
     public function updateEmployeeGrow(Request $request, $employee_id)
@@ -402,7 +402,7 @@ class MentoringController extends Controller implements HasMiddleware
             'id_karyawan' => $employee_id,
         ], $validated));
 
-        return redirect()->back()->with('success', 'GROW Model berhasil diperbarui.');
+        return redirect()->back()->with('success', 'GROW Model updated successfully.');
     }
 
     public function updateInfo(Request $request, $id)
@@ -419,7 +419,7 @@ class MentoringController extends Controller implements HasMiddleware
         $mentoring = Mentoring::findOrFail($id);
         $mentoring->update($validated);
 
-        return redirect()->back()->with('success', 'Info Mentoring berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Mentoring information updated successfully.');
     }
 
     public function updateEmployeeInfo(Request $request, $employee_id)
@@ -437,7 +437,7 @@ class MentoringController extends Controller implements HasMiddleware
             'id_karyawan' => $employee_id,
         ], $validated));
 
-        return redirect()->back()->with('success', 'Info Mentoring berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Mentoring information updated successfully.');
     }
 
     public function updateProgress(Request $request, $id)
@@ -451,7 +451,7 @@ class MentoringController extends Controller implements HasMiddleware
         $mentoring = Mentoring::findOrFail($id);
         $mentoring->update($validated);
 
-        return redirect()->back()->with('success', 'Progress Tracking berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Progress tracking updated successfully.');
     }
 
     public function updateEmployeeProgress(Request $request, $employee_id)
@@ -466,6 +466,6 @@ class MentoringController extends Controller implements HasMiddleware
             'id_karyawan' => $employee_id,
         ], $validated));
 
-        return redirect()->back()->with('success', 'Progress Tracking berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Progress tracking updated successfully.');
     }
 }

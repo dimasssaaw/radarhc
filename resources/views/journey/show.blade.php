@@ -314,13 +314,13 @@
         $assessmentItems = $assessmentReports->mapWithKeys(function ($r, $index) {
             $periodLabel = '';
             if ($r->tahun && $r->periode) {
-                $periodLabel = $r->tahun . ' - Periode ' . $r->periode;
+                $periodLabel = $r->tahun . ' - Period ' . $r->periode;
             } elseif ($r->tahun) {
-                $periodLabel = 'Tahun ' . $r->tahun;
+                $periodLabel = 'Year ' . $r->tahun;
             } elseif ($r->periode) {
-                $periodLabel = 'Periode ' . $r->periode;
+                $periodLabel = 'Period ' . $r->periode;
             } else {
-                $periodLabel = 'Sesi #' . $r->id;
+                $periodLabel = 'Session #' . $r->id;
             }
 
             $scores = [
@@ -394,8 +394,8 @@
                                 @click="open = !open" 
                                 class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
                             <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                            <span x-text="current?.label || '{{ $assessmentItems->first()['label'] ?? 'Pilih Periode' }}'">
-                                {{ $assessmentItems->first()['label'] ?? 'Pilih Periode' }}
+                            <span x-text="current?.label || '{{ $assessmentItems->first()['label'] ?? 'Select Period' }}'">
+                                {{ $assessmentItems->first()['label'] ?? 'Select Period' }}
                             </span>
                             <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                         </button>
@@ -428,13 +428,13 @@
                                 @click="open = !open" 
                                 class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
                             <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                            <span>Pilih Periode</span>
+                            <span>Select Period</span>
                             <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <div x-show="open" 
                              class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
                              style="display: none;">
-                            <span class="text-xs text-gray-400 italic">Belum ada riwayat asesmen</span>
+                            <span class="text-xs text-gray-400 italic">No assessment history recorded yet</span>
                         </div>
                     </div>
                 @endif
@@ -544,7 +544,7 @@
             // Find first IDP that has scores, or fallback to the latest IDP
             $idpWithScore = $karyawan->idps->first($hasScore);
             $activeIdp = $idpWithScore ?? $karyawan->idps->sortByDesc('created_at')->first();
-            $activeLabel = $activeIdp ? ($activeIdp->tahun . ($activeIdp->periode ? ' (P' . $activeIdp->periode . ')' : '')) : 'Pilih Periode';
+            $activeLabel = $activeIdp ? ($activeIdp->tahun . ($activeIdp->periode ? ' (P' . $activeIdp->periode . ')' : '')) : 'Select Period';
         @endphp
 
         <!-- Efek Background Hiasan (dibatasi di dalam container rounded) -->
@@ -678,7 +678,7 @@
                 <div class="flex items-center gap-3">
                     <span id="idpScoreAvg" class="font-bold text-sky-600 text-xs"></span>
                     <a id="idpDetailLink" href="{{ route('idp.show', $activeIdp->id) }}" class="text-xs text-sky-600 hover:text-sky-800 hover:underline inline-flex items-center gap-1 font-medium transition-colors">
-                        <span>Detail IDP</span>
+                        <span>IDP Details</span>
                         <i class="fas fa-chevron-right text-[9px]"></i>
                     </a>
                 </div>
@@ -686,7 +686,7 @@
 
             <!-- Alert bila belum dinilai (otomatis tampil/hilang saat ganti pilihan di dropdown) -->
             <div id="idpEmptyAlert" class="mt-2 text-center py-2 px-3 text-xs bg-amber-50 text-amber-700 border border-amber-200/60 rounded-xl transition-all duration-300 {{ $hasScore($activeIdp) ? 'hidden' : '' }}">
-                <i class="fas fa-info-circle mr-1 text-amber-500"></i> Penilaian IDP pada periode ini belum diisi.
+                <i class="fas fa-info-circle mr-1 text-amber-500"></i> IDP assessment for this period has not been filled out yet.
             </div>
             @endif
         </div>
@@ -1164,8 +1164,8 @@
                                     @click="open = !open" 
                                     class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
                                 <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                                <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}'">
-                                    {{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}
+                                <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Select Period' }}'">
+                                    {{ $mentoringItems->first()['label'] ?? 'Select Period' }}
                                 </span>
                                 <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
@@ -1199,7 +1199,7 @@
                                     @click="open = !open" 
                                     class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
                                 <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                                <span>Pilih Periode</span>
+                                <span>Select Period</span>
                                 <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
                             <div x-show="open" 
@@ -1211,7 +1211,7 @@
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
                                  style="display: none;">
-                                <span class="text-xs text-gray-400 italic">Belum ada riwayat mentoring</span>
+                                <span class="text-xs text-gray-400 italic">No mentoring history available yet</span>
                             </div>
                         </div>
                     @endif
@@ -1292,8 +1292,8 @@
                                     @click="open = !open" 
                                     class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
                                 <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                                <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}'">
-                                    {{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}
+                                <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Select Period' }}'">
+                                    {{ $mentoringItems->first()['label'] ?? 'Select Period' }}
                                 </span>
                                 <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
@@ -1326,7 +1326,7 @@
                                     @click="open = !open" 
                                     class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
                                 <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                                <span>Pilih Periode</span>
+                                <span>Select Period</span>
                                 <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
                             <div x-show="open" 
@@ -1338,7 +1338,7 @@
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
                                  style="display: none;">
-                                <span class="text-xs text-gray-400 italic">Belum ada riwayat mentoring</span>
+                                <span class="text-xs text-gray-400 italic">No mentoring history available yet</span>
                             </div>
                         </div>
                     @endif
@@ -1975,7 +1975,7 @@
             // Update average score in UI on initial load
             const initialAvgEl = document.getElementById('idpScoreAvg');
             if (initialAvgEl) {
-                initialAvgEl.textContent = parseFloat(initialResult.avg) > 0 ? `Rata-rata: ${initialResult.avg}/5` : '';
+                initialAvgEl.textContent = parseFloat(initialResult.avg) > 0 ? `Average: ${initialResult.avg}/5` : '';
             }
 
             radarCanvas.chartInstance = new Chart(ctx, {
@@ -2073,7 +2073,7 @@
                 // Update Average Score text
                 const avgScoreEl = document.getElementById('idpScoreAvg');
                 if (avgScoreEl) {
-                    avgScoreEl.textContent = parseFloat(res.avg) > 0 ? `Rata-rata: ${res.avg}/5` : '';
+                    avgScoreEl.textContent = parseFloat(res.avg) > 0 ? `Average: ${res.avg}/5` : '';
                 }
 
                 // Update Detail Link

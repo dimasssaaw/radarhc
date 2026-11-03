@@ -467,12 +467,12 @@
                                                     if (res.ok || res.redirected) {
                                                         this.isUpdatingStatus = false;
                                                     } else {
-                                                        alert('Gagal memperbarui status');
+                                                        alert('Failed to update status');
                                                         this.evaStatus[this.selectedEva] = prevStatus;
                                                         this.isUpdatingStatus = false;
                                                     }
                                                 } catch (err) {
-                                                    alert('Gagal terhubung ke server');
+                                                    alert('Failed to connect to server');
                                                     this.evaStatus[this.selectedEva] = prevStatus;
                                                     this.isUpdatingStatus = false;
                                                 }

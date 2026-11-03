@@ -65,7 +65,7 @@
                     <i class="far fa-calendar-alt text-lg"></i>
                 </div>
                 <div>
-                    <p class="text-[10px] font-bold text-sky-600/80 tracking-wider uppercase mb-0.5">Tahun</p>
+                    <p class="text-[10px] font-bold text-sky-600/80 tracking-wider uppercase mb-0.5">Year</p>
                     <p class="text-sm font-bold text-gray-800">
                         {{ $activeReport ? $activeReport->tahun : '-' }}
                     </p>
@@ -78,7 +78,7 @@
                     <i class="far fa-clock text-lg"></i>
                 </div>
                 <div>
-                    <p class="text-[10px] font-bold text-purple-600/80 tracking-wider uppercase mb-0.5">Periode</p>
+                    <p class="text-[10px] font-bold text-purple-600/80 tracking-wider uppercase mb-0.5">Period</p>
                     <p class="text-sm font-bold text-gray-800">
                         {{ $activeReport && $activeReport->periode ? $activeReport->periode : '-' }}
                     </p>
@@ -123,12 +123,12 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
                     <input type="number" name="tahun" value="{{ $activeReport->tahun ?? '' }}" 
                            class="w-full rounded-lg border border-gray-200 shadow-sm focus:border-[#0ea5e9] focus:ring focus:ring-[#0ea5e9]/20 text-sm py-2 px-3 transition-colors">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Periode</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Period</label>
                     <input type="text" name="periode" value="{{ $activeReport->periode ?? '' }}" 
                            class="w-full rounded-lg border border-gray-200 shadow-sm focus:border-[#0ea5e9] focus:ring focus:ring-[#0ea5e9]/20 text-sm py-2 px-3 transition-colors">
                 </div>
@@ -141,10 +141,10 @@
             
             <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('modal-assessment-info').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    Batal
+                    Cancel
                 </button>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-[#0ea5e9] border border-transparent rounded-lg hover:bg-[#0284c7] transition-colors shadow-sm">
-                    Simpan
+                    Save
                 </button>
             </div>
         </form>
@@ -156,8 +156,8 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
         <div class="px-4 pt-3 pb-2 flex justify-between items-start bg-white border-b border-gray-100">
             <div>
-                <h3 class="font-bold text-[#1e293b] text-base">Kemampuan Berpikir</h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">Input skor skala 0-5.0</p>
+                <h3 class="font-bold text-[#1e293b] text-base">Cognitive Ability</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">Score input scale 0-5.0</p>
             </div>
             <button type="button" onclick="document.getElementById('modal-kb').classList.add('hidden')" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
                 <i class="fas fa-times text-sm"></i>
@@ -171,19 +171,19 @@
             
             <div class="grid grid-cols-2 gap-x-3 gap-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1 pb-1">
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Kecerdasan Umum</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">General Intelligence</label>
                     <input type="number" step="0.1" min="0" max="5" name="kb_kecerdasan_umum" value="{{ $activeReport->kb_kecerdasan_umum ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Fleksibilitas Berpikir</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Thinking Flexibility</label>
                     <input type="number" step="0.1" min="0" max="5" name="kb_fleksibilitas_berfikir" value="{{ $activeReport->kb_fleksibilitas_berfikir ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Kemampuan Konseptual</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Conceptual Ability</label>
                     <input type="number" step="0.1" min="0" max="5" name="kb_kemampuan_konseptual" value="{{ $activeReport->kb_kemampuan_konseptual ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Daya Analisa Sintesa</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Analysis & Synthesis</label>
                     <input type="number" step="0.1" min="0" max="5" name="kb_analisa_sintesa" value="{{ $activeReport->kb_analisa_sintesa ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
             </div>
@@ -203,8 +203,8 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
         <div class="px-4 pt-3 pb-2 flex justify-between items-start bg-white border-b border-gray-100">
             <div>
-                <h3 class="font-bold text-[#1e293b] text-base">Sikap Kerja</h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">Input skor skala 0-5.0</p>
+                <h3 class="font-bold text-[#1e293b] text-base">Work Attitude</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">Score input scale 0-5.0</p>
             </div>
             <button type="button" onclick="document.getElementById('modal-sk').classList.add('hidden')" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
                 <i class="fas fa-times text-sm"></i>
@@ -222,7 +222,7 @@
                     <input type="number" step="0.1" min="0" max="5" name="sk_sistematika_kerja" value="{{ $activeReport->sk_sistematika_kerja ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Endurance Kerja</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Work Endurance</label>
                     <input type="number" step="0.1" min="0" max="5" name="sk_daya_tahan" value="{{ $activeReport->sk_daya_tahan ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
@@ -250,8 +250,8 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
         <div class="px-4 pt-3 pb-2 flex justify-between items-start bg-white border-b border-gray-100">
             <div>
-                <h3 class="font-bold text-[#1e293b] text-base">Kepribadian</h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">Input skor skala 0-5.0</p>
+                <h3 class="font-bold text-[#1e293b] text-base">Personality</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">Score input scale 0-5.0</p>
             </div>
             <button type="button" onclick="document.getElementById('modal-kp').classList.add('hidden')" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
                 <i class="fas fa-times text-sm"></i>
@@ -265,27 +265,27 @@
             
             <div class="grid grid-cols-2 gap-x-3 gap-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1 pb-1">
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Stabilitas Emosi</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Emotional Stability</label>
                     <input type="number" step="0.1" min="0" max="5" name="kp_stabilitas_emosi" value="{{ $activeReport->kp_stabilitas_emosi ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Kepemimpinan</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Leadership</label>
                     <input type="number" step="0.1" min="0" max="5" name="kp_kepemimpinan" value="{{ $activeReport->kp_kepemimpinan ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Penyesuaian Diri</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Adaptability</label>
                     <input type="number" step="0.1" min="0" max="5" name="kp_penyesuaian_diri" value="{{ $activeReport->kp_penyesuaian_diri ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Integritas</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Integrity</label>
                     <input type="number" step="0.1" min="0" max="5" name="kp_integritas" value="{{ $activeReport->kp_integritas ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Kepercayaan Diri</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Self Confidence</label>
                     <input type="number" step="0.1" min="0" max="5" name="kp_kepercayaan_diri" value="{{ $activeReport->kp_kepercayaan_diri ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
                 <div class="flex flex-col justify-end">
-                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Motivasi Kerja</label>
+                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">Work Motivation</label>
                     <input type="number" step="0.1" min="0" max="5" name="kp_motivasi_kerja" value="{{ $activeReport->kp_motivasi_kerja ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
                 </div>
             </div>
@@ -306,7 +306,7 @@
         <div class="px-4 pt-3 pb-2 flex justify-between items-start bg-white border-b border-gray-100">
             <div>
                 <h3 class="font-bold text-[#1e293b] text-base">Managerial Skill</h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">Input skor skala 0-5.0</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Score input scale 0-5.0</p>
             </div>
             <button type="button" onclick="document.getElementById('modal-ms').classList.add('hidden')" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
                 <i class="fas fa-times text-sm"></i>
@@ -374,17 +374,17 @@
     <!-- Kemampuan Berpikir -->
     <div class="bg-[#eef8f1] rounded-2xl p-6 relative border border-[#d1ebd7] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex justify-between items-center mb-2">
-            <h3 class="font-bold text-gray-900 text-lg">Kemampuan Berpikir</h3>
+            <h3 class="font-bold text-gray-900 text-lg">Cognitive Ability</h3>
             @if($activeReport)
                 @can('edit_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-kb').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @else
                 @can('tambah_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-kb').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @endif
@@ -394,38 +394,38 @@
         </div>
         <div class="space-y-3 z-20 relative">
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Kecerdasan Umum</span>
+                <span class="text-gray-600">General Intelligence</span>
                 <span class="font-bold text-[#147a42]">{{ $activeReport ? number_format((float)$activeReport->kb_kecerdasan_umum, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Fleksibilitas Berpikir</span>
+                <span class="text-gray-600">Thinking Flexibility</span>
                 <span class="font-bold text-[#147a42]">{{ $activeReport ? number_format((float)$activeReport->kb_fleksibilitas_berfikir, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Kemampuan Konseptual</span>
+                <span class="text-gray-600">Conceptual Ability</span>
                 <span class="font-bold text-[#147a42]">{{ $activeReport ? number_format((float)$activeReport->kb_kemampuan_konseptual, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Daya Analisa Sintesa</span>
+                <span class="text-gray-600">Analysis & Synthesis</span>
                 <span class="font-bold text-[#147a42]">{{ $activeReport ? number_format((float)$activeReport->kb_analisa_sintesa, 1) : '0.0' }} / 5</span>
             </div>
         </div>
     </div>
 
-    <!-- Sikap Kerja -->
+    <!-- Work Attitude -->
     <div class="bg-[#fcf7ec] rounded-2xl p-6 relative border border-[#f0e4cc] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex justify-between items-center mb-2">
-            <h3 class="font-bold text-gray-900 text-lg">Sikap Kerja</h3>
+            <h3 class="font-bold text-gray-900 text-lg">Work Attitude</h3>
             @if($activeReport)
                 @can('edit_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-sk').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @else
                 @can('tambah_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-sk').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @endif
@@ -439,7 +439,7 @@
                 <span class="font-bold text-[#b58514]">{{ $activeReport ? number_format((float)$activeReport->sk_sistematika_kerja, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Endurance Kerja</span>
+                <span class="text-gray-600">Work Endurance</span>
                 <span class="font-bold text-[#b58514]">{{ $activeReport ? number_format((float)$activeReport->sk_daya_tahan, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
@@ -453,20 +453,20 @@
         </div>
     </div>
 
-    <!-- Kepribadian -->
+    <!-- Personality -->
     <div class="bg-[#eff1f9] rounded-2xl p-6 relative border border-[#dce0f2] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex justify-between items-center mb-2">
-            <h3 class="font-bold text-gray-900 text-lg">Kepribadian</h3>
+            <h3 class="font-bold text-gray-900 text-lg">Personality</h3>
             @if($activeReport)
                 @can('edit_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-kp').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @else
                 @can('tambah_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-kp').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @endif
@@ -476,27 +476,27 @@
         </div>
         <div class="grid grid-cols-2 gap-x-4 gap-y-3 z-20 relative">
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600 text-xs sm:text-sm">Stabilitas Emosi</span>
+                <span class="text-gray-600 text-xs sm:text-sm">Emotional Stability</span>
                 <span class="font-bold text-[#35459e]">{{ $activeReport ? number_format((float)$activeReport->kp_stabilitas_emosi, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600 text-xs sm:text-sm">Kepemimpinan</span>
+                <span class="text-gray-600 text-xs sm:text-sm">Leadership</span>
                 <span class="font-bold text-[#35459e]">{{ $activeReport ? number_format((float)$activeReport->kp_kepemimpinan, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600 text-xs sm:text-sm">Penyesuaian Diri</span>
+                <span class="text-gray-600 text-xs sm:text-sm">Adaptability</span>
                 <span class="font-bold text-[#35459e]">{{ $activeReport ? number_format((float)$activeReport->kp_penyesuaian_diri, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600 text-xs sm:text-sm">Integritas</span>
+                <span class="text-gray-600 text-xs sm:text-sm">Integrity</span>
                 <span class="font-bold text-[#35459e]">{{ $activeReport ? number_format((float)$activeReport->kp_integritas, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600 text-xs sm:text-sm">Kepercayaan Diri</span>
+                <span class="text-gray-600 text-xs sm:text-sm">Self Confidence</span>
                 <span class="font-bold text-[#35459e]">{{ $activeReport ? number_format((float)$activeReport->kp_kepercayaan_diri, 1) : '0.0' }} / 5</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-600 text-xs sm:text-sm">Motivasi Kerja</span>
+                <span class="text-gray-600 text-xs sm:text-sm">Work Motivation</span>
                 <span class="font-bold text-[#35459e]">{{ $activeReport ? number_format((float)$activeReport->kp_motivasi_kerja, 1) : '0.0' }} / 5</span>
             </div>
         </div>
@@ -509,13 +509,13 @@
             @if($activeReport)
                 @can('edit_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-ms').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @else
                 @can('tambah_assessment')
                 <a href="#" onclick="event.preventDefault(); document.getElementById('modal-ms').classList.remove('hidden');" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow">
-                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Isi Data' }}
+                <i class="far fa-edit"></i> {{ $activeReport ? 'Edit' : 'Fill Data' }}
             </a>
                 @endcan
             @endif
@@ -605,7 +605,7 @@
                 tooltip: {
                     callbacks: {
                         title: (items) => items[0].label,
-                        label: (item) => 'Nilai: ' + item.raw
+                        label: (item) => 'Score: ' + item.raw
                     }
                 }
             }
@@ -615,7 +615,7 @@
         new Chart(document.getElementById('chartKB').getContext('2d'), {
             type: 'radar',
             data: {
-                labels: ['Kecerdasan Umum', 'Fleksibilitas Berpikir', 'Kemampuan Konseptual', 'Analisa Sintesa'],
+                labels: ['General Intelligence', 'Thinking Flexibility', 'Conceptual Ability', 'Analysis & Synthesis'],
                 datasets: [{
                     data: [
                         {{ $activeReport?->kb_kecerdasan_umum ?? 0 }},
@@ -659,7 +659,7 @@
         new Chart(document.getElementById('chartKP').getContext('2d'), {
             type: 'radar',
             data: {
-                labels: ['Stabilitas Emosi', 'Penyesuaian Diri', 'Kepercayaan Diri', 'Kepemimpinan', 'Integritas', 'Motivasi Kerja'],
+                labels: ['Emotional Stability', 'Adaptability', 'Self Confidence', 'Leadership', 'Integrity', 'Work Motivation'],
                 datasets: [{
                     data: [
                         {{ $activeReport?->kp_stabilitas_emosi ?? 0 }},

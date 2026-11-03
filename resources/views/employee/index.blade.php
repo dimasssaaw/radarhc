@@ -3,7 +3,7 @@
 @section('content')
 <div class="mb-6 flex justify-between items-end">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ isset($headKaryawan) ? 'Data Karyawan' : 'Employee data' }}</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Employee Data</h1>
         <p class="text-sm text-gray-500 mt-1">Monitor company employee information</p>
     </div>
     <div class="flex gap-3">
@@ -31,19 +31,19 @@
             <div class="flex items-center gap-2">
                 <h2 class="text-lg font-bold text-gray-900">{{ $headKaryawan->nama }}</h2>
             </div>
-            <p class="text-[11px] text-gray-500 mt-0.5">NPK: {{ $headKaryawan->npk }} <span class="mx-2 text-gray-300">|</span> Departemen: {{ $headKaryawan->department ? $headKaryawan->department->nama_departemen : '-' }}</p>
+            <p class="text-[11px] text-gray-500 mt-0.5">NPK: {{ $headKaryawan->npk }} <span class="mx-2 text-gray-300">|</span> Department: {{ $headKaryawan->department ? $headKaryawan->department->nama_departemen : '-' }}</p>
             <p class="text-xs font-medium text-gray-700 mt-1">{{ ucwords($headKaryawan->position?->nama_jabatan) }}</p>
         </div>
     </div>
 
     <div class="flex gap-8 text-right pr-4">
         <div>
-            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Masa Kerja</p>
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Length of Service</p>
             <p class="text-base font-bold text-[#065f46]">
                 @php
                 $masuk = \Carbon\Carbon::parse($headKaryawan->masuk_kerja);
                 $diff = $masuk->diff(\Carbon\Carbon::now());
-                echo $diff->y > 0 ? $diff->y . ' Thn' : $diff->m . ' Bln';
+                echo $diff->y > 0 ? $diff->y . ' Yrs' : $diff->m . ' Mos';
                 @endphp
             </p>
         </div>
@@ -58,7 +58,7 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 text-sm"></i>
             </div>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Employee, Departemen, Kaderisasi..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Employee, Department, Cadre..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all">
             <button type="submit" class="hidden"></button>
         </div>
 
@@ -205,10 +205,10 @@
                             </a>
                             @endcan
                             @can('hapus_karyawan')
-                            <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                            <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this employee?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Hapus">
+                                <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Delete">
                                     <i class="fas fa-trash-alt w-4"></i>
                                 </button>
                             </form>
@@ -223,7 +223,7 @@
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
                             <p class="font-medium text-gray-900">No employee data available</p>
-                            <p class="text-xs text-gray-400 mt-1">Silakan tambah karyawan baru atau import data</p>
+                            <p class="text-xs text-gray-400 mt-1">Please add a new employee or import data</p>
                         </div>
                     </td>
                 </tr>
@@ -258,8 +258,8 @@
                         <i class="fas fa-file-import text-green-600 text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900" id="modal-title">Impor Data Karyawan</h3>
-                        <p class="text-xs text-gray-500 mt-1">Unggah file spreadsheet untuk menambahkan data massal.</p>
+                        <h3 class="text-lg font-bold text-gray-900" id="modal-title">Import Employee Data</h3>
+                        <p class="text-xs text-gray-500 mt-1">Upload a spreadsheet file to bulk import data.</p>
                     </div>
                 </div>
                 <button type="button" onclick="document.getElementById('importEmployeeModal').classList.add('hidden')" class="bg-gray-50 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none transition-all">
@@ -277,12 +277,12 @@
                                 <i class="fas fa-table text-green-600 text-base"></i>
                             </div>
                             <div>
-                                <h4 class="text-sm font-semibold text-gray-900">Format Kolom</h4>
-                                <p class="text-[10px] text-gray-500 mt-0.5">NPK, Nama, Departemen, Tgl Lahir, dll.</p>
+                                <h4 class="text-sm font-semibold text-gray-900">Column Format</h4>
+                                <p class="text-[10px] text-gray-500 mt-0.5">NPK, Name, Department, Birth Date, etc.</p>
                             </div>
                         </div>
                         <a href="{{ route('employee.template') }}" data-hx-boost="false" download class="inline-flex justify-center items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap">
-                            <i class="fas fa-download"></i> Unduh Template
+                            <i class="fas fa-download"></i> Download Template
                         </a>
                     </div>
                     <div class="border-2 border-dashed border-green-300 bg-green-50/30 rounded-xl p-6 text-center hover:bg-green-50/50 transition-colors cursor-pointer relative mb-4">
@@ -298,8 +298,8 @@
                         <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600 mb-2 shadow-sm">
                             <i class="fas fa-cloud-upload-alt text-lg"></i>
                         </div>
-                        <p class="text-xs text-gray-700 font-medium mb-1">Tarik file ke sini, atau <span class="text-green-600 hover:text-green-700 underline font-semibold">klik</span></p>
-                        <p class="text-[10px] text-gray-500">.XLSX, .XLS, .CSV (Maksimal 15 MB)</p>
+                        <p class="text-xs text-gray-700 font-medium mb-1">Drag file here, or <span class="text-green-600 hover:text-green-700 underline font-semibold">click</span></p>
+                        <p class="text-[10px] text-gray-500">.XLSX, .XLS, .CSV (Max. 15 MB)</p>
                     </div>
                     <!-- File selected state -->
                     <div id="file-upload-state" class="hidden border border-gray-200 rounded-xl p-3 mb-4 relative overflow-hidden bg-white shadow-sm">
@@ -310,7 +310,7 @@
                                     <div class="flex items-center gap-2">
                                         <h4 class="text-xs font-semibold text-gray-900" id="file-name">template.xlsx</h4>
                                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-green-50 text-green-700 border border-green-200">
-                                            <span class="w-1 h-1 rounded-full bg-green-500"></span> Siap
+                                            <span class="w-1 h-1 rounded-full bg-green-500"></span> Ready
                                         </span>
                                     </div>
                                     <p class="text-[10px] text-gray-500 mt-0.5" id="file-size">0.0 MB</p>
@@ -332,17 +332,17 @@
                                 <input type="checkbox" name="overwrite" class="w-3.5 h-3.5 text-green-600 border-gray-300 rounded focus:ring-green-600" checked>
                             </div>
                             <div>
-                                <p class="text-xs font-semibold text-gray-900 group-hover:text-green-700 transition-colors">Timpa data jika NPK sudah ada</p>
+                                <p class="text-xs font-semibold text-gray-900 group-hover:text-green-700 transition-colors">Overwrite data if NPK already exists</p>
                             </div>
                         </label>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                     <button type="button" onclick="document.getElementById('importEmployeeModal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:w-auto">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-[#0ea5e9] text-xs font-medium text-white hover:bg-[#0284c7] focus:outline-none transition-all sm:w-auto flex items-center gap-1.5">
-                        <i class="fas fa-cloud-upload-alt"></i> Impor
+                        <i class="fas fa-cloud-upload-alt"></i> Import
                     </button>
                 </div>
             </form>

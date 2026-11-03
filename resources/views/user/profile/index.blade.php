@@ -78,8 +78,8 @@
             <i class="fas fa-exclamation-circle"></i>
         </div>
         <div>
-            <h2 class="text-lg font-bold text-red-800">Profil Karyawan Tidak Ditemukan</h2>
-            <p class="text-xs text-red-600 mt-1">Sistem tidak dapat menemukan data Karyawan yang cocok dengan email akun Anda (<strong>{{ auth()->user()->email }}</strong>).</p>
+            <h2 class="text-lg font-bold text-red-800">Employee Profile Not Found</h2>
+            <p class="text-xs text-red-600 mt-1">The system cannot find employee data matching your account email (<strong>{{ auth()->user()->email }}</strong>).</p>
         </div>
     </div>
 </div>
@@ -235,7 +235,7 @@
                                     <i class="fas fa-eye text-sm"></i>
                                 </a>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 shadow-md z-50">
-                                    Lihat Detail Profil
+                                    View Profile Details
                                     <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-800 rotate-45"></div>
                                 </div>
                             </div>
@@ -254,7 +254,7 @@
 
                             @can('hapus_karyawan')
                             <div class="relative group/tooltip">
-                                <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-all">
@@ -262,7 +262,7 @@
                                     </button>
                                 </form>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 shadow-md z-50">
-                                    Hapus Data
+                                    Delete Data
                                     <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-800 rotate-45"></div>
                                 </div>
                             </div>
@@ -309,8 +309,8 @@
                         <i class="fas fa-file-import text-green-600 text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900" id="modal-title">Impor Data Karyawan</h3>
-                        <p class="text-xs text-gray-500 mt-1">Unggah file spreadsheet untuk menambahkan data massal.</p>
+                        <h3 class="text-lg font-bold text-gray-900" id="modal-title">Import Employee Data</h3>
+                        <p class="text-xs text-gray-500 mt-1">Upload a spreadsheet file to add bulk data.</p>
                     </div>
                 </div>
                 <button type="button" onclick="document.getElementById('importEmployeeModal').classList.add('hidden')" class="bg-gray-50 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none transition-all">
@@ -328,12 +328,12 @@
                                 <i class="fas fa-table text-green-600 text-base"></i>
                             </div>
                             <div>
-                                <h4 class="text-sm font-semibold text-gray-900">Format Kolom</h4>
-                                <p class="text-[10px] text-gray-500 mt-0.5">NPK, Nama, Departemen, Tgl Lahir, dll.</p>
+                                <h4 class="text-sm font-semibold text-gray-900">Column Format</h4>
+                                <p class="text-[10px] text-gray-500 mt-0.5">NPK, Name, Department, Birth Date, etc.</p>
                             </div>
                         </div>
                         <a href="{{ route('employee.template') }}" data-hx-boost="false" download class="inline-flex justify-center items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap">
-                            <i class="fas fa-download"></i> Unduh Template
+                            <i class="fas fa-download"></i> Download Template
                         </a>
                     </div>
                     <div class="border-2 border-dashed border-green-300 bg-green-50/30 rounded-xl p-6 text-center hover:bg-green-50/50 transition-colors cursor-pointer relative mb-4">
@@ -349,8 +349,8 @@
                         <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600 mb-2 shadow-sm">
                             <i class="fas fa-cloud-upload-alt text-lg"></i>
                         </div>
-                        <p class="text-xs text-gray-700 font-medium mb-1">Tarik file ke sini, atau <span class="text-green-600 hover:text-green-700 underline font-semibold">klik</span></p>
-                        <p class="text-[10px] text-gray-500">.XLSX, .XLS, .CSV (Maksimal 15 MB)</p>
+                        <p class="text-xs text-gray-700 font-medium mb-1">Drag and drop file here, or <span class="text-green-600 hover:text-green-700 underline font-semibold">click</span></p>
+                        <p class="text-[10px] text-gray-500">.XLSX, .XLS, .CSV (Maximum 15 MB)</p>
                     </div>
                     <!-- File selected state -->
                     <div id="file-upload-state" class="hidden border border-gray-200 rounded-xl p-3 mb-4 relative overflow-hidden bg-white shadow-sm">
@@ -361,7 +361,7 @@
                                     <div class="flex items-center gap-2">
                                         <h4 class="text-xs font-semibold text-gray-900" id="file-name">template.xlsx</h4>
                                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-green-50 text-green-700 border border-green-200">
-                                            <span class="w-1 h-1 rounded-full bg-green-500"></span> Siap
+                                            <span class="w-1 h-1 rounded-full bg-green-500"></span> Ready
                                         </span>
                                     </div>
                                     <p class="text-[10px] text-gray-500 mt-0.5" id="file-size">0.0 MB</p>
@@ -383,17 +383,17 @@
                                 <input type="checkbox" name="overwrite" class="w-3.5 h-3.5 text-green-600 border-gray-300 rounded focus:ring-green-600" checked>
                             </div>
                             <div>
-                                <p class="text-xs font-semibold text-gray-900 group-hover:text-green-700 transition-colors">Timpa data jika NPK sudah ada</p>
+                                <p class="text-xs font-semibold text-gray-900 group-hover:text-green-700 transition-colors">Overwrite data if NPK already exists</p>
                             </div>
                         </label>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
                     <button type="button" onclick="document.getElementById('importEmployeeModal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:w-auto">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-[#0ea5e9] text-xs font-medium text-white hover:bg-[#0284c7] focus:outline-none transition-all sm:w-auto flex items-center gap-1.5">
-                        <i class="fas fa-cloud-upload-alt"></i> Impor
+                        <i class="fas fa-cloud-upload-alt"></i> Import
                     </button>
                 </div>
             </form>

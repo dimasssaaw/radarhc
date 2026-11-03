@@ -292,7 +292,7 @@
                 </div>
             @endif
 
-            <input type="text" name="npk" value="{{ old('npk') }}" placeholder="NPK (Nomor Pokok Karyawan)" required autofocus />
+            <input type="text" name="npk" value="{{ old('npk') }}" placeholder="NPK (Employee ID)" required autofocus />
             
             <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
             <a href="{{ route('password.request') }}" style="font-size: 12px; color: #0284c7; text-decoration: none; margin-top: 10px; font-weight: 500;">Forgot your password?</a>

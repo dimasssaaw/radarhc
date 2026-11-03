@@ -79,11 +79,11 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                         $email = $validEmail;
                         $seenEmails[$validEmail] = $npk;
                     } else {
-                        $this->warnings[] = "Email '{$validEmail}' pada NPK {$npk} diabaikan karena duplikat dengan NPK {$seenEmails[$validEmail]}.";
+                        $this->warnings[] = "Email '{$validEmail}' on NPK {$npk} was ignored because it is a duplicate of NPK {$seenEmails[$validEmail]}.";
                     }
                 } elseif ($rawEmail !== null && ! $isDash && trim((string) $rawEmail) !== '') {
                     $cleanRaw = trim((string) $rawEmail);
-                    $this->warnings[] = "Format email '{$cleanRaw}' pada NPK {$npk} tidak valid sehingga dikosongkan.";
+                    $this->warnings[] = "Email format '{$cleanRaw}' on NPK {$npk} is invalid and was left empty.";
                 }
 
                 $karyawan = Karyawan::where('npk', $npk)->first();

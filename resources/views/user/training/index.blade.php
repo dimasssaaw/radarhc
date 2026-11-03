@@ -16,7 +16,7 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 text-sm"></i>
             </div>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Employee, NPK, Jabatan..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Employee, NPK, Position..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all">
             <button type="submit" class="hidden"></button>
         </div>
         
@@ -156,7 +156,7 @@
                     <td class="px-5 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
                             <!-- Hanya tombol Lihat Detail Training -->
-                            <a href="{{ route('user-training.show', $emp->id) }}" class="text-gray-400 hover:text-[#06b6d4] p-1.5 rounded-md hover:bg-cyan-50 transition-colors" title="Lihat Detail Training">
+                            <a href="{{ route('user-training.show', $emp->id) }}" class="text-gray-400 hover:text-[#06b6d4] p-1.5 rounded-md hover:bg-cyan-50 transition-colors" title="View Training Details">
                                 <i class="fas fa-eye w-4 text-center"></i>
                             </a>
                         </div>

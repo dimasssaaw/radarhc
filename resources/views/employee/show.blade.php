@@ -198,13 +198,13 @@
 
         $periodLabel = '';
         if ($m->tahun && $m->periode) {
-            $periodLabel = $m->tahun . ' - Periode ' . $m->periode;
+            $periodLabel = $m->tahun . ' - Period ' . $m->periode;
         } elseif ($m->tahun) {
-            $periodLabel = 'Tahun ' . $m->tahun;
+            $periodLabel = 'Year ' . $m->tahun;
         } elseif ($m->periode) {
-            $periodLabel = 'Periode ' . $m->periode;
+            $periodLabel = 'Period ' . $m->periode;
         } else {
-            $periodLabel = 'Sesi #' . $m->id;
+            $periodLabel = 'Session #' . $m->id;
         }
         
 
@@ -271,8 +271,8 @@
                             @click="open = !open" 
                             class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-700 shadow-sm transition-all focus:outline-none focus:border-[#0ea5e9] cursor-pointer">
                         <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                        <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}'">
-                            {{ $mentoringItems->first()['label'] ?? 'Pilih Periode' }}
+                        <span x-text="current?.label || '{{ $mentoringItems->first()['label'] ?? 'Select Period' }}'">
+                            {{ $mentoringItems->first()['label'] ?? 'Select Period' }}
                         </span>
                         <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
@@ -306,7 +306,7 @@
                             @click="open = !open" 
                             class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-semibold text-gray-500 shadow-sm transition-all focus:outline-none cursor-pointer">
                         <i class="far fa-calendar-alt text-[#0ea5e9]"></i>
-                        <span>Pilih Periode</span>
+                        <span>Select Period</span>
                         <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
                     <div x-show="open" 
@@ -318,7 +318,7 @@
                          x-transition:leave-end="opacity-0 scale-95"
                          class="absolute right-0 top-full mt-1.5 min-w-[210px] bg-white rounded-lg shadow-xl border border-gray-100 p-2 z-50 text-center"
                          style="display: none;">
-                        <span class="text-xs text-gray-400 italic">Belum ada riwayat mentoring</span>
+                        <span class="text-xs text-gray-400 italic">No mentoring history available yet</span>
                     </div>
                 </div>
             @endif

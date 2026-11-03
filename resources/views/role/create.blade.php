@@ -9,8 +9,8 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">Tambah Role</h2>
-                <p class="text-sm text-gray-500 mt-1">Tambahkan role baru ke dalam sistem</p>
+                <h2 class="text-xl font-bold text-gray-900">Add Role</h2>
+                <p class="text-sm text-gray-500 mt-1">Add a new role to the system</p>
             </div>
             <a href="{{ route('role.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
@@ -33,20 +33,20 @@
                 @endif
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-gray-700">Nama Role <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="cth. Admin" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent outline-none transition-all text-sm">
+                    <label class="block text-sm font-medium text-gray-700">Role Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Admin" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent outline-none transition-all text-sm">
                 </div>
             </div>
 
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <a href="{{ route('role.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
-                    Batal
+                    Cancel
                 </a>
                 <button type="submit" :disabled="isSubmitting" class="bg-[#0ea5e9] hover:bg-sky-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-save" x-show="!isSubmitting"></i>
                     <i class="fas fa-spinner fa-spin" x-show="isSubmitting" style="display: none;"></i>
-                    <span x-text="isSubmitting ? 'Menyimpan...' : 'Simpan Role'"></span>
+                    <span x-text="isSubmitting ? 'Saving...' : 'Save Role'"></span>
                 </button>
             </div>
         </form>

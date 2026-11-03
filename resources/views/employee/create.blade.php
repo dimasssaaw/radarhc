@@ -9,8 +9,8 @@
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">Tambah Karyawan</h2>
-                <p class="text-sm text-gray-500 mt-1">Masukkan informasi detail karyawan baru ke dalam sistem.</p>
+                <h2 class="text-xl font-bold text-gray-900">Add Employee</h2>
+                <p class="text-sm text-gray-500 mt-1">Enter the new employee's detailed information into the system</p>
             </div>
             <a href="{{ route('employee.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
@@ -36,32 +36,32 @@
                     <!-- NPK -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">NPK <span class="text-red-500">*</span></label>
-                        <input type="text" name="npk" value="{{ old('npk') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('npk') border-red-500 @enderror" placeholder="cth. 10231">
+                        <input type="text" name="npk" value="{{ old('npk') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('npk') border-red-500 @enderror" placeholder="e.g. 10231">
                     </div>
 
                     <!-- Nama -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama" value="{{ old('nama') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('nama') border-red-500 @enderror" placeholder="cth. Ade Kurniawan">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Full name <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama" value="{{ old('nama') }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('nama') border-red-500 @enderror" placeholder="e.g. Ade Kurniawan">
                     </div>
 
                     <!-- Tanggal Lahir -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Lahir</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Date of birth</label>
                         <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('tanggal_lahir') border-red-500 @enderror">
                     </div>
 
                     <!-- Lama Bekerja -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Mulai Bekerja</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Start Date of Employment</label>
                         <input type="date" name="lama_bekerja" value="{{ old('lama_bekerja') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('lama_bekerja') border-red-500 @enderror">
                     </div>
 
                     <!-- Jabatan -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Posisi / Jabatan <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Position / Job Title <span class="text-red-500">*</span></label>
                         <select name="position_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('position_id') border-red-500 @enderror">
-                            <option value="">Pilih Jabatan</option>
+                            <option value="">Select Position</option>
                             @foreach($positions as $pos)
                                 <option value="{{ $pos->id }}" {{ old('position_id') == $pos->id ? 'selected' : '' }}>{{ $pos->nama_jabatan }}</option>
                             @endforeach
@@ -70,9 +70,9 @@
                     
                     <!-- Readiness -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Kaderisasi</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cadre Status</label>
                         <select name="readiness" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('readiness') border-red-500 @enderror">
-                            <option value="">Pilih Status (Opsional)</option>
+                            <option value="">Select Status (Optional)</option>
                             <option value="R1 ready" {{ in_array(old('readiness'), ['R1', 'R1 ready']) ? 'selected' : '' }}>R1</option>
                             <option value="R2 ready" {{ in_array(old('readiness'), ['R2', 'R2 ready']) ? 'selected' : '' }}>R2</option>
                             <option value="R3 ready" {{ in_array(old('readiness'), ['R3', 'R3 ready']) ? 'selected' : '' }}>R3</option>
@@ -84,20 +84,20 @@
 
                     <!-- Foto -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Unggah Foto</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Upload Photo</label>
                         <input type="file" name="foto" accept="image/png, image/jpeg, image/jpg, image/webp" class="w-full rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 text-sm py-1.5 px-4 transition-all file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#0ea5e9]/10 file:text-[#0ea5e9] hover:file:bg-[#0ea5e9]/20 @error('foto') border-red-500 @enderror">
                     </div>
 
                     <!-- Pendidikan -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pendidikan</label>
-                        <input type="text" name="pendidikan" value="{{ old('pendidikan') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('pendidikan') border-red-500 @enderror" placeholder="cth. S1 Sistem Informasi">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Education</label>
+                        <input type="text" name="pendidikan" value="{{ old('pendidikan') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('pendidikan') border-red-500 @enderror" placeholder="e.g. Bachelor of Information Systems">
                     </div>
 
                     <!-- Kontak -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kontak (No HP)</label>
-                        <input type="text" name="kontak" value="{{ old('kontak') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('kontak') border-red-500 @enderror" placeholder="cth. 08123456789">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Contact (Mobile Number)</label>
+                        <input type="text" name="kontak" value="{{ old('kontak') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('kontak') border-red-500 @enderror" placeholder="e.g. 08123456789">
                     </div>
 
                     <!-- Email -->
@@ -108,9 +108,9 @@
 
                     <!-- Departemen -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Departemen <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Department <span class="text-red-500">*</span></label>
                         <select name="department_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('department_id') border-red-500 @enderror">
-                            <option value="">Pilih Departemen</option>
+                            <option value="">Select Department</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
                                     {{ $dept->nama_departemen }}
@@ -122,26 +122,26 @@
                     <!-- Grade -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Grade</label>
-                        <input type="text" name="grade" value="{{ old('grade') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('grade') border-red-500 @enderror" placeholder="cth. A1">
+                        <input type="text" name="grade" value="{{ old('grade') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('grade') border-red-500 @enderror" placeholder="e.g. A1">
                     </div>
 
                     <!-- IQ -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Skor IQ</label>
-                        <input type="number" name="iq" value="{{ old('iq') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('iq') border-red-500 @enderror" placeholder="cth. 120">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">IQ Score</label>
+                        <input type="number" name="iq" value="{{ old('iq') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('iq') border-red-500 @enderror" placeholder="e.g. 120">
                     </div>
 
                     <!-- DISC -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">DISC</label>
-                        <input type="text" name="disc" value="{{ old('disc') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('disc') border-red-500 @enderror" placeholder="cth. D/I/S/C">
+                        <input type="text" name="disc" value="{{ old('disc') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('disc') border-red-500 @enderror" placeholder="e.g. D/I/S/C">
                     </div>
 
                     <!-- HAV -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">HAV</label>
                         <select name="hav" class="drop-up w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border @error('hav') border-red-500 @enderror">
-                            <option value="">Pilih HAV (Opsional)</option>
+                            <option value="">Select HAV (Optional)</option>
                             <option value="star" {{ old('hav') == 'star' ? 'selected' : '' }}>Star</option>
                             <option value="high potential" {{ old('hav') == 'high potential' ? 'selected' : '' }}>High potential</option>
                             <option value="potential" {{ old('hav') == 'potential' ? 'selected' : '' }}>Potential</option>
@@ -157,11 +157,11 @@
             <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
                 <a href="{{ route('employee.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
-                    Batal
+                    Cancel
                 </a>
                 <button type="submit" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-save"></i>
-                    <span>Simpan Data</span>
+                    <span>Save Data</span>
                 </button>
             </div>
         </form>

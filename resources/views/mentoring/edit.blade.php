@@ -24,7 +24,7 @@
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
             <div>
                 <h2 class="text-xl font-bold text-gray-900" id="modal-title">Edit Mentoring</h2>
-                <p class="text-sm text-gray-500 mt-1">Perbarui data mentoring untuk karyawan</p>
+                <p class="text-sm text-gray-500 mt-1">Update mentoring data for employee</p>
             </div>
             <a href="{{ $closeUrl }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
@@ -57,7 +57,7 @@
 
                     <!-- Nama Karyawan -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Karyawan</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Employee Name</label>
                         <input type="text" value="{{ $selectedEmployee ? $selectedEmployee->nama : '-' }}" readonly class="w-full rounded-lg border-gray-200 bg-gray-50 text-gray-500 text-sm py-2 px-3 border cursor-not-allowed">
                     </div>
 
@@ -81,31 +81,31 @@
 
                     <!-- Tahun -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tahun</label>
-                        <input type="text" name="tahun" value="{{ old('tahun', $mentoring->tahun) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="cth. 2024">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Year</label>
+                        <input type="text" name="tahun" value="{{ old('tahun', $mentoring->tahun) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="e.g. 2024">
                     </div>
 
                     <!-- Periode -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Periode</label>
-                        <input type="text" name="periode" value="{{ old('periode', $mentoring->periode) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="cth. 1 atau 2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Period</label>
+                        <input type="text" name="periode" value="{{ old('periode', $mentoring->periode) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="e.g. 1 or 2">
                     </div>
 
                     <!-- Project -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Project</label>
-                        <input type="text" name="project" value="{{ old('project', $mentoring->project) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Nama Project">
+                        <input type="text" name="project" value="{{ old('project', $mentoring->project) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Project Name">
                     </div>
                     
                     <!-- Mentor -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Mentor</label>
-                        <input type="text" name="mentor" value="{{ old('mentor', $mentoring->mentor) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Nama Mentor">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Mentor Name</label>
+                        <input type="text" name="mentor" value="{{ old('mentor', $mentoring->mentor) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Mentor Name">
                     </div>
 
                     <!-- Status Mentoring -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Mentoring</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Mentoring Status</label>
                         <select name="status_mentoring" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                             <option value="in_progress" {{ in_array(old('status_mentoring', $mentoring->status_mentoring), ['in_progress', 'pending']) ? 'selected' : '' }}>In Progress</option>
                             <option value="completed" {{ old('status_mentoring', $mentoring->status_mentoring) == 'completed' ? 'selected' : '' }}>Completed</option>
@@ -114,25 +114,25 @@
 
                     <!-- Development Area -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Area Pengembangan (Development)</label>
-                        <input type="text" name="development" value="{{ old('development', $mentoring->development) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Area kompetensi yang dikembangkan">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Development Area</label>
+                        <input type="text" name="development" value="{{ old('development', $mentoring->development) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white" placeholder="Competency area to be developed">
                     </div>
 
                     <!-- Target Date -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Target Penyelesaian</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Target Completion Date</label>
                         <input type="date" name="target" value="{{ old('target', $mentoring->target ? \Carbon\Carbon::parse($mentoring->target)->format('Y-m-d') : '') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                     </div>
                     
                     <!-- Monitoring Date -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Monitoring</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Monitoring Date</label>
                         <input type="date" name="monitoring" value="{{ old('monitoring', $mentoring->monitoring ? \Carbon\Carbon::parse($mentoring->monitoring)->format('Y-m-d') : '') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                     </div>
 
                     <!-- Final Date -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal Final (Selesai)</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Final Date (Completed)</label>
                         <input type="date" name="final" value="{{ old('final', $mentoring->final ? \Carbon\Carbon::parse($mentoring->final)->format('Y-m-d') : '') }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white">
                     </div>
                 </div>
@@ -141,11 +141,11 @@
         <!-- Footer -->
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 shrink-0">
             <a href="{{ $closeUrl }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
-                Batal
+                Cancel
             </a>
             <button type="submit" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">
                 <i class="fas fa-save"></i>
-                <span>Simpan Perubahan</span>
+                <span>Save Changes</span>
             </button>
         </div>
         </form>

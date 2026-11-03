@@ -76,7 +76,7 @@ class TrainingController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             if (! $userKaryawan || $employee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -128,7 +128,7 @@ class TrainingController extends Controller implements HasMiddleware
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             $targetEmployee = Karyawan::find($id);
             if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -145,10 +145,10 @@ class TrainingController extends Controller implements HasMiddleware
         $training->save();
 
         if (request()->has('redirect_to')) {
-            return redirect(request('redirect_to'))->with('success', 'Target Training berhasil diperbarui');
+            return redirect(request('redirect_to'))->with('success', 'Training target updated successfully.');
         }
 
-        return redirect()->back()->with('success', 'Target Training berhasil diperbarui');
+        return redirect()->back()->with('success', 'Training target updated successfully.');
     }
 
     public function storeHistory(Request $request, $employee_id)
@@ -158,7 +158,7 @@ class TrainingController extends Controller implements HasMiddleware
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             $targetEmployee = Karyawan::find($employee_id);
             if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Akses tidak diizinkan untuk departemen lain.');
+                abort(403, 'Access not authorized for other departments.');
             }
         }
 
@@ -212,7 +212,7 @@ class TrainingController extends Controller implements HasMiddleware
 
         $riwayat->save();
 
-        return redirect()->back()->with('success', 'Riwayat Training berhasil ditambahkan');
+        return redirect()->back()->with('success', 'Training record added successfully.');
     }
 
     public function updateHistory(Request $request, $id)
@@ -268,7 +268,7 @@ class TrainingController extends Controller implements HasMiddleware
 
         $riwayat->save();
 
-        return redirect()->back()->with('success', 'Riwayat Training berhasil diperbarui');
+        return redirect()->back()->with('success', 'Training record updated successfully.');
     }
 
     public function updateStatus(Request $request, $id)
@@ -300,12 +300,12 @@ class TrainingController extends Controller implements HasMiddleware
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Status berhasil diperbarui',
+                'message' => 'Status updated successfully.',
                 'data' => $riwayat,
             ]);
         }
 
-        return redirect()->back()->with('success', 'Status berhasil diperbarui');
+        return redirect()->back()->with('success', 'Status updated successfully.');
     }
 
     public function destroyHistory($id)
@@ -324,7 +324,7 @@ class TrainingController extends Controller implements HasMiddleware
 
         $riwayat->delete();
 
-        return redirect()->back()->with('success', 'Riwayat Training berhasil dihapus');
+        return redirect()->back()->with('success', 'Training record deleted successfully.');
     }
 
     public function uploadEva(Request $request, $id)
@@ -352,6 +352,6 @@ class TrainingController extends Controller implements HasMiddleware
         $riwayat->{$eva.'_lampiran'} = $path;
         $riwayat->save();
 
-        return redirect()->back()->with('success', 'Lampiran EVA berhasil diunggah');
+        return redirect()->back()->with('success', 'EVA attachment uploaded successfully.');
     }
 }
