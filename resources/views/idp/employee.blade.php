@@ -184,7 +184,7 @@
                         </a>
                         @endcan
                         @can('hapus_idp')
-                        <form action="{{ route('idp.destroy', $idp->id) }}" method="POST" hx-boost="false" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this year\'s IDP data?');">
+                        <form action="{{ route('idp.destroy', $idp->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this year\'s IDP data?');">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="redirect_to" value="{{ url()->current() }}">

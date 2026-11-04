@@ -148,15 +148,158 @@
             justify-content: center !important;
             padding: 0 !important;
             color: #0f172a !important;
+            height: 28px !important;
         }
+        /* Custom Month Trigger in Calendar Header (Matches System UI) */
         .flatpickr-current-month .cur-month {
             font-weight: 700 !important;
             color: #0f172a !important;
+            padding: 3px 8px !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            font-size: 0.85rem !important;
+            line-height: 1 !important;
+            transition: all 0.15s ease !important;
+            user-select: none !important;
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
             margin-right: 4px !important;
+            pointer-events: auto !important;
+        }
+        .flatpickr-current-month .cur-month:hover,
+        .flatpickr-current-month .cur-month.active {
+            background-color: #f0f9ff !important;
+            border-color: #38bdf8 !important;
+            color: #0284c7 !important;
+        }
+        .flatpickr-current-month .cur-month .month-chevron {
+            font-size: 8px !important;
+            color: #94a3b8 !important;
+            margin-left: 2px !important;
+            transition: transform 0.2s ease !important;
+            pointer-events: none !important;
+        }
+        .flatpickr-current-month .cur-month:hover .month-chevron,
+        .flatpickr-current-month .cur-month.active .month-chevron {
+            color: #0ea5e9 !important;
+        }
+        .flatpickr-current-month .cur-month.active .month-chevron {
+            transform: rotate(180deg) !important;
+        }
+        .flatpickr-monthDropdown-months {
+            display: none !important;
+        }
+
+        /* Custom Month Popup Menu (Matches System UI) */
+        .flatpickr-custom-month-menu {
+            position: absolute !important;
+            top: 36px !important;
+            left: 8px !important;
+            right: 8px !important;
+            background: #ffffff !important;
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+            z-index: 9999 !important;
+            padding: 8px !important;
+            animation: fpFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .flatpickr-custom-month-menu.hidden {
+            display: none !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-header {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            color: #64748b !important;
+            text-align: center !important;
+            padding-bottom: 6px !important;
+            margin-bottom: 6px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 4px !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 6px 2px !important;
+            border-radius: 8px !important;
+            font-family: 'Inter', sans-serif !important;
+            background: #ffffff !important;
+            border: 1px solid transparent !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            user-select: none !important;
+            pointer-events: auto !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item .m-short,
+        .flatpickr-custom-month-menu .month-menu-item .m-full {
+            pointer-events: none !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item .m-short {
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
+            color: #1e293b !important;
+            line-height: 1.2 !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item .m-full {
+            font-size: 0.62rem !important;
+            font-weight: 500 !important;
+            color: #64748b !important;
+            line-height: 1 !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item:hover {
+            background-color: #f0f9ff !important;
+            border-color: #bae6fd !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item:hover .m-short,
+        .flatpickr-custom-month-menu .month-menu-item:hover .m-full {
+            color: #0284c7 !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item.active {
+            background-color: #0ea5e9 !important;
+            border-color: #0284c7 !important;
+            box-shadow: 0 2px 4px rgba(14, 165, 233, 0.25) !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item.active .m-short {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+        .flatpickr-custom-month-menu .month-menu-item.active .m-full {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        .flatpickr-current-month .numInputWrapper {
+            display: inline-block !important;
+            width: 62px !important;
+            vertical-align: middle !important;
+            margin-left: 2px !important;
         }
         .flatpickr-current-month input.cur-year {
+            font-size: 0.82rem !important;
             font-weight: 700 !important;
             color: #0f172a !important;
+            height: 24px !important;
+            line-height: 24px !important;
+            padding: 0 2px !important;
+            border: 1px solid transparent !important;
+            border-radius: 4px !important;
+            background: transparent !important;
+            margin: 0 !important;
+        }
+        .flatpickr-current-month input.cur-year:hover,
+        .flatpickr-current-month input.cur-year:focus {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #0ea5e9 !important;
         }
         .flatpickr-months .flatpickr-prev-month,
         .flatpickr-months .flatpickr-next-month {
@@ -585,24 +728,260 @@
         }
         window.initTomSelect = initTomSelect;
 
+        function parseFlexibleDate(val) {
+            if (!val || typeof val !== 'string') return null;
+            val = val.trim();
+            if (!val) return null;
+            
+            // Match YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
+            let m = val.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+            if (m) {
+                let y = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, d = parseInt(m[3], 10);
+                let dt = new Date(y, mo, d);
+                if (dt.getFullYear() === y && dt.getMonth() === mo && dt.getDate() === d) return dt;
+            }
+            // Match DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
+            m = val.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+            if (m) {
+                let d = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, y = parseInt(m[3], 10);
+                let dt = new Date(y, mo, d);
+                if (dt.getFullYear() === y && dt.getMonth() === mo && dt.getDate() === d) return dt;
+            }
+            let native = new Date(val);
+            if (!isNaN(native.getTime())) return native;
+            return null;
+        }
+
+        function commitFlatpickrValue(instance) {
+            if (!instance || !instance.element) return;
+            let raw = instance.element.value;
+            let val = raw ? raw.trim() : '';
+            if (!val) {
+                if (instance.selectedDates.length > 0) {
+                    instance.clear();
+                }
+                return;
+            }
+            let parsed = parseFlexibleDate(val);
+            if (parsed) {
+                let formatted = instance.formatDate(parsed, "Y-m-d");
+                if (instance.element.value !== formatted || !instance.selectedDates[0] || instance.formatDate(instance.selectedDates[0], "Y-m-d") !== formatted) {
+                    instance.setDate(parsed, true, "Y-m-d");
+                }
+            }
+        }
+
+        function refreshActiveMonth(instance) {
+            if (!instance || !instance.calendarContainer) return;
+            let menu = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+            let curMonthEl = instance.calendarContainer.querySelector('.cur-month');
+            if (curMonthEl && !curMonthEl.querySelector('.month-chevron')) {
+                let chevron = document.createElement('i');
+                chevron.className = 'fas fa-chevron-down month-chevron';
+                curMonthEl.appendChild(chevron);
+            }
+            if (menu) {
+                let currentM = instance.currentMonth;
+                menu.querySelectorAll('.month-menu-item').forEach((item) => {
+                    let idx = parseInt(item.getAttribute('data-month-idx'), 10);
+                    if (idx === currentM) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        function setupCustomMonthDropdown(instance) {
+            if (!instance || !instance.calendarContainer) return;
+            
+            let curMonthEl = instance.calendarContainer.querySelector('.cur-month');
+            if (curMonthEl && !curMonthEl.querySelector('.month-chevron')) {
+                let chevron = document.createElement('i');
+                chevron.className = 'fas fa-chevron-down month-chevron';
+                curMonthEl.appendChild(chevron);
+            }
+            
+            // Check if menu already exists
+            let menu = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+            if (!menu) {
+                menu = document.createElement('div');
+                menu.className = 'flatpickr-custom-month-menu hidden';
+                
+                let menuHeader = document.createElement('div');
+                menuHeader.className = 'month-menu-header';
+                menuHeader.innerHTML = '<span>Pilih Bulan / Select Month</span>';
+                menu.appendChild(menuHeader);
+                
+                let grid = document.createElement('div');
+                grid.className = 'month-menu-grid';
+                
+                let monthNames = [
+                    { short: 'Jan', full: 'Januari' },
+                    { short: 'Feb', full: 'Februari' },
+                    { short: 'Mar', full: 'Maret' },
+                    { short: 'Apr', full: 'April' },
+                    { short: 'Mei', full: 'Mei' },
+                    { short: 'Jun', full: 'Juni' },
+                    { short: 'Jul', full: 'Juli' },
+                    { short: 'Agu', full: 'Agustus' },
+                    { short: 'Sep', full: 'September' },
+                    { short: 'Okt', full: 'Oktober' },
+                    { short: 'Nov', full: 'November' },
+                    { short: 'Des', full: 'Desember' }
+                ];
+                
+                monthNames.forEach((m, idx) => {
+                    let btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'month-menu-item';
+                    btn.setAttribute('data-month-idx', idx);
+                    btn.innerHTML = `<span class="m-short">${m.short}</span><span class="m-full">${m.full}</span>`;
+                    
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        instance.changeMonth(idx, false);
+                        menu.classList.add('hidden');
+                        let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                        if (curMonth) curMonth.classList.remove('active');
+                        refreshActiveMonth(instance);
+                    });
+                    
+                    grid.appendChild(btn);
+                });
+                
+                menu.appendChild(grid);
+                instance.calendarContainer.appendChild(menu);
+            }
+            
+            // Attach single delegated click on calendarContainer for toggling and selecting month menu
+            if (!instance.calendarContainer._hasMonthDelegation) {
+                instance.calendarContainer._hasMonthDelegation = true;
+                instance.calendarContainer.addEventListener('click', function(e) {
+                    let monthTrigger = e.target.closest('.cur-month') || (e.target.closest('.flatpickr-current-month') && !e.target.closest('.numInputWrapper, input.cur-year'));
+                    if (monthTrigger) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let m = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+                        let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                        if (m) {
+                            let willOpen = m.classList.contains('hidden');
+                            if (willOpen) {
+                                refreshActiveMonth(instance);
+                                m.classList.remove('hidden');
+                                if (curMonth) curMonth.classList.add('active');
+                            } else {
+                                m.classList.add('hidden');
+                                if (curMonth) curMonth.classList.remove('active');
+                            }
+                        }
+                        return;
+                    }
+                    
+                    let monthBtn = e.target.closest('.month-menu-item');
+                    if (monthBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let idx = parseInt(monthBtn.getAttribute('data-month-idx'), 10);
+                        if (!isNaN(idx)) {
+                            instance.changeMonth(idx, false);
+                        }
+                        let m = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+                        if (m) m.classList.add('hidden');
+                        let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                        if (curMonth) curMonth.classList.remove('active');
+                        refreshActiveMonth(instance);
+                        return;
+                    }
+
+                    if (!e.target.closest('.flatpickr-custom-month-menu')) {
+                        let m = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+                        if (m) m.classList.add('hidden');
+                        let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                        if (curMonth) curMonth.classList.remove('active');
+                    }
+                });
+            }
+            
+            refreshActiveMonth(instance);
+        }
+
         function initFlatpickr(container) {
-            let root = (container instanceof HTMLElement) ? container : document;
+            if (typeof flatpickr === 'undefined') return;
+            
             let localeId = (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.id) ? flatpickr.l10ns.id : 'default';
             
-            root.querySelectorAll('input[type="date"], input.datepicker, input[data-flatpickr]').forEach(function(el) {
+            // Query within container if provided, but also always ensure document modals are checked
+            let root = (container instanceof HTMLElement) ? container : document;
+            let elements = Array.from(root.querySelectorAll('input[type="date"], input.datepicker, input[data-flatpickr]'));
+            
+            // Also ensure any uninitialized date inputs in document/modals are processed
+            if (root !== document) {
+                document.querySelectorAll('input[type="date"], input.datepicker, input[data-flatpickr]').forEach(function(el) {
+                    if (!el._flatpickr && !elements.includes(el)) {
+                        elements.push(el);
+                    }
+                });
+            }
+            
+            elements.forEach(function(el) {
                 if (el._flatpickr) return;
                 
-                el.type = 'text';
+                if (el.type === 'date') {
+                    el.type = 'text';
+                }
                 el.setAttribute('data-flatpickr', 'true');
-                el.setAttribute('placeholder', el.getAttribute('placeholder') || 'YYYY-MM-DD');
+                if (!el.getAttribute('placeholder')) {
+                    el.setAttribute('placeholder', 'YYYY-MM-DD');
+                }
+                el.setAttribute('autocomplete', 'off');
                 
                 flatpickr(el, {
                     dateFormat: "Y-m-d",
                     locale: localeId,
                     disableMobile: true,
                     allowInput: true,
+                    monthSelectorType: "static",
                     position: "auto",
+                    onOpen: function(selectedDates, dateStr, instance) {
+                        setupCustomMonthDropdown(instance);
+                        refreshActiveMonth(instance);
+                        if (instance.calendarContainer) {
+                            let m = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+                            if (m) m.classList.add('hidden');
+                            let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                            if (curMonth) curMonth.classList.remove('active');
+                        }
+                    },
+                    onClose: function(selectedDates, dateStr, instance) {
+                        commitFlatpickrValue(instance);
+                        if (instance.calendarContainer) {
+                            let m = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+                            if (m) m.classList.add('hidden');
+                            let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                            if (curMonth) curMonth.classList.remove('active');
+                        }
+                    },
+                    onMonthChange: function(selectedDates, dateStr, instance) {
+                        refreshActiveMonth(instance);
+                        if (instance.calendarContainer) {
+                            let m = instance.calendarContainer.querySelector('.flatpickr-custom-month-menu');
+                            if (m) m.classList.add('hidden');
+                            let curMonth = instance.calendarContainer.querySelector('.cur-month');
+                            if (curMonth) curMonth.classList.remove('active');
+                        }
+                    },
+                    onYearChange: function(selectedDates, dateStr, instance) {
+                        refreshActiveMonth(instance);
+                    },
+                    onChange: function(selectedDates, dateStr, instance) {
+                        instance.element.dispatchEvent(new Event('input', { bubbles: true }));
+                        instance.element.dispatchEvent(new Event('change', { bubbles: true }));
+                    },
                     onReady: function(selectedDates, dateStr, instance) {
+                        setupCustomMonthDropdown(instance);
                         if (!instance.calendarContainer.querySelector('.flatpickr-custom-footer')) {
                             let footer = document.createElement('div');
                             footer.className = 'flatpickr-custom-footer';
@@ -614,21 +993,65 @@
                                 e.preventDefault();
                                 e.stopPropagation();
                                 instance.clear();
+                                instance.element.dispatchEvent(new Event('input', { bubbles: true }));
+                                instance.element.dispatchEvent(new Event('change', { bubbles: true }));
                                 instance.close();
                             });
                             footer.querySelector('.flatpickr-btn-today').addEventListener('click', function(e) {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                instance.setDate(new Date());
+                                instance.setDate(new Date(), true);
                                 instance.close();
                             });
                             instance.calendarContainer.appendChild(footer);
                         }
                     }
                 });
+
+                // Sync while typing so partial/full typed dates don't get lost
+                let syncTimeout = null;
+                el.addEventListener('input', function() {
+                    clearTimeout(syncTimeout);
+                    syncTimeout = setTimeout(function() {
+                        if (!el._flatpickr) return;
+                        let parsed = parseFlexibleDate(el.value);
+                        if (parsed) {
+                            el._flatpickr.setDate(parsed, false);
+                        }
+                    }, 300);
+                });
+
+                // On blur, immediately commit any typed date UNLESS interacting inside calendar
+                el.addEventListener('blur', function(e) {
+                    if (!el._flatpickr) return;
+                    if (e.relatedTarget && el._flatpickr.calendarContainer && el._flatpickr.calendarContainer.contains(e.relatedTarget)) {
+                        return;
+                    }
+                    setTimeout(function() {
+                        if (el._flatpickr && el._flatpickr.calendarContainer && el._flatpickr.calendarContainer.contains(document.activeElement)) {
+                            return;
+                        }
+                        if (el._flatpickr) {
+                            commitFlatpickrValue(el._flatpickr);
+                        }
+                    }, 50);
+                });
+
+                // Prevent accidental form submission on Enter & commit typed date
+                el.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (el._flatpickr) {
+                            commitFlatpickrValue(el._flatpickr);
+                            el._flatpickr.close();
+                        }
+                    }
+                });
             });
         }
         window.initFlatpickr = initFlatpickr;
+
         
         document.addEventListener('DOMContentLoaded', () => {
             initTomSelect();
@@ -638,14 +1061,22 @@
             initTomSelect(e.detail?.target);
             initFlatpickr(e.detail?.target);
         });
+        document.addEventListener('htmx:load', () => {
+            initFlatpickr();
+        });
 
         // Dynamic fallback for any modal or input clicked/focused
         document.addEventListener('focusin', function(e) {
-            if (e.target && (e.target.matches('input[type="date"], input.datepicker') || e.target.hasAttribute('data-flatpickr'))) {
-                if (!e.target._flatpickr) {
-                    initFlatpickr(e.target.parentElement || document);
-                    if (e.target._flatpickr) {
-                        e.target._flatpickr.open();
+            let el = e.target;
+            if (el && (el.matches('input[type="date"], input.datepicker') || el.hasAttribute('data-flatpickr'))) {
+                if (!el._flatpickr) {
+                    initFlatpickr(document);
+                    if (el._flatpickr) {
+                        setTimeout(() => {
+                            if (document.activeElement === el) {
+                                el._flatpickr.open();
+                            }
+                        }, 50);
                     }
                 }
             }

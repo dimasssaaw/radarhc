@@ -437,6 +437,10 @@ class IdpController extends Controller implements HasMiddleware
             IdpPenilain::create($penilaianData);
         }
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back()->with('success', 'Spider Chart updated successfully.');
     }
 
@@ -459,6 +463,10 @@ class IdpController extends Controller implements HasMiddleware
         $penilaianData['id_penilain'] = $Idp->id; // Bypass missing default value
         IdpPenilain::create($penilaianData);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->route('idp.show', $Idp->id)->with('success', 'Spider Chart updated successfully.');
     }
 
@@ -474,6 +482,10 @@ class IdpController extends Controller implements HasMiddleware
 
         $Idp = Idp::findOrFail($id);
         $Idp->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->back()->with('success', 'GROW Model updated successfully.');
     }
@@ -497,6 +509,10 @@ class IdpController extends Controller implements HasMiddleware
             'grow_insight' => $validated['grow_insight'] ?? null,
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back()->with('success', 'GROW Model updated successfully.');
     }
 
@@ -511,6 +527,10 @@ class IdpController extends Controller implements HasMiddleware
         ]);
         $Idp = Idp::findOrFail($id);
         $Idp->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->back()->with('success', 'IDP information updated successfully.');
     }
@@ -527,6 +547,10 @@ class IdpController extends Controller implements HasMiddleware
         $validated['id_karyawan'] = $employee_id;
         Idp::create($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back()->with('success', 'IDP information updated successfully.');
     }
 
@@ -540,6 +564,10 @@ class IdpController extends Controller implements HasMiddleware
         $Idp = Idp::findOrFail($id);
         $Idp->update($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back()->with('success', 'Review schedule updated successfully.');
     }
 
@@ -552,6 +580,10 @@ class IdpController extends Controller implements HasMiddleware
         ]);
         $validated['id_karyawan'] = $employee_id;
         Idp::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->back()->with('success', 'Review schedule updated successfully.');
     }

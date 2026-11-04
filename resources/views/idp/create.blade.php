@@ -30,7 +30,7 @@
             </a>
         </div>
 
-        <form action="{{ route('idp.store') }}" method="POST" hx-boost="false" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+        <form action="{{ route('idp.store') }}" method="POST" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true; if (window.NProgress) window.NProgress.start();">
             @csrf
             <input type="hidden" name="redirect_to" value="{{ $closeUrl }}">
 
@@ -137,9 +137,9 @@
             <a href="{{ $closeUrl }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
                 Cancel
             </a>
-            <button type="submit" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">
-                <i class="fas fa-save"></i>
-                <span>Save IDP</span>
+            <button type="submit" :disabled="isSubmitting" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <i class="fas" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                <span x-text="isSubmitting ? 'Saving...' : 'Save IDP'"></span>
             </button>
         </div>
         </form>

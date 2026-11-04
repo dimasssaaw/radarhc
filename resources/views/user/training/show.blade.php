@@ -2,173 +2,8 @@
 @section('title', 'Training Details')
 
 @section('content')
-    <script>
-        function trainingDetails() {
-            return {
-                showFormModal: {{ $errors->any() ? 'true' : 'false' }},
-                showUploadModal: false,
-                uploadEva: '',
-                uploadId: null,
-                formTitle: 'Add Training',
-                formAction: '{{ route('training.store-history', $employee->id) }}',
-                formMethod: 'POST',
-                activeEvaTab: 'eva1',
-                formData: { 
-                    id: '', 
-                    kategori: '', 
-                    nama: '', 
-                    tanggal: '', 
-                    eva1_status: '', 
-                    eva2_status: '', 
-                    eva3_status: '', 
-                    eva1_lampiran: '',
-                    eva2_lampiran: '',
-                    eva3_lampiran: ''
-                },
-                formErrors: {},
-                isSubmitting: false,
-
-                getOriginalFileName(path) {
-                    if (!path) return '';
-                    let name = path.split('/').pop();
-                    let underscoreIndex = name.indexOf('_');
-                    return underscoreIndex !== -1 ? name.substring(underscoreIndex + 1) : name;
-                },
-
-                getStatusModalLabel(statusVal) {
-                    let map = {
-                        '': '-- Select Status --',
-                        'pending': 'Pending',
-                        'not_started': 'Not Started',
-                        'in_progress': 'In Progress',
-                        'completed': 'Completed',
-                        'remedial': 'Remedial'
-                    };
-                    return map[statusVal] || '-- Select Status --';
-                },
-
-                async submitForm(formElement) {
-                    this.isSubmitting = true;
-                    try {
-                        const fd = new FormData(formElement);
-                        const response = await fetch(this.formAction, {
-                            method: 'POST',
-                            body: fd,
-                            headers: { 
-                                'X-Requested-With': 'XMLHttpRequest', 
-                                'Accept': 'application/json' 
-                            }
-                        });
-
-                        if (response.ok || response.redirected) {
-                            window.location.reload();
-                        } else if (response.status === 422) {
-                            const data = await response.json();
-                            this.formErrors = data.errors;
-                        } else {
-                            alert('A server error occurred.');
-                        }
-                    } catch (err) {
-                        alert('Failed to connect to the server.');
-                    } finally {
-                        this.isSubmitting = false;
-                    }
-                },
-
-                openModal(title, kategori, data = null) {
-                    this.formTitle = title;
-                    this.formData.kategori = kategori;
-                    this.formErrors = {};
-
-                    if (data) {
-                        this.formAction = '{{ url('training/history') }}/' + data.id;
-                        this.formMethod = 'PUT';
-                        this.formData.id = data.id;
-                        this.formData.nama = data.nama_training;
-                        this.formData.tanggal = data.tanggal_training ? data.tanggal_training.split(' ')[0] : '';
-                        this.formData.eva1_status = data.eva1_status || '';
-                        this.formData.eva2_status = data.eva2_status || '';
-                        this.formData.eva3_status = data.eva3_status || '';
-                        this.formData.eva1_lampiran = data.eva1_lampiran || '';
-                        this.formData.eva2_lampiran = data.eva2_lampiran || '';
-                        this.formData.eva3_lampiran = data.eva3_lampiran || '';
-                    } else {
-                        this.formAction = '{{ route('training.store-history', $employee->id) }}';
-                        this.formMethod = 'POST';
-                        this.formData.id = null;
-                        this.formData.nama = '';
-                        this.formData.tanggal = '';
-                        this.formData.eva1_status = '';
-                        this.formData.eva2_status = '';
-                        this.formData.eva3_status = '';
-                        this.formData.eva1_lampiran = '';
-                        this.formData.eva2_lampiran = '';
-                        this.formData.eva3_lampiran = '';
-                    }
-                    this.activeEvaTab = 'eva1';
-                    this.showFormModal = true;
-                    this.syncTomSelect();
-                },
-
-                syncTomSelect() {
-                    this.$nextTick(() => {
-                        let modalEl = document.querySelector('[role="dialog"]');
-                        ['eva1', 'eva2', 'eva3'].forEach(tab => {
-                            let el = modalEl ? modalEl.querySelector('select[name="' + tab + '_status"]') : document.querySelector('select[name="' + tab + '_status"]');
-                            if (el) {
-                                if (!el.tomselect && typeof TomSelect !== 'undefined') {
-                                    let ts = new TomSelect(el, {
-                                        controlInput: null,
-                                        allowEmptyOption: true
-                                    });
-                                    el._tomSelectHooked = true;
-                                    ts.on('dropdown_open', () => {
-                                        let controlRect = ts.control.getBoundingClientRect();
-                                        let dropdownHeight = Math.max(ts.dropdown.scrollHeight || 0, ts.dropdown.offsetHeight || 0, 220);
-                                        let spaceBelow = window.innerHeight - controlRect.bottom;
-                                        let spaceAbove = controlRect.top;
-                                        if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-                                            ts.wrapper.classList.add('drop-up');
-                                        } else {
-                                            ts.wrapper.classList.remove('drop-up');
-                                        }
-                                    });
-                                    ts.on('change', (val) => {
-                                        this.formData[tab + '_status'] = val;
-                                    });
-                                    let currentVal = this.formData[tab + '_status'] || '';
-                                    if (currentVal) {
-                                        ts.setValue(currentVal, true);
-                                    }
-                                } else if (el.tomselect) {
-                                    if (!el._tomSelectHooked) {
-                                        el._tomSelectHooked = true;
-                                        el.tomselect.on('change', (val) => {
-                                            this.formData[tab + '_status'] = val;
-                                        });
-                                    }
-                                    let currentVal = this.formData[tab + '_status'] || '';
-                                    if (el.tomselect.getValue() !== currentVal) {
-                                        el.tomselect.setValue(currentVal, true);
-                                    }
-                                }
-                            }
-                        });
-                    });
-                },
-
-                openUploadModal(eva, id) {
-                    this.uploadEva = eva;
-                    this.uploadId = id;
-                    this.showUploadModal = true;
-                }
-            };
-        }
-    </script>
-
-    <div x-data="trainingDetails()" x-init="if (showFormModal) syncTomSelect()">
-        <div class="min-h-full -mx-8 -my-8 bg-white p-8">
-            <!-- Header -->
+    <div class="min-h-full -mx-8 -my-8 bg-white p-8">
+        <!-- Header -->
             <div class="mb-6 flex justify-between items-end">
                 <div>
                     <div class="text-sm text-gray-400 mb-1 flex items-center gap-2">
@@ -237,78 +72,78 @@
                 <div class="lg:col-span-7 bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.10)]"
                     x-data="{ showEditTarget: false }">
                     <form id="training-target-form" action="{{ route('training.update-target', $employee->id) }}"
-                        method="POST">
+                        method="POST" hx-boost="false">
                         @csrf
+
+                        <div class="p-4 flex justify-between items-center border-b border-gray-100">
+                            <h3 class="text-sm font-bold text-gray-900">Training Evaluation</h3>
+                            @can('edit_training')
+                                <button @click="if (!showEditTarget) { showEditTarget = true; $event.preventDefault(); }"
+                                    :type="showEditTarget ? 'submit' : 'button'"
+                                    class="bg-[#06b6d4] hover:bg-[#0891b2] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
+                                    <i class="fas" :class="showEditTarget ? 'fa-save' : 'fa-edit'"></i>
+                                    <span x-text="showEditTarget ? 'Save' : 'Edit Data'"></span>
+                                </button>
+                            @endcan
+                        </div>
+
+                        <div class="overflow-x-auto p-4 pt-0">
+                            <table class="w-full text-center text-sm border-collapse mt-4 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                <thead class="bg-gray-900 text-white text-[11px] uppercase tracking-wider">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left">Category</th>
+                                        <th class="px-4 py-3">Target</th>
+                                        <th class="px-4 py-3">Completed</th>
+                                        <th class="px-4 py-3">Achievement</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 bg-white">
+                                    <tr>
+                                        <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
+                                            <div class="w-2 h-2 rounded-full bg-[#22c55e]"></div> Mandatory
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">
+                                            <span x-show="!showEditTarget">{{ $training->target_mandatory }}</span>
+                                            <input x-show="showEditTarget" type="number" name="target_mandatory"
+                                                value="{{ $training->target_mandatory }}"
+                                                min="0"
+                                                class="w-20 mx-auto rounded border-gray-300 px-2 py-1 text-center text-sm">
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $completedMandatory }}</td>
+                                        <td class="px-4 py-3 font-bold text-[#22c55e]">{{ $achieveMandatory }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
+                                            <div class="w-2 h-2 rounded-full bg-[#0ea5e9]"></div> Skill
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">
+                                            <span x-show="!showEditTarget">{{ $training->target_skill }}</span>
+                                            <input x-show="showEditTarget" type="number" name="target_skill"
+                                                value="{{ $training->target_skill }}"
+                                                min="0"
+                                                class="w-20 mx-auto rounded border-gray-300 px-2 py-1 text-center text-sm">
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $completedSkill }}</td>
+                                        <td class="px-4 py-3 font-bold text-[#0ea5e9]">{{ $achieveSkill }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
+                                            <div class="w-2 h-2 rounded-full bg-[#f43f5e]"></div> Managerial
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">
+                                            <span x-show="!showEditTarget">{{ $training->target_managerial }}</span>
+                                            <input x-show="showEditTarget" type="number" name="target_managerial"
+                                                value="{{ $training->target_managerial }}"
+                                                min="0"
+                                                class="w-20 mx-auto rounded border-gray-300 px-2 py-1 text-center text-sm">
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $completedManagerial }}</td>
+                                        <td class="px-4 py-3 font-bold text-[#f43f5e]">{{ $achieveManagerial }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </form>
-
-                    <div class="p-4 flex justify-between items-center border-b border-gray-100">
-                        <h3 class="text-sm font-bold text-gray-900">Training Evaluation</h3>
-                        @can('edit_training')
-                            <button @click="if (!showEditTarget) { showEditTarget = true; $event.preventDefault(); }"
-                                :type="showEditTarget ? 'submit' : 'button'" form="training-target-form"
-                                class="bg-[#06b6d4] hover:bg-[#0891b2] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                                <i class="fas" :class="showEditTarget ? 'fa-save' : 'fa-edit'"></i>
-                                <span x-text="showEditTarget ? 'Save' : 'Edit Data'"></span>
-                            </button>
-                        @endcan
-                    </div>
-
-                    <div class="overflow-x-auto p-4 pt-0">
-                        <table class="w-full text-center text-sm border-collapse mt-4 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                            <thead class="bg-gray-900 text-white text-[11px] uppercase tracking-wider">
-                                <tr>
-                                    <th class="px-4 py-3 text-left">Category</th>
-                                    <th class="px-4 py-3">Target</th>
-                                    <th class="px-4 py-3">Completed</th>
-                                    <th class="px-4 py-3">Achievement</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 bg-white">
-                                <tr>
-                                    <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-[#22c55e]"></div> Mandatory
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-600">
-                                        <span x-show="!showEditTarget">{{ $training->target_mandatory }}</span>
-                                        <input x-show="showEditTarget" type="number" name="target_mandatory"
-                                            form="training-target-form" value="{{ $training->target_mandatory }}"
-                                            min="0"
-                                            class="w-20 mx-auto rounded border-gray-300 px-2 py-1 text-center text-sm">
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-600">{{ $completedMandatory }}</td>
-                                    <td class="px-4 py-3 font-bold text-[#22c55e]">{{ $achieveMandatory }}%</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-[#0ea5e9]"></div> Skill
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-600">
-                                        <span x-show="!showEditTarget">{{ $training->target_skill }}</span>
-                                        <input x-show="showEditTarget" type="number" name="target_skill"
-                                            form="training-target-form" value="{{ $training->target_skill }}"
-                                            min="0"
-                                            class="w-20 mx-auto rounded border-gray-300 px-2 py-1 text-center text-sm">
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-600">{{ $completedSkill }}</td>
-                                    <td class="px-4 py-3 font-bold text-[#0ea5e9]">{{ $achieveSkill }}%</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 text-left font-semibold text-gray-800 flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-[#f43f5e]"></div> Managerial
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-600">
-                                        <span x-show="!showEditTarget">{{ $training->target_managerial }}</span>
-                                        <input x-show="showEditTarget" type="number" name="target_managerial"
-                                            form="training-target-form" value="{{ $training->target_managerial }}"
-                                            min="0"
-                                            class="w-20 mx-auto rounded border-gray-300 px-2 py-1 text-center text-sm">
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-600">{{ $completedManagerial }}</td>
-                                    <td class="px-4 py-3 font-bold text-[#f43f5e]">{{ $achieveManagerial }}%</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
 
@@ -354,7 +189,8 @@
                             </span>
                         </div>
                         @can('tambah_training')
-                            <button @click="openModal('Add {{ $section['title'] }}', '{{ $section['kategori'] }}')"
+                            <button type="button" x-data
+                                @click="$dispatch('open-training-modal', { title: 'Add {{ $section['title'] }}', kategori: '{{ $section['kategori'] }}' })"
                                 style="color: {{ $section['color'] }}; border-color: {{ $section['color'] }};"
                                 class="bg-white border {{ $section['hover_bg'] }} px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs">
                                 <i class="fas fa-plus text-[10px]"></i> Add
@@ -466,6 +302,7 @@
 
                                                     if (res.ok || res.redirected) {
                                                         this.isUpdatingStatus = false;
+                                                        window.location.reload();
                                                     } else {
                                                         alert('Failed to update status');
                                                         this.evaStatus[this.selectedEva] = prevStatus;
@@ -589,8 +426,8 @@
                                                             <span class="truncate">{{ strtoupper($eva) }} PDF</span>
                                                         </a>
                                                     @else
-                                                        <button type="button"
-                                                            @click="openUploadModal('{{ $eva }}', {{ $item->id }})"
+                                                        <button type="button" x-data
+                                                            @click="$dispatch('open-upload-modal', { eva: '{{ $eva }}', id: {{ $item->id }} })"
                                                             style="color: {{ $section['color'] }};"
                                                             class="inline-flex items-center justify-center gap-1.5 px-3 h-[38px] rounded-lg text-xs font-medium border border-dashed border-gray-300 hover:border-current {{ $section['hover_bg'] }} transition-colors"
                                                             title="Upload {{ strtoupper($eva) }} Attachment">
@@ -606,8 +443,8 @@
                                         <td class="px-4 py-3 text-center align-middle">
                                             <div class="flex items-center justify-center gap-1.5">
                                                 @can('edit_training')
-                                                    <button type="button"
-                                                        @click="openModal('Edit {{ $section['title'] }}', '{{ $section['kategori'] }}', @js($item))"
+                                                    <button type="button" x-data
+                                                        @click="$dispatch('open-training-modal', { title: 'Edit {{ $section['title'] }}', kategori: '{{ $section['kategori'] }}', data: @js($item) })"
                                                         class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0ea5e9] hover:bg-sky-50 transition-all"
                                                         title="Edit training">
                                                         <i class="fas fa-pen text-xs"></i>
@@ -646,13 +483,148 @@
                     </div>
                 </div>
             @endforeach
+        </div>
+@endsection
 
-            <!-- Training Form Modal -->
-            <template x-teleport="body">
-                <div x-show="showFormModal" style="display: none;" 
-                    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 overflow-y-auto"
-                    @click.self="showFormModal = false"
-                    aria-labelledby="modal-title" role="dialog" aria-modal="true">
+@push('modals')
+    <!-- Training Form Modal -->
+    <div x-data="{
+        showFormModal: {{ (isset($errors) && $errors->any()) ? 'true' : 'false' }},
+        formTitle: 'Add Training',
+        formAction: '{{ route('training.store-history', $employee->id) }}',
+        formMethod: 'POST',
+        activeEvaTab: 'eva1',
+        formData: { 
+            id: '', 
+            kategori: '', 
+            nama: '', 
+            tanggal: '', 
+            eva1_status: '', 
+            eva2_status: '', 
+            eva3_status: '', 
+            eva1_lampiran: '',
+            eva2_lampiran: '',
+            eva3_lampiran: ''
+        },
+        newFiles: {
+            eva1: null,
+            eva2: null,
+            eva3: null
+        },
+        formErrors: {},
+        isSubmitting: false,
+
+        getOriginalFileName(path) {
+            if (!path) return '';
+            let name = path.split('/').pop();
+            let underscoreIndex = name.indexOf('_');
+            return underscoreIndex !== -1 ? name.substring(underscoreIndex + 1) : name;
+        },
+
+        getStatusModalLabel(statusVal) {
+            let map = {
+                '': '-- Select Status --',
+                'pending': 'Pending',
+                'not_started': 'Not Started',
+                'in_progress': 'In Progress',
+                'completed': 'Completed',
+                'remedial': 'Remedial'
+            };
+            return map[statusVal] || '-- Select Status --';
+        },
+
+        async submitForm(formElement) {
+            this.isSubmitting = true;
+            this.formErrors = {};
+            try {
+                const fd = new FormData(formElement);
+                const response = await fetch(this.formAction, {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest', 
+                        'Accept': 'application/json' 
+                    }
+                });
+
+                if (response.ok || response.redirected) {
+                    window.location.reload();
+                } else if (response.status === 422) {
+                    const data = await response.json();
+                    this.formErrors = data.errors || {};
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    alert(data.message || 'A server error occurred.');
+                }
+            } catch (err) {
+                alert('Failed to connect to the server.');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        openModal(detail) {
+            let title = detail?.title || 'Add Training';
+            let kategori = detail?.kategori || '';
+            let data = detail?.data || null;
+
+            this.formTitle = title;
+            this.formData.kategori = kategori;
+            this.formErrors = {};
+            this.newFiles = { eva1: null, eva2: null, eva3: null };
+
+            if (data) {
+                this.formAction = '{{ url('training/history') }}/' + data.id;
+                this.formMethod = 'PUT';
+                this.formData.id = data.id;
+                this.formData.nama = data.nama_training || '';
+                this.formData.tanggal = data.tanggal_training ? data.tanggal_training.substring(0, 10) : '';
+                this.formData.eva1_status = data.eva1_status || '';
+                this.formData.eva2_status = data.eva2_status || '';
+                this.formData.eva3_status = data.eva3_status || '';
+                this.formData.eva1_lampiran = data.eva1_lampiran || '';
+                this.formData.eva2_lampiran = data.eva2_lampiran || '';
+                this.formData.eva3_lampiran = data.eva3_lampiran || '';
+            } else {
+                this.formAction = '{{ route('training.store-history', $employee->id) }}';
+                this.formMethod = 'POST';
+                this.formData.id = null;
+                this.formData.nama = '';
+                this.formData.tanggal = '';
+                this.formData.eva1_status = '';
+                this.formData.eva2_status = '';
+                this.formData.eva3_status = '';
+                this.formData.eva1_lampiran = '';
+                this.formData.eva2_lampiran = '';
+                this.formData.eva3_lampiran = '';
+            }
+            this.activeEvaTab = 'eva1';
+            this.showFormModal = true;
+
+            this.$nextTick(() => {
+                let modalEl = this.$el;
+                if (modalEl) {
+                    modalEl.querySelectorAll('input[type=file]').forEach(i => i.value = '');
+                    let dateInput = modalEl.querySelector('input[name=tanggal_training]');
+                    if (dateInput) {
+                        if (!dateInput._flatpickr && typeof window.initFlatpickr === 'function') {
+                            window.initFlatpickr(dateInput.parentElement || modalEl);
+                        }
+                        if (dateInput._flatpickr) {
+                            dateInput._flatpickr.setDate(this.formData.tanggal || '', false);
+                        }
+                    }
+                }
+            });
+        }
+    }"
+    @open-training-modal.window="openModal($event.detail)"
+    class="relative z-[100]">
+        
+        <div x-show="showFormModal" style="display: none;" 
+            class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 overflow-y-auto"
+            @click.self="showFormModal = false"
+            aria-labelledby="modal-title" role="dialog" aria-modal="true">
                     
                     <div x-show="showFormModal" 
                         @click.stop
@@ -699,6 +671,7 @@
                                         <div class="relative">
                                             <input type="date" name="tanggal_training"
                                                 x-model="formData.tanggal"
+                                                @change="formData.tanggal = $el.value"
                                                 :class="formErrors.tanggal_training ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#0ea5e9] focus:ring-[#0ea5e9]'"
                                                 class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0ea5e9] focus:ring-[#0ea5e9] text-sm py-2 px-3 border bg-white font-semibold">
                                         </div>
@@ -714,7 +687,7 @@
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Evaluation</label>
                                     <div class="grid grid-cols-3 gap-2">
                                         @foreach (['eva1' => 'EVA 1', 'eva2' => 'EVA 2', 'eva3' => 'EVA 3'] as $tabKey => $tabLabel)
-                                             <button type="button" @click="activeEvaTab = '{{ $tabKey }}'; syncTomSelect();"
+                                             <button type="button" @click="activeEvaTab = '{{ $tabKey }}'"
                                                 :class="activeEvaTab === '{{ $tabKey }}' ?
                                                     'bg-sky-50 text-sky-600 border-sky-300' :
                                                     'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
@@ -754,7 +727,7 @@
                                             }
                                         }" class="mb-4">
                                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
-                                            <input type="hidden" name="{{ $tab }}_status" :value="formData.{{ $tab }}_status">
+                                            <input type="hidden" name="{{ $tab }}_status" :value="formData.{{ $tab }}_status" x-model="formData.{{ $tab }}_status">
                                             <div class="relative" :class="openStatusModalDrop ? 'z-50' : 'z-10'" @click.outside="openStatusModalDrop = false">
                                                 <button type="button" 
                                                     @click="toggle($el)"
@@ -790,21 +763,21 @@
                                                 x-text="formErrors.{{ $tab }}_status ? formErrors.{{ $tab }}_status[0] : ''" style="display: none;"></p>
                                         </div>
 
-                                        <div x-data="{ newFile: null }">
+                                        <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Attachment</label>
                                             <input id="{{ $tab }}_file" type="file" name="{{ $tab }}_file" accept="application/pdf" class="sr-only" 
-                                                @change="newFile = $event.target.files[0] ? $event.target.files[0].name : null">
+                                                @change="newFiles['{{ $tab }}'] = $event.target.files[0] ? $event.target.files[0].name : null">
                                             
                                             <!-- View Mode -->
-                                            <div x-show="formData.{{ $tab }}_lampiran || newFile" style="display: none;" 
+                                            <div x-show="formData.{{ $tab }}_lampiran || newFiles['{{ $tab }}']" style="display: none;" 
                                                 class="flex items-center justify-between border border-gray-200 bg-white rounded-lg p-3">
                                                 <div class="flex items-center gap-3 overflow-hidden">
                                                     <i class="fas fa-file-pdf text-emerald-600 text-xl shrink-0"></i>
                                                     <span class="text-sm font-bold text-gray-800 truncate" 
-                                                        x-text="newFile ? newFile : getOriginalFileName(formData.{{ $tab }}_lampiran)"></span>
+                                                        x-text="newFiles['{{ $tab }}'] ? newFiles['{{ $tab }}'] : getOriginalFileName(formData.{{ $tab }}_lampiran)"></span>
                                                 </div>
                                                 <div class="flex items-center gap-2 shrink-0">
-                                                    <a x-show="formData.{{ $tab }}_lampiran && !newFile" 
+                                                    <a x-show="formData.{{ $tab }}_lampiran && !newFiles['{{ $tab }}']" 
                                                         :href="'{{ Storage::disk('hrg')->url('') }}' + formData.{{ $tab }}_lampiran" 
                                                         target="_blank" 
                                                         class="px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
@@ -818,7 +791,7 @@
                                             </div>
 
                                             <!-- Upload Mode -->
-                                            <label x-show="!formData.{{ $tab }}_lampiran && !newFile" for="{{ $tab }}_file"
+                                            <label x-show="!formData.{{ $tab }}_lampiran && !newFiles['{{ $tab }}']" for="{{ $tab }}_file"
                                                 :class="formErrors.{{ $tab }}_file ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'"
                                                 class="border border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
                                                 <i class="fas fa-file-alt text-gray-400 text-xl mb-1.5"></i>
@@ -851,11 +824,14 @@
                         </form>
                     </div>
                 </div>
-            </template>
+            </div>
 
-            <!-- Quick Upload Modal -->
-            <template x-teleport="body">
-                <div x-show="showUploadModal" style="display: none;" 
+    <!-- Quick Upload Modal -->
+    <div x-data="{ showUploadModal: false, uploadEva: '', uploadId: null, isUploading: false }"
+        @open-upload-modal.window="showUploadModal = true; uploadEva = $event.detail.eva; uploadId = $event.detail.id; isUploading = false"
+        class="relative z-[110]">
+        
+        <div x-show="showUploadModal" style="display: none;" 
                     class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 overflow-y-auto"
                     @click.self="showUploadModal = false"
                     aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -885,7 +861,7 @@
                             method="POST" enctype="multipart/form-data" hx-boost="false"
                             x-data="{ isUploading: false }" @submit="isUploading = true">
                             @csrf
-                            <input type="hidden" name="eva" :value="uploadEva">
+                            <input type="hidden" name="eva" :value="uploadEva" x-model="uploadEva">
 
                             <div class="p-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -912,12 +888,8 @@
                         </form>
                     </div>
                 </div>
-            </template>
-        </div>
-    </div>
-@endsection
+            </div>
 
-@push('modals')
     <style>
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;

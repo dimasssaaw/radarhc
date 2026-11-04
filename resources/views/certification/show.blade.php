@@ -389,8 +389,22 @@
         // Populate form
         document.getElementById('edit_nama').value = cert.nama_sertifikasi;
         document.getElementById('edit_penerbit').value = cert.penerbit || '';
-        document.getElementById('edit_terbit').value = cert.terbit ? cert.terbit.split('T')[0] : '';
-        document.getElementById('edit_kadaluarsa').value = cert.kadaluarsa ? cert.kadaluarsa.split('T')[0] : '';
+        
+        const terbitVal = cert.terbit ? cert.terbit.split('T')[0] : '';
+        const kadaluarsaVal = cert.kadaluarsa ? cert.kadaluarsa.split('T')[0] : '';
+        const terbitInput = document.getElementById('edit_terbit');
+        const kadaluarsaInput = document.getElementById('edit_kadaluarsa');
+        
+        terbitInput.value = terbitVal;
+        kadaluarsaInput.value = kadaluarsaVal;
+        
+        if (terbitInput._flatpickr) {
+            terbitInput._flatpickr.setDate(terbitVal, false);
+        }
+        if (kadaluarsaInput._flatpickr) {
+            kadaluarsaInput._flatpickr.setDate(kadaluarsaVal, false);
+        }
+
         document.getElementById('edit_status').value = cert.status_sertifikat;
         
         // Handle existing file display

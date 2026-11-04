@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Karyawan;
 use App\Models\RiwayatTraining;
 use App\Models\Training;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -121,16 +122,21 @@ class TrainingController extends Controller implements HasMiddleware
         ));
     }
 
-    public function updateTarget(Request $request, $id)
+    private function authorizeDepartmentAccess($employeeId): void
     {
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            $targetEmployee = Karyawan::find($id);
+            $targetEmployee = Karyawan::find($employeeId);
             if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Access not authorized for other departments.');
             }
         }
+    }
+
+    public function updateTarget(Request $request, $id)
+    {
+        $this->authorizeDepartmentAccess($id);
 
         $request->validate([
             'target_mandatory' => 'required|integer|min:0',
@@ -144,6 +150,16 @@ class TrainingController extends Controller implements HasMiddleware
         $training->target_managerial = $request->target_managerial;
         $training->save();
 
+        if ($request->wantsJson()) {
+            session()->flash('success', 'Training target updated successfully.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Training target updated successfully.',
+                'data' => $training,
+            ]);
+        }
+
         if (request()->has('redirect_to')) {
             return redirect(request('redirect_to'))->with('success', 'Training target updated successfully.');
         }
@@ -153,14 +169,7 @@ class TrainingController extends Controller implements HasMiddleware
 
     public function storeHistory(Request $request, $employee_id)
     {
-        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
-        if (! $isAdmin) {
-            $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
-            $targetEmployee = Karyawan::find($employee_id);
-            if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
-                abort(403, 'Access not authorized for other departments.');
-            }
-        }
+        $this->authorizeDepartmentAccess($employee_id);
 
         $request->validate([
             'kategori' => 'required|in:mandatory,skill,managerial',
@@ -185,7 +194,7 @@ class TrainingController extends Controller implements HasMiddleware
             'kategori' => $request->kategori,
             'nama_training' => $request->nama_training,
             'status_training' => 'completed',
-            'tanggal_training' => $request->tanggal_training,
+            'tanggal_training' => $request->tanggal_training ? Carbon::parse($request->tanggal_training)->format('Y-m-d') : null,
             'eva1_status' => $request->eva1_status ?: null,
             'eva2_status' => $request->eva2_status ?: null,
             'eva3_status' => $request->eva3_status ?: null,
@@ -212,12 +221,23 @@ class TrainingController extends Controller implements HasMiddleware
 
         $riwayat->save();
 
+        if ($request->wantsJson()) {
+            session()->flash('success', 'Training record added successfully.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Training record added successfully.',
+                'data' => $riwayat,
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Training record added successfully.');
     }
 
     public function updateHistory(Request $request, $id)
     {
         $riwayat = RiwayatTraining::findOrFail($id);
+        $this->authorizeDepartmentAccess($riwayat->id_karyawan);
 
         $request->validate([
             'nama_training' => 'required|string',
@@ -233,7 +253,7 @@ class TrainingController extends Controller implements HasMiddleware
         \Log::info('updateHistory called', ['id' => $id, 'data' => $request->all()]);
 
         $riwayat->nama_training = $request->nama_training;
-        $riwayat->tanggal_training = $request->tanggal_training;
+        $riwayat->tanggal_training = $request->tanggal_training ? Carbon::parse($request->tanggal_training)->format('Y-m-d') : null;
         $riwayat->eva1_status = $request->eva1_status ?: null;
         $riwayat->eva2_status = $request->eva2_status ?: null;
         $riwayat->eva3_status = $request->eva3_status ?: null;
@@ -268,28 +288,37 @@ class TrainingController extends Controller implements HasMiddleware
 
         $riwayat->save();
 
+        if ($request->wantsJson()) {
+            session()->flash('success', 'Training record updated successfully.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Training record updated successfully.',
+                'data' => $riwayat,
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Training record updated successfully.');
     }
 
     public function updateStatus(Request $request, $id)
     {
         $riwayat = RiwayatTraining::findOrFail($id);
+        $this->authorizeDepartmentAccess($riwayat->id_karyawan);
 
         $rules = [];
         $data = [];
 
-        if ($request->has('status_training')) {
+        if ($request->exists('status_training')) {
             $rules['status_training'] = 'required|in:completed,in_progress,remedial,not_started';
             $data['status_training'] = $request->status_training;
-        } elseif ($request->has('eva1_status')) {
-            $rules['eva1_status'] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
-            $data['eva1_status'] = $request->eva1_status ?: null;
-        } elseif ($request->has('eva2_status')) {
-            $rules['eva2_status'] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
-            $data['eva2_status'] = $request->eva2_status ?: null;
-        } elseif ($request->has('eva3_status')) {
-            $rules['eva3_status'] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
-            $data['eva3_status'] = $request->eva3_status ?: null;
+        }
+
+        foreach (['eva1_status', 'eva2_status', 'eva3_status'] as $field) {
+            if ($request->exists($field)) {
+                $rules[$field] = 'nullable|in:completed,in_progress,remedial,not_started,pending';
+                $data[$field] = $request->input($field) ?: null;
+            }
         }
 
         if (! empty($rules)) {
@@ -298,6 +327,8 @@ class TrainingController extends Controller implements HasMiddleware
         }
 
         if ($request->wantsJson()) {
+            session()->flash('success', 'Status updated successfully.');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Status updated successfully.',
@@ -311,6 +342,7 @@ class TrainingController extends Controller implements HasMiddleware
     public function destroyHistory($id)
     {
         $riwayat = RiwayatTraining::findOrFail($id);
+        $this->authorizeDepartmentAccess($riwayat->id_karyawan);
 
         if ($riwayat->eva1_lampiran) {
             Storage::disk('hrg')->delete($riwayat->eva1_lampiran);
@@ -329,12 +361,13 @@ class TrainingController extends Controller implements HasMiddleware
 
     public function uploadEva(Request $request, $id)
     {
+        $riwayat = RiwayatTraining::findOrFail($id);
+        $this->authorizeDepartmentAccess($riwayat->id_karyawan);
+
         $request->validate([
             'eva' => 'required|in:eva1,eva2,eva3',
             'file' => 'required|mimes:pdf|max:10240',
         ]);
-
-        $riwayat = RiwayatTraining::findOrFail($id);
 
         $eva = $request->eva;
 

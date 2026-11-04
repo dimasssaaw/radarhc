@@ -516,31 +516,62 @@
 @endphp
 <div x-data="{ 
     showModal: false,
+    isSubmitting: false,
+    formErrors: {},
+    async submitForm(form) {
+        this.isSubmitting = true;
+        this.formErrors = {};
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            });
+            if (response.ok || response.redirected) {
+                window.location.reload();
+            } else if (response.status === 422) {
+                const data = await response.json();
+                this.formErrors = data.errors || {};
+            } else {
+                const data = await response.json().catch(() => ({}));
+                alert(data.message || 'A server error occurred.');
+            }
+        } catch (e) {
+            alert('Failed to connect to the server.');
+        } finally {
+            this.isSubmitting = false;
+        }
+    },
     @foreach ($fields as $dbKey => $label)
     '{{ $dbKey }}': {{ optional($Idp->penilaian)->$dbKey ?? 0 }},
     @endforeach
-}" @open-penilaian-modal.window="showModal = true" class="relative z-[9999]">
-    <div x-show="showModal" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" @click="showModal = false"></div>
-            
-            <!-- Modal panel -->
-            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-sm border border-gray-100 my-8 flex flex-col">
-                <div class="bg-white px-4 pt-3 pb-2 border-b border-gray-100 flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-[#1e293b] text-base" id="modal-title">
-                            Input Competency Scores
-                        </h3>
-                        <p class="text-[11px] text-gray-500 mt-0.5">Enter scores on a scale of 0-5.0</p>
-                    </div>
-                    <button type="button" @click="showModal = false" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
-                        <span class="sr-only">Close</span>
-                        <i class="fas fa-times text-sm"></i>
-                    </button>
+}" @open-penilaian-modal.window="showModal = true" class="relative z-[100]">
+    <!-- Background overlay -->
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 bg-black/50 z-[100] transition-opacity cursor-pointer"
+         @click="showModal = false"
+         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+    
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-0"
+         @click.self="showModal = false">
+        <div @click.stop
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-sm border border-gray-100 my-8 flex flex-col">
+            <div class="bg-white px-4 pt-3 pb-2 border-b border-gray-100 flex justify-between items-start">
+                <div>
+                    <h3 class="font-bold text-[#1e293b] text-base" id="modal-title">
+                        Input Competency Scores
+                    </h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Enter scores on a scale of 0-5.0</p>
                 </div>
-                
-                <form action="{{ $Idp->id ? route('idp.update-penilaian', $Idp->id) : route('idp.update-employee-penilaian', $Idp->karyawan->id) }}" method="POST">
+                <button type="button" @click="showModal = false" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
+                    <span class="sr-only">Close</span>
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            
+            <form action="{{ $Idp->id ? route('idp.update-penilaian', $Idp->id) : route('idp.update-employee-penilaian', $Idp->karyawan->id) }}" method="POST" hx-boost="false" @submit.prevent="submitForm($el)">
                     @csrf
                     <div class="bg-white px-4 py-3 max-h-[50vh] overflow-y-auto custom-scrollbar">
                         <div class="grid grid-cols-2 gap-x-3 gap-y-3">
@@ -558,15 +589,15 @@
                         <button type="button" @click="showModal = false" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                             Cancel
                         </button>
-                        <button type="submit" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5">
-                            <i class="fas fa-save text-[10px]"></i> Save
+                        <button type="submit" :disabled="isSubmitting" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <i class="fas text-[10px]" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                            <span x-text="isSubmitting ? 'Saving...' : 'Save'"></span>
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
 @endpush
 
 @push('modals')
@@ -588,100 +619,140 @@
 @endpush
 
 @push('modals')
-<div x-data="{ showModal: false }" @open-idp-info-modal.window="showModal = true" class="relative z-[9999]">
-    <div x-show="showModal" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <div class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" @click="showModal = false"></div>
+<div x-data="{ showModal: false, isSubmitting: false, formErrors: {},
+    async submitForm(form) {
+        this.isSubmitting = true; this.formErrors = {};
+        try {
+            const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+            if (response.ok || response.redirected) { window.location.reload(); }
+            else if (response.status === 422) { const data = await response.json(); this.formErrors = data.errors || {}; }
+            else { const data = await response.json().catch(() => ({})); alert(data.message || 'A server error occurred.'); }
+        } catch (e) { alert('Failed to connect to the server.'); }
+        finally { this.isSubmitting = false; }
+    }
+}" @open-idp-info-modal.window="showModal = true" class="relative z-[100]">
+    <!-- Background overlay -->
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 bg-black/50 z-[100] transition-opacity cursor-pointer"
+         @click="showModal = false"
+         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+    
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-0"
+         @click.self="showModal = false">
+        <div @click.stop
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-[360px] border border-gray-100 my-8 flex flex-col mx-auto max-h-[90vh]">
+            <div class="bg-white px-5 pt-4 pb-2.5 sm:px-6 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">IDP Information</h3>
+                </div>
+                <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 p-1 focus:outline-none transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             
-            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-[360px] border border-gray-100 my-8 flex flex-col mx-auto">
-                <div class="bg-white px-5 pt-4 pb-2.5 sm:px-6 border-b border-gray-100 flex justify-between items-center">
+            <form action="{{ $Idp->id ? route('idp.update-info', $Idp->id) : route('idp.update-employee-info', $Idp->karyawan->id) }}" method="POST" hx-boost="false" class="flex flex-col overflow-hidden" @submit.prevent="submitForm($el)">
+                @csrf
+                <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900">IDP Information</h3>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Year</label>
+                        <input type="text" name="tahun" value="{{ $Idp->tahun ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="e.g. 2024">
                     </div>
-                    <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 p-1 focus:outline-none transition-all">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Period</label>
+                        <input type="text" name="periode" value="{{ $Idp->periode ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="e.g. 1 or 2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
+                        <select name="status_idp" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" >
+                            <option value="" {{ empty($Idp->status_idp) ? 'selected' : '' }}>-- Select Status --</option>
+                            <option value="in_progress" {{ ($Idp->status_idp ?? '') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                            <option value="completed" {{ ($Idp->status_idp ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        </select>
+                    </div>
+                    <div> 
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Mentor</label>
+                        <input type="text" name="mentor" value="{{ $Idp->mentor ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="Mentor Name">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Development Area</label>
+                        <input type="text" name="development" value="{{ $Idp->development ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="Development Area">
+                    </div>
                 </div>
                 
-                <form action="{{ $Idp->id ? route('idp.update-info', $Idp->id) : route('idp.update-employee-info', $Idp->karyawan->id) }}" method="POST">
-                    @csrf
-                    <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Year</label>
-                            <input type="text" name="tahun" value="{{ $Idp->tahun ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="e.g. 2024">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Period</label>
-                            <input type="text" name="periode" value="{{ $Idp->periode ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="e.g. 1 or 2">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Status</label>
-                            <select name="status_idp" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" >
-                                <option value="" {{ empty($Idp->status_idp) ? 'selected' : '' }}>-- Select Status --</option>
-                                <option value="in_progress" {{ ($Idp->status_idp ?? '') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                <option value="completed" {{ ($Idp->status_idp ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
-                            </select>
-                        </div>
-                        <div> 
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Mentor</label>
-                            <input type="text" name="mentor" value="{{ $Idp->mentor ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="Mentor Name">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Development Area</label>
-                            <input type="text" name="development" value="{{ $Idp->development ?? '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-1.5 px-2.5 border" placeholder="Development Area">
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
-                        <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-teal-500 text-sm font-medium text-white hover:bg-teal-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
-                    </div>
-                </form>
-            </div>
+                <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
+                    <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
+                    <button type="submit" :disabled="isSubmitting" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-teal-500 text-sm font-medium text-white hover:bg-teal-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                        <i class="fas text-xs" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        <span x-text="isSubmitting ? 'Saving...' : 'Save'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 @endpush
 
 @push('modals')
-<div x-data="{ showModal: false }" @open-jadwal-modal.window="showModal = true" class="relative z-[9999]">
-    <div x-show="showModal" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <div class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" @click="showModal = false"></div>
+<div x-data="{ showModal: false, isSubmitting: false, formErrors: {},
+    async submitForm(form) {
+        this.isSubmitting = true; this.formErrors = {};
+        try {
+            const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+            if (response.ok || response.redirected) { window.location.reload(); }
+            else if (response.status === 422) { const data = await response.json(); this.formErrors = data.errors || {}; }
+            else { const data = await response.json().catch(() => ({})); alert(data.message || 'A server error occurred.'); }
+        } catch (e) { alert('Failed to connect to the server.'); }
+        finally { this.isSubmitting = false; }
+    }
+}" @open-jadwal-modal.window="showModal = true" class="relative z-[100]">
+    <!-- Background overlay -->
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 bg-black/50 z-[100] transition-opacity cursor-pointer"
+         @click="showModal = false"
+         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+    
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-0"
+         @click.self="showModal = false">
+        <div @click.stop
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-[360px] border border-gray-100 my-8 flex flex-col mx-auto max-h-[90vh]">
+            <div class="bg-white px-5 pt-4 pb-2.5 sm:px-6 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Review Schedule</h3>
+                </div>
+                <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 p-1 focus:outline-none transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             
-            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-[360px] border border-gray-100 my-8 flex flex-col mx-auto">
-                <div class="bg-white px-5 pt-4 pb-2.5 sm:px-6 border-b border-gray-100 flex justify-between items-center">
+            <form action="{{ $Idp->id ? route('idp.update-jadwal', $Idp->id) : route('idp.update-employee-jadwal', $Idp->karyawan->id) }}" method="POST" hx-boost="false" class="flex flex-col" @submit.prevent="submitForm($el)">
+                @csrf
+                <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900">Review Schedule</h3>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Target Setting</label>
+                        <input type="date" name="target" value="{{ $Idp->target ? \Carbon\Carbon::parse($Idp->target)->format('Y-m-d') : '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
                     </div>
-                    <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 p-1 focus:outline-none transition-all">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Monitoring</label>
+                        <input type="date" name="monitoring" value="{{ $Idp->monitoring ? \Carbon\Carbon::parse($Idp->monitoring)->format('Y-m-d') : '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-0.5">Final Review</label>
+                        <input type="date" name="final" value="{{ $Idp->final ? \Carbon\Carbon::parse($Idp->final)->format('Y-m-d') : '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
+                    </div>
                 </div>
                 
-                <form action="{{ $Idp->id ? route('idp.update-jadwal', $Idp->id) : route('idp.update-employee-jadwal', $Idp->karyawan->id) }}" method="POST">
-                    @csrf
-                    <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Target Setting</label>
-                            <input type="date" name="target" value="{{ $Idp->target ? \Carbon\Carbon::parse($Idp->target)->format('Y-m-d') : '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Monitoring</label>
-                            <input type="date" name="monitoring" value="{{ $Idp->monitoring ? \Carbon\Carbon::parse($Idp->monitoring)->format('Y-m-d') : '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Final Review</label>
-                            <input type="date" name="final" value="{{ $Idp->final ? \Carbon\Carbon::parse($Idp->final)->format('Y-m-d') : '' }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm py-1.5 px-2.5 border">
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
-                        <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
-                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5"><i class="fas fa-save text-xs"></i> Save</button>
-                    </div>
-                </form>
-            </div>
+                <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2 sm:px-6">
+                    <button type="button" @click="showModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all sm:w-auto">Cancel</button>
+                    <button type="submit" :disabled="isSubmitting" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-4 py-1.5 bg-sky-500 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none transition-all sm:w-auto flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                        <i class="fas text-xs" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        <span x-text="isSubmitting ? 'Saving...' : 'Save'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

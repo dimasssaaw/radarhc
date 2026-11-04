@@ -297,7 +297,7 @@
             {{ count($stagnasiWarnings ?? []) }} Need Review
         </span>
     </div>
-    <p class="text-xs text-gray-500 mb-4">Karyawan yang terindikasi stagnan berdasarkan evaluasi 2 tahun terakhir (nilai tidak meningkat & readiness belum siap), serta terdapat kendala pada program Training atau Mentoring</p>
+    <p class="text-xs text-gray-500 mb-4">Employees identified as stagnant based on evaluations from the last two years</p>
     
     <div class="flex flex-col gap-3">
         @forelse($stagnasiWarnings ?? [] as $karyawan)

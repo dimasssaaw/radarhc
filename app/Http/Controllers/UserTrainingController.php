@@ -74,13 +74,21 @@ class UserTrainingController extends Controller
             ['target_mandatory' => 0, 'target_skill' => 0, 'target_managerial' => 0]
         );
 
-        $riwayatMandatory = RiwayatTraining::where('id_karyawan', $id)->where('kategori', 'mandatory')->get();
-        $riwayatSkill = RiwayatTraining::where('id_karyawan', $id)->where('kategori', 'skill')->get();
-        $riwayatManagerial = RiwayatTraining::where('id_karyawan', $id)->where('kategori', 'managerial')->get();
+        $riwayat = RiwayatTraining::where('id_karyawan', $id)->latest()->get();
 
-        $completedMandatory = RiwayatTraining::where('id_karyawan', $id)->where('kategori', 'mandatory')->where('status_training', 'completed')->count();
-        $completedSkill = RiwayatTraining::where('id_karyawan', $id)->where('kategori', 'skill')->where('status_training', 'completed')->count();
-        $completedManagerial = RiwayatTraining::where('id_karyawan', $id)->where('kategori', 'managerial')->where('status_training', 'completed')->count();
+        $riwayatMandatory = $riwayat->where('kategori', 'mandatory');
+        $riwayatSkill = $riwayat->where('kategori', 'skill');
+        $riwayatManagerial = $riwayat->where('kategori', 'managerial');
+
+        $isCompleted = function ($item) {
+            return $item->eva1_status === 'completed' &&
+                   $item->eva2_status === 'completed' &&
+                   $item->eva3_status === 'completed';
+        };
+
+        $completedMandatory = $riwayatMandatory->filter($isCompleted)->count();
+        $completedSkill = $riwayatSkill->filter($isCompleted)->count();
+        $completedManagerial = $riwayatManagerial->filter($isCompleted)->count();
 
         $achieveMandatory = $training->target_mandatory > 0 ? min(100, round(($completedMandatory / $training->target_mandatory) * 100)) : 0;
         $achieveSkill = $training->target_skill > 0 ? min(100, round(($completedSkill / $training->target_skill) * 100)) : 0;
