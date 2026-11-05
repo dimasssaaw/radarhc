@@ -22,4 +22,9 @@ class Idp extends Model
     {
         return $this->hasOne(IdpPenilain::class, 'id_idp');
     }
+
+    public function competencyScores()
+    {
+        return $this->hasMany(IdpCompetencyScore::class, 'id_idp');
+    }
 }

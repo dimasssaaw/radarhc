@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Idp;
+use App\Models\IdpCompetencyGroup;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 
@@ -54,7 +55,7 @@ class UserIdpController extends Controller
 
     public function show(Request $request, $id)
     {
-        $Idp = Idp::with('karyawan')->findOrFail($id);
+        $Idp = Idp::with(['karyawan.position', 'penilaian', 'competencyScores'])->findOrFail($id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
@@ -64,7 +65,34 @@ class UserIdpController extends Controller
             }
         }
 
-        return view('user.idp.show', compact('Idp'));
+        $jabatan = strtolower(trim((string) ($Idp->karyawan->position?->nama_jabatan ?? '')));
+
+        $chartGroups = IdpCompetencyGroup::with(['competencies' => function ($q) {
+            $q->orderBy('order')->orderBy('id');
+        }])
+            ->where(function ($q) use ($jabatan) {
+                if ($jabatan !== '') {
+                    $q->whereRaw('LOWER(target_position) = ?', [$jabatan]);
+                    if (str_contains($jabatan, 'section head')) {
+                        $q->orWhereRaw('LOWER(target_position) = ?', ['department head']);
+                    }
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
+            })
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get();
+
+        $savedScores = $Idp->competencyScores->pluck('score', 'idp_competency_id')->toArray();
+        $competencyScores = [];
+        foreach ($chartGroups as $group) {
+            foreach ($group->competencies as $comp) {
+                $competencyScores[$comp->id] = isset($savedScores[$comp->id]) ? (float) $savedScores[$comp->id] : 0.0;
+            }
+        }
+
+        return view('user.idp.show', compact('Idp', 'chartGroups', 'competencyScores'));
     }
 
     public function showEmployee($employee_id)

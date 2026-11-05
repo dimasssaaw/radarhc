@@ -311,7 +311,17 @@
     @php
         $assessmentReports = $karyawan->assessmentReports->sortByDesc('tahun')->sortByDesc('periode')->sortByDesc('id')->values();
         
-        $assessmentItems = $assessmentReports->mapWithKeys(function ($r, $index) {
+        $kbAspect = \App\Models\AssessmentAspect::where('code', 'kb_kecerdasan_umum')->first();
+        $skAspect = \App\Models\AssessmentAspect::where('code', 'sk_sistematika_kerja')->first();
+        $kpLeadAspect = \App\Models\AssessmentAspect::where('code', 'kp_kepemimpinan')->first();
+        $kpIntegAspect = \App\Models\AssessmentAspect::where('code', 'kp_integritas')->first();
+
+        $kbLabel = $kbAspect?->name ?? 'General Intelligence';
+        $skLabel = $skAspect?->name ?? 'Work Systematics';
+        $kpLeadLabel = $kpLeadAspect?->name ?? 'Leadership';
+        $kpIntegLabel = $kpIntegAspect?->name ?? 'Integrity';
+
+        $assessmentItems = $assessmentReports->mapWithKeys(function ($r, $index) use ($kbAspect, $skAspect, $kpLeadAspect, $kpIntegAspect) {
             $periodLabel = '';
             if ($r->tahun && $r->periode) {
                 $periodLabel = $r->tahun . ' - Period ' . $r->periode;
@@ -323,13 +333,13 @@
                 $periodLabel = 'Session #' . $r->id;
             }
 
-            $scores = [
-                (float) ($r->kb_kecerdasan_umum ?? 0),
-                (float) ($r->sk_sistematika_kerja ?? 0),
-                (float) ($r->kp_kepemimpinan ?? 0),
-                (float) ($r->ms_planning_controlling ?? 0),
-                (float) ($r->kp_integritas ?? 0),
-            ];
+            $kbScore = $r ? ($kbAspect ? $r->getAspectScore($kbAspect) : (float)($r->kb_kecerdasan_umum ?? 0)) : 0;
+            $skScore = $r ? ($skAspect ? $r->getAspectScore($skAspect) : (float)($r->sk_sistematika_kerja ?? 0)) : 0;
+            $kpLeadScore = $r ? ($kpLeadAspect ? $r->getAspectScore($kpLeadAspect) : (float)($r->kp_kepemimpinan ?? 0)) : 0;
+            $kpIntegScore = $r ? ($kpIntegAspect ? $r->getAspectScore($kpIntegAspect) : (float)($r->kp_integritas ?? 0)) : 0;
+            $msPlanScore = (float) ($r->ms_planning_controlling ?? 0);
+
+            $scores = [$kbScore, $skScore, $kpLeadScore, $msPlanScore, $kpIntegScore];
             $filteredScores = array_filter($scores, fn($s) => $s > 0);
             $avg = count($filteredScores) > 0 ? round(array_sum($filteredScores) / count($filteredScores), 1) : 0.0;
 
@@ -340,10 +350,10 @@
                 'periode' => $r->periode ?? null,
                 'avg' => number_format($avg, 1),
                 'avg_raw' => $avg,
-                'general_intelligence' => (float) ($r->kb_kecerdasan_umum ?? 0),
-                'work_systematics' => (float) ($r->sk_sistematika_kerja ?? 0),
-                'integrity' => (float) ($r->kp_integritas ?? 0),
-                'leadership' => (float) ($r->kp_kepemimpinan ?? 0),
+                'general_intelligence' => $kbScore,
+                'work_systematics' => $skScore,
+                'integrity' => $kpIntegScore,
+                'leadership' => $kpLeadScore,
                 'has_score' => count($filteredScores) > 0,
             ]];
         });
@@ -470,7 +480,7 @@
                 <!-- Indikator 1 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">General Intelligence</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">{{ $kbLabel }}</span>
                         <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.general_intelligence).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['general_intelligence'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -481,7 +491,7 @@
                 <!-- Indikator 2 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Work Systematics</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">{{ $skLabel }}</span>
                         <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.work_systematics).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['work_systematics'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -492,7 +502,7 @@
                 <!-- Indikator 3 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Integrity</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">{{ $kpIntegLabel }}</span>
                         <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.integrity).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['integrity'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -503,7 +513,7 @@
                 <!-- Indikator 4 -->
                 <div>
                     <div class="flex justify-between items-end mb-1.5">
-                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Leadership</span>
+                        <span class="text-[12px] font-bold text-gray-700 uppercase tracking-wide">{{ $kpLeadLabel }}</span>
                         <span class="text-sm font-black text-gray-900" x-text="current ? parseFloat(current.leadership).toFixed(1) : '0.0'">{{ number_format($assessmentItems->first()['leadership'] ?? 0, 1) }}</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
@@ -1891,22 +1901,49 @@
                 return isNaN(parsed) ? 0 : parsed;
             }
 
-            // Define competency models
+            @php
+                $masterHead = \App\Models\IdpCompetencyGroup::where('target_position', 'department head')->first();
+                $masterStaff = \App\Models\IdpCompetencyGroup::where('target_position', 'staff')->first();
+                $masterUnit = \App\Models\IdpCompetencyGroup::where('target_position', 'unit head')->first();
+
+                $headLabels = $masterHead && $masterHead->competencies->isNotEmpty()
+                    ? $masterHead->competencies->pluck('name')->toArray()
+                    : ['Managing Change', 'Empowerment', 'Fostering Teamwork', 'Analysis & Decision Making', 'Planning & Controlling', 'Integrity & Ethics', 'Excellence', 'Compassion', 'Humility'];
+                $headTargets = $masterHead && $masterHead->competencies->isNotEmpty()
+                    ? $masterHead->competencies->pluck('target_score')->map(fn($v) => (float)$v)->toArray()
+                    : array_fill(0, count($headLabels), 4);
+
+                $staffLabels = $masterStaff && $masterStaff->competencies->isNotEmpty()
+                    ? $masterStaff->competencies->pluck('name')->toArray()
+                    : ['Leads Courageously', 'Coach & Develop Others', 'Teamwork', 'Trouble Shooting', 'Customer Satisfaction', 'Cross Functional Capability', 'Quality Focus', 'Continuous Improvement', 'Planning Monitoring', 'Personal Integrity', 'Drive For Result', 'Learning'];
+                $staffTargets = $masterStaff && $masterStaff->competencies->isNotEmpty()
+                    ? $masterStaff->competencies->pluck('target_score')->map(fn($v) => (float)$v)->toArray()
+                    : array_fill(0, count($staffLabels), 4);
+
+                $unitLabels = $masterUnit && $masterUnit->competencies->isNotEmpty()
+                    ? $masterUnit->competencies->pluck('name')->toArray()
+                    : ['Directiveness', 'Monitoring', 'Teamwork', 'Quality & Customer Focus', 'Continuous Improvement', 'Personal Integrity'];
+                $unitTargets = $masterUnit && $masterUnit->competencies->isNotEmpty()
+                    ? $masterUnit->competencies->pluck('target_score')->map(fn($v) => (float)$v)->toArray()
+                    : array_fill(0, count($unitLabels), 4);
+            @endphp
+
+            // Define competency models from Master IDP
             const competencyModels = {
                 head: {
-                    labels: ['Managing Change', 'Empowerment', 'Fostering Teamwork', 'Analysis & Decision Making', 'Planning & Controlling', 'Integrity & Ethics', 'Excellence', 'Compassion', 'Humility'],
+                    labels: {!! json_encode($headLabels) !!},
                     dbKeys: ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'],
-                    target: Array(9).fill(4)
+                    target: {!! json_encode($headTargets) !!}
                 },
                 staff: {
-                    labels: ['Leads Courageously', 'Coach & Develop Others', 'Teamwork', 'Trouble Shooting', 'Customer Satisfaction', 'Cross Functional Capability', 'Quality Focus', 'Continuous Improvement', 'Planning Monitoring', 'Personal Integrity', 'Drive For Result', 'Learning'],
+                    labels: {!! json_encode($staffLabels) !!},
                     dbKeys: ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'],
-                    target: Array(12).fill(4)
+                    target: {!! json_encode($staffTargets) !!}
                 },
                 unit: {
-                    labels: ['Directiveness', 'Monitoring', 'Teamwork', 'Quality & Customer Focus', 'Continuous Improvement', 'Personal Integrity'],
+                    labels: {!! json_encode($unitLabels) !!},
                     dbKeys: ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'],
-                    target: Array(6).fill(4)
+                    target: {!! json_encode($unitTargets) !!}
                 }
             };
 
@@ -1947,22 +1984,13 @@
             }
 
             function getMultilineLabel(key) {
-                if (key === 'Analysis & Decision Making') return ['Analysis &', 'Decision Making'];
-                if (key === 'Planning & Controlling') return ['Planning &', 'Controlling'];
-                if (key === 'Integrity & Ethics') return ['Integrity &', 'Ethics'];
-                if (key === 'Managing Change') return ['Managing', 'Change'];
-                if (key === 'Fostering Teamwork') return ['Fostering', 'Teamwork'];
-                if (key === 'Leads Courageously') return ['Leads', 'Courageously'];
-                if (key === 'Coach & Develop Others') return ['Coach &', 'Develop Others'];
-                if (key === 'Trouble Shooting') return ['Trouble', 'Shooting'];
-                if (key === 'Customer Satisfaction') return ['Customer', 'Satisfaction'];
-                if (key === 'Cross Functional Capability') return ['Cross Functional', 'Capability'];
-                if (key === 'Quality Focus') return ['Quality', 'Focus'];
-                if (key === 'Continuous Improvement') return ['Continuous', 'Improvement'];
-                if (key === 'Planning Monitoring') return ['Planning', 'Monitoring'];
-                if (key === 'Personal Integrity') return ['Personal', 'Integrity'];
-                if (key === 'Drive For Result') return ['Drive For', 'Result'];
-                if (key === 'Quality & Customer Focus') return ['Quality &', 'Customer Focus'];
+                if (typeof key !== 'string') return key;
+                if (key.length <= 16) return key;
+                const words = key.split(' ');
+                if (words.length > 1) {
+                    const mid = Math.ceil(words.length / 2);
+                    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+                }
                 return key;
             }
 

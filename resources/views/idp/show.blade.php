@@ -191,39 +191,81 @@
 
     </div>
 
-    <!-- Right Column (Competency Assessment) -->
-    <div class="lg:col-span-8 flex flex-col gap-6 w-full">
-        <!-- Competency Assessment -->
-        <div class="bg-gradient-to-br from-slate-50 to-gray-100/80 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-200 overflow-hidden flex flex-col relative transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-300">
+    <!-- Right Column (Competency Assessment with Tabs - Option 2) -->
+    <div class="lg:col-span-8 flex flex-col gap-6 w-full" x-data="{ 
+        activeTab: {{ $chartGroups->first()?->id ?? 0 }},
+        switchTab(groupId) {
+            this.activeTab = groupId;
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    if (typeof window.renderSpiderChart === 'function') {
+                        window.renderSpiderChart(groupId);
+                    }
+                }, 50);
+            });
+        }
+    }">
+        <!-- Tab Navigation Buttons -->
+        @if($chartGroups->count() > 1)
+        <div class="bg-slate-100 p-1.5 rounded-2xl border border-gray-200/80 shadow-inner flex items-center gap-2 overflow-x-auto no-scrollbar">
+            @foreach($chartGroups as $grp)
+            <button type="button"
+                @click="switchTab({{ $grp->id }})"
+                :class="activeTab === {{ $grp->id }} 
+                    ? 'bg-[#0ea5e9] text-white shadow-md font-bold' 
+                    : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-white/80 font-medium'"
+                class="px-4 py-2.5 rounded-xl text-xs transition-all duration-200 flex items-center gap-2 shrink-0">
+                <i class="fas fa-bullseye text-sm" :class="activeTab === {{ $grp->id }} ? 'text-white' : 'text-sky-500'"></i>
+                <span>{{ $grp->title }}</span>
+                <span :class="activeTab === {{ $grp->id }} ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-full text-[10px] font-bold">
+                    {{ $grp->competencies->count() }}
+                </span>
+            </button>
+            @endforeach
+        </div>
+        @endif
+
+        <!-- Tab Content Cards -->
+        @forelse($chartGroups as $grp)
+        <div x-show="activeTab === {{ $grp->id }}" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="bg-gradient-to-br from-slate-50 to-gray-100/80 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-200 overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-300">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500"></div>
             
             <!-- Header -->
-            <div class="px-6 py-5 flex justify-between items-center bg-slate-50/50 border-b border-gray-50">
-                <div>
-                    <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
-                        <i class="fas fa-spider text-teal-500 text-base"></i> Competency Assessment
-                    </h3>
-                    <p class="text-xs text-gray-500 mt-1 ml-6">IDP {{ ucwords($Idp->karyawan->position?->nama_jabatan) }}</p>
+            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 border-b border-gray-100">
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-2">
+                            <i class="fas fa-bullseye text-[#0ea5e9] text-base shrink-0"></i> 
+                            <span>{{ $grp->title }}</span>
+                        </h3>
+                        @if($grp->target_position)
+                            <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 shrink-0">
+                                Position: {{ ucwords($grp->target_position) }}
+                            </span>
+                        @endif
+                    </div>
+                    @if($grp->description)
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{{ $grp->description }}</p>
+                    @endif
                 </div>
                 @can('edit_idp')
-                <button x-data @click="$dispatch('open-penilaian-modal')" class="group relative overflow-hidden bg-white border border-gray-200 hover:border-teal-300 text-gray-700 hover:text-teal-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all duration-300 flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5">
-                    <span class="absolute inset-0 bg-teal-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    <span class="relative flex items-center gap-2">
-                        @if($Idp->penilaian)
-                            <i class="fas fa-edit"></i> Edit
-                        @else
-                            <i class="fas fa-plus"></i> Add
-                        @endif
-                    </span>
-                </button>
+                <div class="shrink-0 self-start sm:self-center">
+                    <button type="button" @click="$dispatch('open-penilaian-modal-{{ $grp->id }}')" class="whitespace-nowrap bg-white border border-gray-200 hover:border-teal-300 text-gray-700 hover:text-teal-700 px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5">
+                        <i class="fas fa-edit text-teal-600"></i>
+                        <span>Edit Value</span>
+                    </button>
+                </div>
                 @endcan
             </div>
 
             <!-- Chart Area -->
             <div class="bg-white/60 backdrop-blur-sm mx-0 sm:mx-6 my-6 rounded-2xl p-4 sm:p-8 relative border border-white/50 shadow-[0_2px_15px_rgba(0,0,0,0.02)] w-full block">
-                <!-- Wrapper for Chart to control its exact size -->
-                <div class="relative w-full min-w-[280px] sm:min-w-[400px] h-[400px] md:h-[500px] mx-auto overflow-hidden">
-                    <canvas id="competencyChart" style="width: 100%; height: 100%;"></canvas>
+                <div class="relative w-full min-w-[280px] sm:min-w-[400px] h-[400px] md:h-[480px] mx-auto overflow-hidden">
+                    <canvas id="competencyChart_{{ $grp->id }}" style="width: 100%; height: 100%;"></canvas>
                 </div>
                 
                 <div class="mt-6 md:mt-8 text-center w-full">
@@ -237,173 +279,104 @@
             <div class="px-6 pb-6 pt-2">
                 <div class="flex justify-between items-center mb-5">
                     <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-list-ul"></i> Competency Breakdown ({{ strtoupper($Idp->karyawan->position?->nama_jabatan) }} LEVEL)
+                        <i class="fas fa-list-ul"></i> Competency Breakdown ({{ $grp->title }})
                     </h4>
-                    <span class="text-xs font-bold px-3 py-1 bg-teal-50 text-teal-700 rounded-full border border-teal-100" id="avgScore">Avg: 0.0 / 5.0</span>
+                    @php
+                        $compCount = $grp->competencies->count();
+                        $totalScore = $grp->competencies->sum(fn($c) => (float)($competencyScores[$c->id] ?? 0));
+                        $avgScore = $compCount > 0 ? $totalScore / $compCount : 0;
+                    @endphp
+                    <span class="text-xs font-bold px-3 py-1 bg-teal-50 text-teal-700 rounded-full border border-teal-100" id="avgScore_{{ $grp->id }}">
+                        Avg: {{ number_format($avgScore, 1) }} / 5.0
+                    </span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="competencyCards">
-                    <!-- JS will populate this -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="competencyCards_{{ $grp->id }}">
+                    @foreach($grp->competencies as $compIndex => $comp)
+                    @php
+                        $score = (float) ($competencyScores[$comp->id] ?? 0);
+                        $scoreColor = $score >= 4 ? 'text-teal-600' : ($score >= 3 ? 'text-indigo-600' : 'text-amber-600');
+                        $scoreBg = $score >= 4 ? 'bg-teal-50 border-teal-100' : ($score >= 3 ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-100');
+                    @endphp
+                    <div class="group flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:bg-slate-50 transition-all duration-300 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <div class="w-8 h-8 rounded-full shrink-0 bg-slate-50 flex items-center justify-center border border-gray-200 text-xs font-bold text-gray-400 group-hover:bg-white group-hover:text-teal-500 transition-colors">
+                                {{ $compIndex + 1 }}
+                            </div>
+                            <div class="min-w-0">
+                                <h5 class="text-xs font-bold text-gray-700 group-hover:text-gray-900 transition-colors line-clamp-2 leading-tight" title="{{ $comp->name }}">{{ $comp->name }}</h5>
+                                @if($comp->description)
+                                    <p class="text-[10px] text-gray-400 line-clamp-1 mt-0.5">{{ $comp->description }}</p>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="shrink-0 px-2.5 py-1 rounded-lg border {{ $scoreBg }} {{ $scoreColor }} text-xs font-bold shadow-sm">
+                            {{ number_format($score, 1) }}
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
+        @empty
+        <div class="bg-white rounded-2xl p-10 text-center border border-gray-200 shadow-sm">
+            <div class="w-14 h-14 rounded-2xl bg-sky-50 text-[#0ea5e9] flex items-center justify-center mx-auto mb-3 border border-sky-100">
+                <i class="fas fa-bullseye text-2xl"></i>
+            </div>
+            <h4 class="font-bold text-gray-800 text-base mb-1">No Spider Chart Available for This Position</h4>
+            <p class="text-xs text-gray-500 max-w-sm mx-auto mb-4">
+                This employee holds the position <span class="font-bold text-gray-700">{{ $Idp->karyawan->position?->nama_jabatan ?? 'Belum ditentukan' }}</span>. There is no Spider Chart targeted for this position yet.
+            </p>
+            @can('lihat_idp')
+            <a href="{{ route('master-idp.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold rounded-lg shadow-sm transition-all">
+                <i class="fas fa-cog"></i> Configure in Master IDP
+            </a>
+            @endcan
+        </div>
+        @endforelse
 
     </div>
 </div>
 
 <script>
+    const chartGroupsData = @json($chartGroups);
+    const competencyScoresMap = @json($competencyScores);
+    window.idpChartInstances = window.idpChartInstances || {};
+
     function getMultilineLabel(key) {
-        if (key === 'Analysis & Decision Making') return ['Analysis &', 'Decision Making'];
-        if (key === 'Planning & Controlling') return ['Planning &', 'Controlling'];
-        if (key === 'Integrity & Ethics') return ['Integrity &', 'Ethics'];
-        if (key === 'Managing Change') return ['Managing', 'Change'];
-        if (key === 'Fostering Teamwork') return ['Fostering', 'Teamwork'];
-        if (key === 'Leads Courageously') return ['Leads', 'Courageously'];
-        if (key === 'Coach & Develop Others') return ['Coach &', 'Develop Others'];
-        if (key === 'Trouble Shooting') return ['Trouble', 'Shooting'];
-        if (key === 'Customer Satisfaction') return ['Customer', 'Satisfaction'];
-        if (key === 'Cross Functional Capability') return ['Cross Functional', 'Capability'];
-        if (key === 'Quality Focus') return ['Quality', 'Focus'];
-        if (key === 'Continuous Improvement') return ['Continuous', 'Improvement'];
-        if (key === 'Planning Monitoring') return ['Planning', 'Monitoring'];
-        if (key === 'Personal Integrity') return ['Personal', 'Integrity'];
-        if (key === 'Drive For Result') return ['Drive For', 'Result'];
-        if (key === 'Quality & Customer Focus') return ['Quality &', 'Customer Focus'];
+        if (!key) return '';
+        if (key.length > 18 && key.includes(' ')) {
+            const words = key.split(' ');
+            const mid = Math.ceil(words.length / 2);
+            return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+        }
         return key;
     }
 
-    function renderIdpChart() {
-        const ctxEl = document.getElementById('competencyChart');
+    function renderSpiderChart(groupId) {
+        const group = chartGroupsData.find(g => g.id === groupId);
+        if (!group) return;
+
+        const ctxEl = document.getElementById('competencyChart_' + groupId);
         if (!ctxEl) return;
-        
-        const jabatan = "{{ strtolower($Idp->karyawan->position?->nama_jabatan) }}";
-        const penilaianStr = @json($Idp->penilaian);
-        let penilaian = null;
-        try {
-            if (penilaianStr) penilaian = JSON.parse(penilaianStr);
-        } catch(e) {
-            penilaian = @json($Idp->penilaian);
-        }
-        
-        let labels = [];
-        let dataScores = [];
-        let cardsHtml = '';
-        let total = 0;
-        let count = 0;
 
-        if (jabatan === 'department head' || jabatan === 'section head') {
-            const keys = ['Managing Change', 'Empowerment', 'Fostering Teamwork', 'Analysis & Decision Making', 'Planning & Controlling', 'Integrity & Ethics', 'Excellence', 'Compassion', 'Humility'];
-            const dbKeys = ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'];
-            
-            keys.forEach((key, index) => {
-                labels.push(getMultilineLabel(key));
-                let score = penilaian ? (penilaian[dbKeys[index]] || 0) : 0;
-                let parsedScore = parseFloat(score);
-                dataScores.push(score);
-                total += parsedScore;
-                count++;
-                
-                let scoreColor = parsedScore >= 4 ? 'text-teal-600' : (parsedScore >= 3 ? 'text-indigo-600' : 'text-amber-600');
-                let scoreBg = parsedScore >= 4 ? 'bg-teal-50 border-teal-100' : (parsedScore >= 3 ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-100');
-                
-                cardsHtml += `
-                <div class="group flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:bg-slate-50 transition-all duration-300 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5">
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <div class="w-8 h-8 rounded-full shrink-0 bg-slate-50 flex items-center justify-center border border-gray-200 text-xs font-bold text-gray-400 group-hover:bg-white group-hover:text-teal-500 transition-colors">
-                            ${index + 1}
-                        </div>
-                        <h5 class="text-xs font-bold text-gray-700 group-hover:text-gray-900 transition-colors line-clamp-2 leading-tight" title="${key}">${key}</h5>
-                    </div>
-                    <div class="shrink-0 px-2.5 py-1 rounded-lg border ${scoreBg} ${scoreColor} text-xs font-bold shadow-sm">
-                        ${parsedScore.toFixed(1)}
-                    </div>
-                </div>
-                `;
-            });
-        } else if (jabatan === 'staff') {
-            const keys = ['Leads Courageously', 'Coach & Develop Others', 'Teamwork', 'Trouble Shooting', 'Customer Satisfaction', 'Cross Functional Capability', 'Quality Focus', 'Continuous Improvement', 'Planning Monitoring', 'Personal Integrity', 'Drive For Result', 'Learning'];
-            const dbKeys = ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'];
-            
-            keys.forEach((key, index) => {
-                labels.push(getMultilineLabel(key));
-                let score = penilaian ? (penilaian[dbKeys[index]] || 0) : 0;
-                let parsedScore = parseFloat(score);
-                dataScores.push(score);
-                total += parsedScore;
-                count++;
-                
-                let scoreColor = parsedScore >= 4 ? 'text-teal-600' : (parsedScore >= 3 ? 'text-indigo-600' : 'text-amber-600');
-                let scoreBg = parsedScore >= 4 ? 'bg-teal-50 border-teal-100' : (parsedScore >= 3 ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-100');
-                
-                cardsHtml += `
-                <div class="group flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:bg-slate-50 transition-all duration-300 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5">
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <div class="w-8 h-8 rounded-full shrink-0 bg-slate-50 flex items-center justify-center border border-gray-200 text-xs font-bold text-gray-400 group-hover:bg-white group-hover:text-teal-500 transition-colors">
-                            ${index + 1}
-                        </div>
-                        <h5 class="text-xs font-bold text-gray-700 group-hover:text-gray-900 transition-colors line-clamp-2 leading-tight" title="${key}">${key}</h5>
-                    </div>
-                    <div class="shrink-0 px-2.5 py-1 rounded-lg border ${scoreBg} ${scoreColor} text-xs font-bold shadow-sm">
-                        ${parsedScore.toFixed(1)}
-                    </div>
-                </div>
-                `;
-            });
-        } else {
-            const keys = ['Directiveness', 'Monitoring', 'Teamwork', 'Quality & Customer Focus', 'Continuous Improvement', 'Personal Integrity'];
-            const dbKeys = ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'];
-            
-            keys.forEach((key, index) => {
-                labels.push(getMultilineLabel(key));
-                let score = penilaian ? (penilaian[dbKeys[index]] || 0) : 0;
-                let parsedScore = parseFloat(score);
-                dataScores.push(score);
-                total += parsedScore;
-                count++;
-                
-                let scoreColor = parsedScore >= 4 ? 'text-teal-600' : (parsedScore >= 3 ? 'text-indigo-600' : 'text-amber-600');
-                let scoreBg = parsedScore >= 4 ? 'bg-teal-50 border-teal-100' : (parsedScore >= 3 ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-100');
-                
-                cardsHtml += `
-                <div class="group flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:bg-slate-50 transition-all duration-300 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5">
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <div class="w-8 h-8 rounded-full shrink-0 bg-slate-50 flex items-center justify-center border border-gray-200 text-xs font-bold text-gray-400 group-hover:bg-white group-hover:text-teal-500 transition-colors">
-                            ${index + 1}
-                        </div>
-                        <h5 class="text-xs font-bold text-gray-700 group-hover:text-gray-900 transition-colors line-clamp-2 leading-tight" title="${key}">${key}</h5>
-                    </div>
-                    <div class="shrink-0 px-2.5 py-1 rounded-lg border ${scoreBg} ${scoreColor} text-xs font-bold shadow-sm">
-                        ${parsedScore.toFixed(1)}
-                    </div>
-                </div>
-                `;
-            });
+        if (window.idpChartInstances[groupId]) {
+            window.idpChartInstances[groupId].destroy();
         }
 
-        const cardsContainer = document.getElementById('competencyCards');
-        if(cardsContainer) {
-            cardsContainer.innerHTML = cardsHtml;
-        }
-        
-        const avgContainer = document.getElementById('avgScore');
-        if(avgContainer && count > 0) {
-            avgContainer.innerText = 'Avg: ' + (total/count).toFixed(2) + ' / 5.0';
-        }
-
-        if (window.idpChartInstance) {
-            window.idpChartInstance.destroy();
-        }
+        const labels = group.competencies.map(c => getMultilineLabel(c.name));
+        const dataScores = group.competencies.map(c => parseFloat(competencyScoresMap[c.id] || 0));
 
         const ctx = ctxEl.getContext('2d');
-        window.idpChartInstance = new Chart(ctx, {
+        window.idpChartInstances[groupId] = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Maximum Target (5.0)',
+                        label: 'Target (5.0)',
                         data: Array(labels.length).fill(5),
                         backgroundColor: 'transparent',
-                        borderColor: '#cbd5e1', // slate-300
+                        borderColor: '#cbd5e1',
                         borderWidth: 1.5,
                         borderDash: [4, 4],
                         pointRadius: 0,
@@ -411,10 +384,10 @@
                         fill: false
                     },
                     {
-                        label: 'Actual Score',
+                        label: 'Skor Aktual',
                         data: dataScores,
-                        backgroundColor: 'rgba(13, 148, 136, 0.25)', // teal-600 with opacity
-                        borderColor: '#0d9488', // teal-600
+                        backgroundColor: 'rgba(13, 148, 136, 0.25)',
+                        borderColor: '#0d9488',
                         pointBackgroundColor: '#0d9488',
                         pointBorderColor: '#ffffff',
                         pointHoverBackgroundColor: '#ffffff',
@@ -424,7 +397,7 @@
                         pointBorderWidth: 2,
                         pointHoverRadius: 7,
                         pointHoverBorderWidth: 2.5,
-                        tension: 0, // Dibuat 0 agar garis lurus (segi 9/poligon), tidak bulat
+                        tension: 0,
                         fill: true
                     }
                 ]
@@ -479,7 +452,7 @@
                         display: false
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)', // slate-900
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
                         titleFont: { size: 13, family: "'Inter', sans-serif", weight: '600' },
                         bodyFont: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
                         padding: 12,
@@ -491,29 +464,25 @@
                 }
             }
         });
-    } // Eksekusi segera
-    setTimeout(renderIdpChart, 50);
+    }
+
+    // Inisialisasi render chart tab pertama
+    const initialGroupId = {{ $chartGroups->first()?->id ?? 0 }};
+    if (initialGroupId) {
+        setTimeout(() => renderSpiderChart(initialGroupId), 100);
+    }
 
     // Untuk HTMX SPA swap
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id === 'competencyChart' || document.getElementById('competencyChart')) {
-            setTimeout(renderIdpChart, 50);
+    document.body.addEventListener('htmx:afterSwap', function() {
+        if (initialGroupId) {
+            setTimeout(() => renderSpiderChart(initialGroupId), 100);
         }
     });
 </script>
-<!-- Modal for Penilaian Spider Chart -->
+
+<!-- Modals for Penilaian Spider Chart per Group -->
 @push('modals')
-@php
-    $jabatan = strtolower($Idp->karyawan->position?->nama_jabatan ?? '');
-    $fields = [];
-    if ($jabatan === 'department head' || $jabatan === 'section head') {
-        $fields = ['head_managing_change' => 'Managing Change', 'head_empowerment' => 'Empowerment', 'head_fostering_teamwork' => 'Fostering Teamwork', 'head_analysis_decision' => 'Analysis & Decision', 'head_planning_controlling' => 'Planning & Controlling', 'head_integrity_ethics' => 'Integrity & Ethics', 'head_excellence' => 'Excellence', 'head_compassion' => 'Compassion', 'head_humility' => 'Humility'];
-    } elseif ($jabatan === 'staff') {
-        $fields = ['staff_leads_courageously' => 'Leads Courageously', 'staff_coach_develop' => 'Coach & Develop', 'staff_teamwork' => 'Teamwork', 'staff_trouble_shooting' => 'Trouble Shooting', 'staff_customer_satisfaction' => 'Customer Satisfact.', 'staff_cross_functional' => 'Cross Functional', 'staff_quality_focus' => 'Quality Focus', 'staff_continuous_improvement' => 'Continuous Improv.', 'staff_planning_monitoring' => 'Planning Monitor.', 'staff_personal_integrity' => 'Personal Integrity', 'staff_drive_for_result' => 'Drive For Result', 'staff_learning' => 'Learning'];
-    } else {
-        $fields = ['unit_directiveness' => 'Directiveness', 'unit_monitoring' => 'Monitoring', 'unit_teamwork' => 'Teamwork', 'unit_quality_customer' => 'Quality & Customer', 'unit_continuous_improvement' => 'Continuous Improv.', 'unit_personal_integrity' => 'Personal Integrity'];
-    }
-@endphp
+@foreach($chartGroups as $grp)
 <div x-data="{ 
     showModal: false,
     isSubmitting: false,
@@ -541,11 +510,8 @@
         } finally {
             this.isSubmitting = false;
         }
-    },
-    @foreach ($fields as $dbKey => $label)
-    '{{ $dbKey }}': {{ optional($Idp->penilaian)->$dbKey ?? 0 }},
-    @endforeach
-}" @open-penilaian-modal.window="showModal = true" class="relative z-[100]">
+    }
+}" @open-penilaian-modal-{{ $grp->id }}.window="showModal = true" class="relative z-[100]">
     <!-- Background overlay -->
     <div x-show="showModal" style="display: none;" class="fixed inset-0 bg-black/50 z-[100] transition-opacity cursor-pointer"
          @click="showModal = false"
@@ -557,47 +523,52 @@
         <div @click.stop
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-sm border border-gray-100 my-8 flex flex-col">
-            <div class="bg-white px-4 pt-3 pb-2 border-b border-gray-100 flex justify-between items-start">
+             class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-md border border-gray-100 my-8 flex flex-col">
+            <div class="bg-gradient-to-r from-sky-50 to-white px-5 py-4 border-b border-gray-100 flex justify-between items-center">
                 <div>
-                    <h3 class="font-bold text-[#1e293b] text-base" id="modal-title">
-                        Input Competency Scores
+                    <h3 class="font-bold text-[#1e293b] text-base flex items-center gap-2">
+                        <i class="fas fa-bullseye text-[#0ea5e9]"></i> {{ $grp->title }}
                     </h3>
-                    <p class="text-[11px] text-gray-500 mt-0.5">Enter scores on a scale of 0-5.0</p>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Enter the competency score on a scale of 0.0 – 5.0</p>
                 </div>
-                <button type="button" @click="showModal = false" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
+                <button type="button" @click="showModal = false" class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 ml-3">
                     <span class="sr-only">Close</span>
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
             
-            <form action="{{ $Idp->id ? route('idp.update-penilaian', $Idp->id) : route('idp.update-employee-penilaian', $Idp->karyawan->id) }}" method="POST" hx-boost="false" @submit.prevent="submitForm($el)">
-                    @csrf
-                    <div class="bg-white px-4 py-3 max-h-[50vh] overflow-y-auto custom-scrollbar">
-                        <div class="grid grid-cols-2 gap-x-3 gap-y-3">
-                            
-                            @foreach($fields as $dbKey => $label)
-                                <div class="flex flex-col justify-end">
-                                    <label class="block text-[11px] leading-tight font-semibold text-[#334155] mb-1">{{ $label }}</label>
-                                    <input type="number" step="0.1" min="0" max="5" name="{{ $dbKey }}" value="{{ optional($Idp->penilaian)->$dbKey ?? '' }}" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 font-medium py-1 px-2 text-sm text-gray-800" placeholder="4.5">
-                                </div>
-                            @endforeach
+            <form action="{{ $Idp->id ? route('idp.update-competency-scores', $Idp->id) : route('idp.update-employee-competency-scores', $Idp->karyawan->id) }}" method="POST" hx-boost="false" @submit.prevent="submitForm($el)">
+                @csrf
+                <div class="bg-white px-5 py-4 max-h-[55vh] overflow-y-auto custom-scrollbar space-y-3">
+                    @foreach($grp->competencies as $comp)
+                        <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-gray-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <label class="block text-xs font-bold text-gray-800 leading-tight mb-0.5">{{ $comp->name }}</label>
+                                @if($comp->description)
+                                    <p class="text-[10px] text-gray-400 line-clamp-1">{{ $comp->description }}</p>
+                                @endif
+                            </div>
+                            <div class="w-24 shrink-0">
+                                <input type="number" step="0.1" min="0" max="5" name="scores[{{ $comp->id }}]" value="{{ $competencyScores[$comp->id] ?? 0 }}" class="w-full rounded-lg border border-gray-300 text-center font-bold text-gray-800 text-sm py-1.5 px-2 focus:border-teal-500 focus:ring-teal-500" placeholder="0.0">
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="bg-gray-50 px-4 py-3 border-t border-gray-100 flex justify-end gap-2">
-                        <button type="button" @click="showModal = false" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit" :disabled="isSubmitting" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0ea5e9] border border-transparent rounded-md hover:bg-[#0284c7] transition-colors shadow-sm flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
-                            <i class="fas text-[10px]" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-                            <span x-text="isSubmitting ? 'Saving...' : 'Save'"></span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                    @endforeach
+                </div>
+                
+                <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end gap-2">
+                    <button type="button" @click="showModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="isSubmitting" class="px-4 py-2 text-xs font-bold text-white bg-teal-500 hover:bg-teal-600 rounded-lg transition-colors shadow-sm flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                        <i class="fas text-[10px]" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        <span x-text="isSubmitting ? 'Menyimpan...' : 'Simpan Nilai'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+@endforeach
 @endpush
 
 @push('modals')

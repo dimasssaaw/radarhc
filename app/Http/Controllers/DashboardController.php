@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Idp;
+use App\Models\IdpCompetencyGroup;
 use App\Models\IdpPenilain;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
@@ -52,41 +53,88 @@ class DashboardController extends Controller
             'deadwood' => $stats->hav_deadwood ?? 0,
         ];
 
-        // Mappings for competencies
+        // Mappings for competencies with dynamic names & targets from Master IDP
+        $masterHead = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])->where('target_position', 'department head')->first();
+        $masterStaff = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])->where('target_position', 'staff')->first();
+        $masterUnit = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])->where('target_position', 'unit head')->first();
+
+        $defaultHeadCols = [
+            'head_managing_change' => ['Managing Change', 5.0],
+            'head_empowerment' => ['Empowerment', 5.0],
+            'head_fostering_teamwork' => ['Fostering Teamwork', 5.0],
+            'head_analysis_decision' => ['Analysis & Decision', 5.0],
+            'head_planning_controlling' => ['Planning & Controlling', 5.0],
+            'head_integrity_ethics' => ['Integrity & Ethics', 5.0],
+            'head_excellence' => ['Excellence', 5.0],
+            'head_compassion' => ['Compassion', 5.0],
+            'head_humility' => ['Humility', 5.0],
+        ];
+
+        $defaultStaffCols = [
+            'staff_leads_courageously' => ['Leads Courageously', 5.0],
+            'staff_coach_develop' => ['Coach & Develop', 5.0],
+            'staff_teamwork' => ['Teamwork', 5.0],
+            'staff_trouble_shooting' => ['Trouble Shooting', 5.0],
+            'staff_customer_satisfaction' => ['Customer Satisfaction', 5.0],
+            'staff_cross_functional' => ['Cross Functional', 5.0],
+            'staff_quality_focus' => ['Quality Focus', 5.0],
+            'staff_continuous_improvement' => ['Continuous Improvement', 5.0],
+            'staff_planning_monitoring' => ['Planning & Monitoring', 5.0],
+            'staff_personal_integrity' => ['Personal Integrity', 5.0],
+            'staff_drive_for_result' => ['Drive for Result', 5.0],
+            'staff_learning' => ['Learning', 5.0],
+        ];
+
+        $defaultUnitCols = [
+            'unit_directiveness' => ['Directiveness', 5.0],
+            'unit_monitoring' => ['Monitoring', 5.0],
+            'unit_teamwork' => ['Teamwork', 5.0],
+            'unit_quality_customer' => ['Quality Customer', 5.0],
+            'unit_continuous_improvement' => ['Continuous Improvement', 5.0],
+            'unit_personal_integrity' => ['Personal Integrity', 5.0],
+        ];
+
+        $buildMap = function ($group, array $defaultCols) {
+            $cols = array_keys($defaultCols);
+            $map = [];
+            $targets = [];
+            if ($group && $group->competencies->isNotEmpty()) {
+                $comps = $group->competencies->values();
+                foreach ($cols as $idx => $col) {
+                    if (isset($comps[$idx])) {
+                        $label = $comps[$idx]->name;
+                        $target = (float) ($comps[$idx]->target_score ?? 5.0);
+                    } else {
+                        $label = $defaultCols[$col][0];
+                        $target = (float) $defaultCols[$col][1];
+                    }
+                    $map[$label] = $col;
+                    $targets[$label] = $target;
+                }
+            } else {
+                foreach ($defaultCols as $col => $data) {
+                    $map[$data[0]] = $col;
+                    $targets[$data[0]] = (float) $data[1];
+                }
+            }
+
+            return [$map, $targets];
+        };
+
+        [$headMap, $headTargets] = $buildMap($masterHead, $defaultHeadCols);
+        [$staffMap, $staffTargets] = $buildMap($masterStaff, $defaultStaffCols);
+        [$unitMap, $unitTargets] = $buildMap($masterUnit, $defaultUnitCols);
+
         $compMaps = [
-            'head' => [
-                'Managing Change' => 'head_managing_change',
-                'Empowerment' => 'head_empowerment',
-                'Fostering Teamwork' => 'head_fostering_teamwork',
-                'Analysis & Decision' => 'head_analysis_decision',
-                'Planning & Controlling' => 'head_planning_controlling',
-                'Integrity & Ethics' => 'head_integrity_ethics',
-                'Excellence' => 'head_excellence',
-                'Compassion' => 'head_compassion',
-                'Humility' => 'head_humility',
-            ],
-            'staff' => [
-                'Leads Courageously' => 'staff_leads_courageously',
-                'Coach & Develop' => 'staff_coach_develop',
-                'Teamwork' => 'staff_teamwork',
-                'Trouble Shooting' => 'staff_trouble_shooting',
-                'Customer Satisfaction' => 'staff_customer_satisfaction',
-                'Cross Functional' => 'staff_cross_functional',
-                'Quality Focus' => 'staff_quality_focus',
-                'Continuous Improvement' => 'staff_continuous_improvement',
-                'Planning & Monitoring' => 'staff_planning_monitoring',
-                'Personal Integrity' => 'staff_personal_integrity',
-                'Drive for Result' => 'staff_drive_for_result',
-                'Learning' => 'staff_learning',
-            ],
-            'unit_head_group_head' => [
-                'Directiveness' => 'unit_directiveness',
-                'Monitoring' => 'unit_monitoring',
-                'Teamwork' => 'unit_teamwork',
-                'Quality Customer' => 'unit_quality_customer',
-                'Continuous Improvement' => 'unit_continuous_improvement',
-                'Personal Integrity' => 'unit_personal_integrity',
-            ],
+            'head' => $headMap,
+            'staff' => $staffMap,
+            'unit_head_group_head' => $unitMap,
+        ];
+
+        $compTargetMaps = [
+            'head' => $headTargets,
+            'staff' => $staffTargets,
+            'unit_head_group_head' => $unitTargets,
         ];
 
         // Define db jabatan lookup
@@ -167,10 +215,11 @@ class DashboardController extends Controller
 
             foreach ($map as $label => $column) {
                 $avg = $totalEmployees > 0 ? $evaluatedRecords->avg($column) : 0;
+                $targetVal = $compTargetMaps[$level][$label] ?? 5.0;
                 $compAverages[] = [
                     'label' => $label,
                     'score' => round($avg ?? 0, 2),
-                    'target' => 5.0,
+                    'target' => $targetVal,
                 ];
                 $allScoresSum += ($avg ?? 0);
             }
@@ -180,7 +229,7 @@ class DashboardController extends Controller
             if ($level === 'unit_head_group_head') {
                 $displayTitle = 'Unit Head / Group Head';
             } elseif ($level === 'head') {
-                $displayTitle = 'Department Head';
+                $displayTitle = 'Department / Section Head';
             } else {
                 $displayTitle = ucfirst(str_replace('_', ' ', $level));
             }

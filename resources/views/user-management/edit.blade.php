@@ -137,13 +137,35 @@
                         <label class="block text-sm font-medium text-gray-700">Direct Permissions (Optional)</label>
                         <p class="text-xs text-gray-500 mb-2">Select specific actions allowed for this user on each menu.</p>
                         
+                        @php
+                            $moduleLabels = [
+                                'karyawan' => 'Employee Data',
+                                'assessment' => 'Assessment Report',
+                                'mentoring' => 'Mentoring',
+                                'idp' => 'Individual Development Plan (IDP)',
+                                'training' => 'Training',
+                                'certification' => 'Certification',
+                                'journey' => 'Employee Journey',
+                                'departemen' => 'Master Department',
+                                'jabatan' => 'Master Positions',
+                                'role' => 'Master User Roles',
+                                'master_idp' => 'Master Data IDP',
+                                'master_assessment' => 'Master Data Assessment',
+                                'user' => 'Manage Users',
+                            ];
+
+                            $groupedPermissions = $permissions->groupBy(function($p) {
+                                return preg_replace('/^(lihat|tambah|edit|hapus)_/', '', $p->name);
+                            });
+                        @endphp
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @foreach($permissions->groupBy(fn($p) => explode('_', $p->name)[1] ?? $p->name) as $group => $perms)
+                            @foreach($groupedPermissions as $group => $perms)
                                 <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all hover:border-cyan-200 hover:shadow-sm">
-                                    <h4 class="text-sm font-semibold text-gray-800 capitalize">{{ ucfirst($group) }} Menu</h4>
+                                    <h4 class="text-sm font-semibold text-gray-800">{{ $moduleLabels[$group] ?? ucfirst(str_replace('_', ' ', $group)) }}</h4>
                                     <label class="flex items-center gap-2 cursor-pointer shrink-0 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                                         <input type="checkbox" name="permissions[]" value="{{ $group }}" 
-                                            {{ $user->hasPermissionTo('lihat_'.$group) ? 'checked' : '' }}
+                                            {{ $user->can('lihat_'.$group) ? 'checked' : '' }}
                                             class="rounded text-[#06b6d4] focus:ring-[#06b6d4] border-gray-300 w-4 h-4 cursor-pointer">
                                         <span class="text-xs text-gray-700 font-medium">Grant Access</span>
                                     </label>

@@ -419,7 +419,7 @@
                                                 @php $lampiranField = "{$eva}_lampiran"; @endphp
                                                 <div x-show="selectedEva === '{{ $eva }}'" @if(!$loop->first) style="display: none;" @endif class="flex items-center justify-center">
                                                     @if ($item->$lampiranField)
-                                                        <a href="{{ Storage::disk('hrg')->url($item->$lampiranField) }}" target="_blank"
+                                                        <a href="{{ url('/HRG/' . ltrim($item->$lampiranField, '/')) }}" target="_blank"
                                                             class="inline-flex items-center justify-center gap-1.5 px-3 h-[38px] rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 hover:text-rose-700 transition-colors shadow-2xs"
                                                             title="View {{ strtoupper($eva) }} PDF">
                                                             <i class="fas fa-file-pdf text-rose-500 text-sm"></i>
@@ -778,7 +778,7 @@
                                                 </div>
                                                 <div class="flex items-center gap-2 shrink-0">
                                                     <a x-show="formData.{{ $tab }}_lampiran && !newFiles['{{ $tab }}']" 
-                                                        :href="'{{ Storage::disk('hrg')->url('') }}' + formData.{{ $tab }}_lampiran" 
+                                                        :href="'{{ url('/HRG') }}/' + (formData.{{ $tab }}_lampiran ? formData.{{ $tab }}_lampiran.replace(/^\/+/, '') : '')" 
                                                         target="_blank" 
                                                         class="px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
                                                         View PDF

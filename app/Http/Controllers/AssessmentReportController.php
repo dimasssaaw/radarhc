@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssessmentAspect;
+use App\Models\AssessmentCategory;
 use App\Models\AssessmentReport;
+use App\Models\AssessmentScore;
 use App\Models\Department;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Schema;
 
 class AssessmentReportController extends Controller implements HasMiddleware
 {
@@ -143,9 +147,28 @@ class AssessmentReportController extends Controller implements HasMiddleware
             }
         }
 
-        $data = $request->except(['_token', 'redirect_to']);
+        $data = $request->except(['_token', 'redirect_to', 'aspect_scores']);
 
-        AssessmentReport::create($data);
+        $report = AssessmentReport::create($data);
+
+        if ($request->has('aspect_scores') && is_array($request->aspect_scores)) {
+            foreach ($request->aspect_scores as $aspectId => $scoreVal) {
+                if ($scoreVal !== '' && $scoreVal !== null) {
+                    $val = (float) $scoreVal;
+                    AssessmentScore::create([
+                        'assessment_report_id' => $report->id,
+                        'assessment_aspect_id' => $aspectId,
+                        'score' => $val,
+                    ]);
+
+                    $aspect = AssessmentAspect::find($aspectId);
+                    if ($aspect && $aspect->code && Schema::hasColumn('assessment_report', $aspect->code)) {
+                        $report->{$aspect->code} = $val;
+                    }
+                }
+            }
+            $report->save();
+        }
 
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Assessment report data added successfully.');
@@ -176,7 +199,7 @@ class AssessmentReportController extends Controller implements HasMiddleware
     public function show(Request $request, $id)
     {
         $karyawan = Karyawan::with(['department', 'assessmentReports' => function ($q) {
-            $q->latest();
+            $q->with('aspectScores')->latest();
         }])->findOrFail($id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
@@ -197,7 +220,9 @@ class AssessmentReportController extends Controller implements HasMiddleware
             }
         }
 
-        return view('assessment_report.show', compact('karyawan', 'activeReport'));
+        $categories = AssessmentCategory::with('aspects')->orderBy('order')->orderBy('id')->get();
+
+        return view('assessment_report.show', compact('karyawan', 'activeReport', 'categories'));
     }
 
     public function edit(Request $request, $id)
@@ -289,8 +314,29 @@ class AssessmentReportController extends Controller implements HasMiddleware
             }
         }
 
-        $data = $request->except(['_token', '_method', 'redirect_to']);
+        $data = $request->except(['_token', '_method', 'redirect_to', 'aspect_scores']);
         $report->update($data);
+
+        if ($request->has('aspect_scores') && is_array($request->aspect_scores)) {
+            foreach ($request->aspect_scores as $aspectId => $scoreVal) {
+                if ($scoreVal !== '' && $scoreVal !== null) {
+                    $val = (float) $scoreVal;
+                    AssessmentScore::updateOrCreate(
+                        [
+                            'assessment_report_id' => $report->id,
+                            'assessment_aspect_id' => $aspectId,
+                        ],
+                        ['score' => $val]
+                    );
+
+                    $aspect = AssessmentAspect::find($aspectId);
+                    if ($aspect && $aspect->code && Schema::hasColumn('assessment_report', $aspect->code)) {
+                        $report->{$aspect->code} = $val;
+                    }
+                }
+            }
+            $report->save();
+        }
 
         if ($request->has('redirect_to')) {
             return redirect($request->redirect_to)->with('success', 'Assessment report data updated successfully.');

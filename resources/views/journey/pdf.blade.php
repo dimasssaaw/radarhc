@@ -797,10 +797,20 @@
         $activePk = $karyawan->perjalananKarirs->where('status_pencapaian', 'aktif/tercapai')->first() ?? $karyawan->perjalananKarirs->last();
 
         // 3. Assessment Scores
-        $kb = (float) ($activeReport->kb_kecerdasan_umum ?? 0);
-        $sk = (float) ($activeReport->sk_sistematika_kerja ?? 0);
-        $kp_lead = (float) ($activeReport->kp_kepemimpinan ?? 0);
-        $kp_integ = (float) ($activeReport->kp_integritas ?? 0);
+        $kbAspect = \App\Models\AssessmentAspect::where('code', 'kb_kecerdasan_umum')->first();
+        $skAspect = \App\Models\AssessmentAspect::where('code', 'sk_sistematika_kerja')->first();
+        $kpLeadAspect = \App\Models\AssessmentAspect::where('code', 'kp_kepemimpinan')->first();
+        $kpIntegAspect = \App\Models\AssessmentAspect::where('code', 'kp_integritas')->first();
+
+        $kbLabel = $kbAspect?->name ?? 'General Intelligence';
+        $skLabel = $skAspect?->name ?? 'Work Systematics';
+        $kpLeadLabel = $kpLeadAspect?->name ?? 'Leadership';
+        $kpIntegLabel = $kpIntegAspect?->name ?? 'Integrity';
+
+        $kb = $activeReport ? ($kbAspect ? $activeReport->getAspectScore($kbAspect) : (float)($activeReport->kb_kecerdasan_umum ?? 0)) : 0;
+        $sk = $activeReport ? ($skAspect ? $activeReport->getAspectScore($skAspect) : (float)($activeReport->sk_sistematika_kerja ?? 0)) : 0;
+        $kp_lead = $activeReport ? ($kpLeadAspect ? $activeReport->getAspectScore($kpLeadAspect) : (float)($activeReport->kp_kepemimpinan ?? 0)) : 0;
+        $kp_integ = $activeReport ? ($kpIntegAspect ? $activeReport->getAspectScore($kpIntegAspect) : (float)($activeReport->kp_integritas ?? 0)) : 0;
         $ms_plan = (float) ($activeReport->ms_planning_controlling ?? 0);
 
         $keyScores = [$kb, $sk, $kp_lead, $kp_integ, $ms_plan];
@@ -1070,7 +1080,7 @@
 
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>1. General Intelligence</span>
+                            <span>1. {{ $kbLabel }}</span>
                             <span style="color: #0284c7; font-weight: 800;">{{ number_format($kb, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1080,7 +1090,7 @@
 
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>2. Work Systematics</span>
+                            <span>2. {{ $skLabel }}</span>
                             <span style="color: #16a34a; font-weight: 800;">{{ number_format($sk, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1090,7 +1100,7 @@
 
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>3. Leadership</span>
+                            <span>3. {{ $kpLeadLabel }}</span>
                             <span style="color: #9333ea; font-weight: 800;">{{ number_format($kp_lead, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1100,7 +1110,7 @@
 
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 8.2px; font-weight: 600;">
-                            <span>4. Integrity</span>
+                            <span>4. {{ $kpIntegLabel }}</span>
                             <span style="color: #ea580c; font-weight: 800;">{{ number_format($kp_integ, 1) }} / 5</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -1126,17 +1136,27 @@
                                 }
                             }
 
+                            $masterHead = \App\Models\IdpCompetencyGroup::where('target_position', 'department head')->first();
+                            $masterStaff = \App\Models\IdpCompetencyGroup::where('target_position', 'staff')->first();
+                            $masterUnit = \App\Models\IdpCompetencyGroup::where('target_position', 'unit head')->first();
+
                             $competencyModels = [
                                 'head' => [
-                                    'labels' => ['Managing Change', 'Empowerment', 'Teamwork', 'Analysis & Dec.', 'Planning & Ctrl', 'Integrity', 'Excellence', 'Compassion', 'Humility'],
+                                    'labels' => $masterHead && $masterHead->competencies->isNotEmpty()
+                                        ? $masterHead->competencies->pluck('name')->toArray()
+                                        : ['Managing Change', 'Empowerment', 'Teamwork', 'Analysis & Dec.', 'Planning & Ctrl', 'Integrity', 'Excellence', 'Compassion', 'Humility'],
                                     'dbKeys' => ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'],
                                 ],
                                 'staff' => [
-                                    'labels' => ['Courageous', 'Coach Others', 'Teamwork', 'Troubleshoot', 'Customer Focus', 'Cross Functional', 'Quality Focus', 'Cont. Imprv', 'Plan & Monitor', 'Integrity', 'Result Drive', 'Learning'],
+                                    'labels' => $masterStaff && $masterStaff->competencies->isNotEmpty()
+                                        ? $masterStaff->competencies->pluck('name')->toArray()
+                                        : ['Courageous', 'Coach Others', 'Teamwork', 'Troubleshoot', 'Customer Focus', 'Cross Functional', 'Quality Focus', 'Cont. Imprv', 'Plan & Monitor', 'Integrity', 'Result Drive', 'Learning'],
                                     'dbKeys' => ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'],
                                 ],
                                 'unit' => [
-                                    'labels' => ['Directiveness', 'Monitoring', 'Teamwork', 'Quality Focus', 'Cont. Imprv', 'Integrity'],
+                                    'labels' => $masterUnit && $masterUnit->competencies->isNotEmpty()
+                                        ? $masterUnit->competencies->pluck('name')->toArray()
+                                        : ['Directiveness', 'Monitoring', 'Teamwork', 'Quality Focus', 'Cont. Imprv', 'Integrity'],
                                     'dbKeys' => ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'],
                                 ],
                             ];

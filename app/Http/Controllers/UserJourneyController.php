@@ -58,7 +58,7 @@ class UserJourneyController extends Controller
             'department',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {
-                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
+                $q->with('aspectScores')->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
             'idps' => function ($q) {
                 $q->latest();
@@ -99,7 +99,7 @@ class UserJourneyController extends Controller
             'position',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {
-                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
+                $q->with('aspectScores')->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
             'idps' => function ($q) {
                 $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');

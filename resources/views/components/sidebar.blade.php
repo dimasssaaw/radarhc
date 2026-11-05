@@ -116,8 +116,8 @@
                 
 
 
-                @canany(['lihat_departemen', 'lihat_jabatan', 'lihat_role'])
-                <div x-data="{ open: {{ request()->is('department*') || request()->is('role*') || request()->is('positions*') ? 'true' : 'false' }} }">
+                @canany(['lihat_departemen', 'lihat_jabatan', 'lihat_role', 'lihat_master_idp', 'lihat_master_assessment'])
+                <div x-data="{ open: {{ request()->is('department*') || request()->is('role*') || request()->is('positions*') || request()->is('master-idp*') || request()->is('master-assessment*') ? 'true' : 'false' }} }">
                     <button @click="if(!sidebarCollapsed) open = !open" class="w-full menu-3d flex items-center text-gray-600 font-medium text-sm" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'justify-between'">
                         <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center w-full' : 'gap-3'">
                             <!-- Ikon Master Data diubah menjadi fa-database -->
@@ -135,6 +135,12 @@
                         @endcan
                         @can('lihat_role')
                         <a href="{{ route('role.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('role*') ? 'active font-bold' : '' }}"><i class="fas fa-user-shield w-5 text-center text-lg"></i> User Roles</a>
+                        @endcan
+                        @can('lihat_master_idp')
+                        <a href="{{ route('master-idp.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('master-idp*') ? 'active font-bold' : '' }}"><i class="fas fa-bullseye w-5 text-center text-lg"></i> Master IDP</a>
+                        @endcan
+                        @can('lihat_master_assessment')
+                        <a href="{{ route('master-assessment.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('master-assessment*') ? 'active font-bold' : '' }}"><i class="fas fa-file-invoice w-5 text-center text-lg"></i> Master Assessment</a>
                         @endcan
                     </div>
                 </div>

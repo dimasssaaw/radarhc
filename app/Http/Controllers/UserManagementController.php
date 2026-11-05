@@ -93,12 +93,13 @@ class UserManagementController extends Controller implements HasMiddleware
         $permissionsToSync = [];
         if ($request->has('permissions')) {
             foreach ($request->input('permissions') as $module) {
-                // Hanya tambahkan permission yang benar-benar ada di database (Spatie butuh nama exact)
                 $permissionsToSync[] = 'lihat_'.$module;
                 $permissionsToSync[] = 'tambah_'.$module;
                 $permissionsToSync[] = 'edit_'.$module;
                 $permissionsToSync[] = 'hapus_'.$module;
             }
+            $existingPermissions = Permission::pluck('name')->toArray();
+            $permissionsToSync = array_values(array_intersect($permissionsToSync, $existingPermissions));
         }
         $user->syncPermissions($permissionsToSync);
 
@@ -181,6 +182,8 @@ class UserManagementController extends Controller implements HasMiddleware
                 $permissionsToSync[] = 'edit_'.$module;
                 $permissionsToSync[] = 'hapus_'.$module;
             }
+            $existingPermissions = Permission::pluck('name')->toArray();
+            $permissionsToSync = array_values(array_intersect($permissionsToSync, $existingPermissions));
         }
         $user_management->syncPermissions($permissionsToSync);
 

@@ -99,7 +99,7 @@
                     </td>
                     <td class="px-6 py-4 text-center">
                         @if($cert->lampiran_sertifikasi)
-                            <a href="{{ $cert->lampiran_sertifikasi }}" target="_blank" class="text-gray-400 hover:text-blue-500 hover:-translate-y-1 hover:drop-shadow-md inline-block transition-all duration-200" title="View Attachment">
+                            <a href="{{ url($cert->lampiran_sertifikasi) }}" target="_blank" class="text-gray-400 hover:text-blue-500 hover:-translate-y-1 hover:drop-shadow-md inline-block transition-all duration-200" title="View Attachment">
                                 <i class="fas fa-file-pdf text-lg"></i>
                             </a>
                         @else

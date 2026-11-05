@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Idp;
+use App\Models\IdpCompetency;
+use App\Models\IdpCompetencyGroup;
+use App\Models\IdpCompetencyScore;
 use App\Models\IdpPenilain;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
@@ -17,7 +20,7 @@ class IdpController extends Controller implements HasMiddleware
         return [
             new Middleware('can:lihat_idp', only: ['index', 'show', 'showEmployee']),
             new Middleware('can:tambah_idp', only: ['create', 'store']),
-            new Middleware('can:edit_idp', only: ['edit', 'update', 'updateMetrics', 'updateEmployeeMetrics', 'updatePenilaian', 'updateEmployeePenilaian', 'updateGrow', 'updateEmployeeGrow', 'updateInfo', 'updateEmployeeInfo', 'updateJadwal', 'updateEmployeeJadwal']),
+            new Middleware('can:edit_idp', only: ['edit', 'update', 'updateMetrics', 'updateEmployeeMetrics', 'updatePenilaian', 'updateEmployeePenilaian', 'updateGrow', 'updateEmployeeGrow', 'updateInfo', 'updateEmployeeInfo', 'updateJadwal', 'updateEmployeeJadwal', 'updateCompetencyScores', 'updateEmployeeCompetencyScores']),
             new Middleware('can:hapus_idp', only: ['destroy']),
         ];
     }
@@ -197,9 +200,42 @@ class IdpController extends Controller implements HasMiddleware
         return redirect()->route('idp.index')->with('success', 'IDP data added successfully.');
     }
 
+    protected function getLegacyMapping(): array
+    {
+        return [
+            'Managing Change' => 'head_managing_change',
+            'Empowerment' => 'head_empowerment',
+            'Fostering Teamwork' => 'head_fostering_teamwork',
+            'Analysis & Decision Making' => 'head_analysis_decision',
+            'Planning & Controlling' => 'head_planning_controlling',
+            'Integrity & Ethics' => 'head_integrity_ethics',
+            'Excellence' => 'head_excellence',
+            'Excellence & Commitment' => 'head_excellence',
+            'Compassion' => 'head_compassion',
+            'Compassion & Respect' => 'head_compassion',
+            'Humility' => 'head_humility',
+            'Humility & Openness' => 'head_humility',
+            'Leads Courageously' => 'staff_leads_courageously',
+            'Coach & Develop Others' => 'staff_coach_develop',
+            'Teamwork' => 'staff_teamwork',
+            'Trouble Shooting' => 'staff_trouble_shooting',
+            'Customer Satisfaction' => 'staff_customer_satisfaction',
+            'Cross Functional Capability' => 'staff_cross_functional',
+            'Quality Focus' => 'staff_quality_focus',
+            'Continuous Improvement' => 'staff_continuous_improvement',
+            'Planning Monitoring' => 'staff_planning_monitoring',
+            'Personal Integrity' => 'staff_personal_integrity',
+            'Drive For Result' => 'staff_drive_for_result',
+            'Learning' => 'staff_learning',
+            'Directiveness' => 'unit_directiveness',
+            'Monitoring' => 'unit_monitoring',
+            'Quality & Customer Focus' => 'unit_quality_customer',
+        ];
+    }
+
     public function show($id)
     {
-        $Idp = Idp::with('karyawan')->findOrFail($id);
+        $Idp = Idp::with(['karyawan.position', 'penilaian', 'competencyScores'])->findOrFail($id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
         if (! $isAdmin) {
@@ -209,7 +245,45 @@ class IdpController extends Controller implements HasMiddleware
             }
         }
 
-        return view('idp.show', compact('Idp'));
+        $jabatan = strtolower(trim((string) ($Idp->karyawan->position?->nama_jabatan ?? '')));
+
+        // Opsi A: Query chart groups HANYA untuk posisi yang sesuai dengan jabatan karyawan ini
+        $chartGroups = IdpCompetencyGroup::with(['competencies' => function ($q) {
+            $q->orderBy('order')->orderBy('id');
+        }])
+            ->where(function ($q) use ($jabatan) {
+                if ($jabatan !== '') {
+                    $q->whereRaw('LOWER(target_position) = ?', [$jabatan]);
+                    if (str_contains($jabatan, 'section head')) {
+                        $q->orWhereRaw('LOWER(target_position) = ?', ['department head']);
+                    }
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
+            })
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get();
+
+        $savedScores = $Idp->competencyScores->pluck('score', 'idp_competency_id')->toArray();
+        $legacyMap = $this->getLegacyMapping();
+
+        // Satukan skor: jika belum ada di idp_competency_scores, coba fallback dari idp_penilain
+        $competencyScores = [];
+        foreach ($chartGroups as $group) {
+            foreach ($group->competencies as $comp) {
+                if (isset($savedScores[$comp->id])) {
+                    $competencyScores[$comp->id] = (float) $savedScores[$comp->id];
+                } elseif ($Idp->penilaian && isset($legacyMap[$comp->name])) {
+                    $legacyCol = $legacyMap[$comp->name];
+                    $competencyScores[$comp->id] = isset($Idp->penilaian->$legacyCol) ? (float) $Idp->penilaian->$legacyCol : 0.0;
+                } else {
+                    $competencyScores[$comp->id] = 0.0;
+                }
+            }
+        }
+
+        return view('idp.show', compact('Idp', 'chartGroups', 'competencyScores'));
     }
 
     public function showEmployee($employee_id)
@@ -468,6 +542,66 @@ class IdpController extends Controller implements HasMiddleware
         }
 
         return redirect()->route('idp.show', $Idp->id)->with('success', 'Spider Chart updated successfully.');
+    }
+
+    public function updateCompetencyScores(Request $request, $id)
+    {
+        $Idp = Idp::findOrFail($id);
+
+        $scores = $request->input('scores', []);
+        $legacyMap = $this->getLegacyMapping();
+        $legacyUpdateData = [];
+
+        foreach ($scores as $competencyId => $scoreValue) {
+            if ($scoreValue !== null && $scoreValue !== '') {
+                $floatScore = min(5.0, max(0.0, (float) $scoreValue));
+
+                IdpCompetencyScore::updateOrCreate(
+                    [
+                        'id_idp' => $Idp->id,
+                        'idp_competency_id' => $competencyId,
+                    ],
+                    [
+                        'id_karyawan' => $Idp->id_karyawan,
+                        'score' => $floatScore,
+                    ]
+                );
+
+                $compModel = IdpCompetency::find($competencyId);
+                if ($compModel && isset($legacyMap[$compModel->name])) {
+                    $legacyCol = $legacyMap[$compModel->name];
+                    $legacyUpdateData[$legacyCol] = $floatScore;
+                }
+            }
+        }
+
+        if (! empty($legacyUpdateData)) {
+            if ($Idp->penilaian) {
+                $Idp->penilaian->update($legacyUpdateData);
+            } else {
+                $legacyUpdateData['id_idp'] = $Idp->id;
+                $legacyUpdateData['id_karyawan'] = $Idp->id_karyawan;
+                $legacyUpdateData['id_penilain'] = $Idp->id;
+                IdpPenilain::create($legacyUpdateData);
+            }
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->back()->with('success', 'Penilaian Spider Chart berhasil diperbarui.');
+    }
+
+    public function updateEmployeeCompetencyScores(Request $request, $employee_id)
+    {
+        $Idp = Idp::create([
+            'id_karyawan' => $employee_id,
+            'tahun' => date('Y'),
+            'status_idp' => 'in_progress',
+        ]);
+
+        return $this->updateCompetencyScores($request, $Idp->id);
     }
 
     public function updateGrow(Request $request, $id)

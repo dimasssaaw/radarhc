@@ -509,67 +509,55 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* 3D Neumorphic Styles */
+        /* 3D Styles (Reduced, Clean & Soft Shadows) */
         .card-3d {
             background: #ffffff;
             border-radius: 20px;
             box-shadow: 
-                8px 8px 16px rgba(166, 180, 200, 0.5), 
-                -8px -8px 16px rgba(255, 255, 255, 0.8),
-                inset 1px 1px 3px rgba(255, 255, 255, 0.6),
-                inset -1px -1px 3px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+                0 4px 16px -2px rgba(148, 163, 184, 0.12), 
+                0 2px 6px -1px rgba(148, 163, 184, 0.06);
+            border: 1px solid rgba(226, 232, 240, 0.7);
             transition: all 0.3s ease;
         }
         .card-3d:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: 
-                12px 12px 20px rgba(166, 180, 200, 0.6), 
-                -12px -12px 20px rgba(255, 255, 255, 0.9),
-                inset 1px 1px 3px rgba(255, 255, 255, 0.6),
-                inset -1px -1px 3px rgba(0, 0, 0, 0.05);
+                0 10px 24px -4px rgba(148, 163, 184, 0.16), 
+                0 4px 10px -2px rgba(148, 163, 184, 0.08);
         }
         .card-3d-inner {
-            background: #ffffff;
+            background: #f8fafc;
             border-radius: 12px;
-            box-shadow: 
-                inset 6px 6px 12px rgba(166, 180, 200, 0.6), 
-                inset -6px -6px 12px rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 2px 4px 0 rgba(148, 163, 184, 0.08);
+            border: 1px solid #e2e8f0;
         }
         .icon-3d {
             background: #ffffff;
-            box-shadow: 
-                4px 4px 8px rgba(166, 180, 200, 0.6), 
-                -4px -4px 8px rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 2px 6px rgba(148, 163, 184, 0.12);
+            border: 1px solid rgba(226, 232, 240, 0.8);
         }
         .header-3d {
             background: #ffffff;
-            box-shadow: 4px 4px 15px rgba(166, 180, 200, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 2px 8px rgba(148, 163, 184, 0.08);
+            border-bottom: 1px solid #e2e8f0;
         }
         .btn-3d {
             background: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
-            box-shadow: 
-                4px 4px 8px rgba(166, 180, 200, 0.5), 
-                -4px -4px 8px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 1px 3px rgba(148, 163, 184, 0.12);
             transition: all 0.2s ease;
             color: #4b5563;
         }
         .btn-3d:hover {
-            box-shadow: 
-                2px 2px 5px rgba(166, 180, 200, 0.6), 
-                -2px -2px 5px rgba(255, 255, 255, 0.9);
-            transform: translateY(1px);
+            box-shadow: 0 3px 8px rgba(148, 163, 184, 0.18);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            color: #1e293b;
         }
         .btn-3d:active {
-            box-shadow: 
-                inset 2px 2px 5px rgba(166, 180, 200, 0.5), 
-                inset -2px -2px 5px rgba(255, 255, 255, 0.8);
-            transform: translateY(2px);
+            box-shadow: inset 0 1px 2px rgba(148, 163, 184, 0.12);
+            transform: translateY(1px);
         }
     </style>
     <!-- HTMX for SPA without refresh -->

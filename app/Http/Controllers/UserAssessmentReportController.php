@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssessmentCategory;
 use App\Models\Department;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
@@ -58,7 +59,7 @@ class UserAssessmentReportController extends Controller
     public function show(Request $request, $id)
     {
         $karyawan = Karyawan::with(['department', 'assessmentReports' => function ($q) {
-            $q->latest();
+            $q->with('aspectScores')->latest();
         }])->findOrFail($id);
 
         $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
@@ -79,7 +80,9 @@ class UserAssessmentReportController extends Controller
             }
         }
 
-        return view('user.assessment_report.show', compact('karyawan', 'activeReport'));
+        $categories = AssessmentCategory::with('aspects')->orderBy('order')->orderBy('id')->get();
+
+        return view('user.assessment_report.show', compact('karyawan', 'activeReport', 'categories'));
     }
 
     public function showEmployee($employee_id)

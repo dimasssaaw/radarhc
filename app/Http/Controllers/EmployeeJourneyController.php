@@ -68,7 +68,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'department',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {
-                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
+                $q->with('aspectScores')->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
             'idps' => function ($q) {
                 $q->latest();
@@ -109,7 +109,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'position',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {
-                $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
+                $q->with('aspectScores')->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
             'idps' => function ($q) {
                 $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');

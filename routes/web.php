@@ -12,6 +12,8 @@ use App\Http\Controllers\EmployeeScarfController;
 use App\Http\Controllers\EmployeeStrengthController;
 use App\Http\Controllers\EmployeeViaCharacterController;
 use App\Http\Controllers\IdpController;
+use App\Http\Controllers\MasterAssessmentController;
+use App\Http\Controllers\MasterIdpController;
 use App\Http\Controllers\MentoringController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
@@ -35,6 +37,52 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email')->middleware('throttle:5,1');
 });
+
+// Serve public HRG files (Training & Certification attachments, employee photos, etc.)
+Route::get('/HRG/{path}', function (string $path) {
+    $cleanPath = str_replace(['../', '..\\'], '', $path);
+    $fullPath = storage_path('app/public/HRG/'.$cleanPath);
+
+    if (! file_exists($fullPath) || is_dir($fullPath)) {
+        // Fallback for directory casing differences on Linux/Windows (e.g. Training vs training)
+        $segments = explode('/', $cleanPath);
+        if (! empty($segments)) {
+            $segments[0] = ucfirst($segments[0]);
+            $altPath = storage_path('app/public/HRG/'.implode('/', $segments));
+            if (file_exists($altPath) && ! is_dir($altPath)) {
+                $fullPath = $altPath;
+            } else {
+                $segments[0] = strtolower($segments[0]);
+                $altPath2 = storage_path('app/public/HRG/'.implode('/', $segments));
+                if (file_exists($altPath2) && ! is_dir($altPath2)) {
+                    $fullPath = $altPath2;
+                }
+            }
+        }
+    }
+
+    if (! file_exists($fullPath) || is_dir($fullPath)) {
+        abort(404, 'File not found');
+    }
+
+    $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+    $mimeTypes = [
+        'pdf' => 'application/pdf',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+    ];
+
+    $contentType = $mimeTypes[$extension] ?? (mime_content_type($fullPath) ?: 'application/octet-stream');
+
+    return response()->file($fullPath, [
+        'Content-Type' => $contentType,
+        'Content-Disposition' => 'inline; filename="'.basename($fullPath).'"',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->where('path', '.*')->name('hrg.file');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -64,6 +112,25 @@ Route::middleware('auth')->group(function (): void {
     Route::post('employee-scarf/{id_karyawan}', [EmployeeScarfController::class, 'update'])->name('employee-scarf.update');
     Route::resource('departments', DepartmentController::class)->except(['create', 'show'])->names('department');
     Route::resource('positions', PositionController::class)->except(['create', 'show'])->names('position');
+
+    // Master IDP Routes
+    Route::get('master-idp', [MasterIdpController::class, 'index'])->name('master-idp.index');
+    Route::post('master-idp/group', [MasterIdpController::class, 'storeGroup'])->name('master-idp.group.store');
+    Route::put('master-idp/group/{id}', [MasterIdpController::class, 'updateGroup'])->name('master-idp.group.update');
+    Route::delete('master-idp/group/{id}', [MasterIdpController::class, 'destroyGroup'])->name('master-idp.group.destroy');
+    Route::post('master-idp/group/{groupId}/competency', [MasterIdpController::class, 'storeCompetency'])->name('master-idp.competency.store');
+    Route::put('master-idp/competency/{id}', [MasterIdpController::class, 'updateCompetency'])->name('master-idp.competency.update');
+    Route::delete('master-idp/competency/{id}', [MasterIdpController::class, 'destroyCompetency'])->name('master-idp.competency.destroy');
+
+    // Master Assessment Routes
+    Route::get('master-assessment', [MasterAssessmentController::class, 'index'])->name('master-assessment.index');
+    Route::post('master-assessment/category', [MasterAssessmentController::class, 'storeCategory'])->name('master-assessment.category.store');
+    Route::put('master-assessment/category/{id}', [MasterAssessmentController::class, 'updateCategory'])->name('master-assessment.category.update');
+    Route::delete('master-assessment/category/{id}', [MasterAssessmentController::class, 'destroyCategory'])->name('master-assessment.category.destroy');
+    Route::post('master-assessment/category/{categoryId}/aspect', [MasterAssessmentController::class, 'storeAspect'])->name('master-assessment.aspect.store');
+    Route::put('master-assessment/aspect/{id}', [MasterAssessmentController::class, 'updateAspect'])->name('master-assessment.aspect.update');
+    Route::delete('master-assessment/aspect/{id}', [MasterAssessmentController::class, 'destroyAspect'])->name('master-assessment.aspect.destroy');
+
     Route::resource('employee-journey', EmployeeJourneyController::class)->only(['index', 'show', 'store', 'update', 'destroy'])->names('employee-journey');
     Route::get('employee-journey/{id}/pdf', [EmployeeJourneyController::class, 'exportPdf'])->name('employee-journey.pdf');
     Route::post('employee-journey/{employee_id}/recommendation', [EmployeeJourneyController::class, 'storeRecommendation'])->name('employee-journey.recommendation');
@@ -86,8 +153,10 @@ Route::middleware('auth')->group(function (): void {
     Route::post('idp/{idp}/metrics', [IdpController::class, 'updateMetrics'])->name('idp.update-metrics');
     Route::post('idp/employee/{employee_id}/grow', [IdpController::class, 'updateEmployeeGrow'])->name('idp.update-employee-grow');
     Route::post('idp/employee/{employee_id}/penilaian', [IdpController::class, 'updateEmployeePenilaian'])->name('idp.update-employee-penilaian');
+    Route::post('idp/employee/{employee_id}/competency-scores', [IdpController::class, 'updateEmployeeCompetencyScores'])->name('idp.update-employee-competency-scores');
     Route::post('idp/{idp}/grow', [IdpController::class, 'updateGrow'])->name('idp.update-grow');
     Route::post('idp/{idp}/penilaian', [IdpController::class, 'updatePenilaian'])->name('idp.update-penilaian');
+    Route::post('idp/{idp}/competency-scores', [IdpController::class, 'updateCompetencyScores'])->name('idp.update-competency-scores');
 
     Route::post('idp/employee/{employee_id}/info', [IdpController::class, 'updateEmployeeInfo'])->name('idp.update-employee-info');
     Route::post('idp/{idp}/info', [IdpController::class, 'updateInfo'])->name('idp.update-info');

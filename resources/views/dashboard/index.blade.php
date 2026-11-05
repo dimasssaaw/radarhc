@@ -87,7 +87,7 @@
 <div class="mb-4 mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
         <h2 class="text-lg font-bold text-gray-900">Competency Assessment Overall</h2>
-        <p class="text-xs text-gray-500 mt-1">Average competency assessment of all employees per job level &mdash; Head, Staff, Unit Head/Group Head</p>
+        <p class="text-xs text-gray-500 mt-1">Average competency assessment of all employees per job level &mdash; Department / Section Head, Staff, Unit Head / Group Head</p>
     </div>
 
     <!-- Year Filter Dropdown (Custom System Style) -->
@@ -177,25 +177,25 @@
     <!-- Radar Charts Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         @foreach($IDP_LEVEL_COMPETENCY ?? [] as $level => $data)
-        <div class="card-3d p-6 flex flex-col hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
-            <div class="flex justify-between items-start mb-2">
-                <div>
-                    <h3 class="font-bold text-gray-900 text-sm">{{ $data['title'] }}</h3>
-                    <p class="text-[10px] text-gray-400">
+        <div class="card-3d p-6 flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div class="flex justify-between items-start gap-3 mb-2 min-h-[44px]">
+                <div class="flex-1 min-w-0 pr-1">
+                    <h3 class="font-bold text-gray-900 text-sm leading-snug">{{ $data['title'] }}</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">
                         {{ $data['total_employees'] }} employee • average {{ $data['overall_average'] }} / 5.0
                         @if($selectedYear !== 'latest')
                             <span class="inline-block font-semibold text-[#0ea5e9] ml-1">({{ $selectedYear }})</span>
                         @endif
                     </p>
                 </div>
-                <button @click="levelDetail = '{{ $level }}'" class="btn-3d text-[10px] font-bold px-3 py-1.5 uppercase tracking-wide">View Details</button>
+                <button @click="levelDetail = '{{ $level }}'" class="btn-3d text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-wide shrink-0 whitespace-nowrap shadow-xs mt-0.5">View Details</button>
             </div>
-            <div class="h-48 w-full mt-4 flex justify-center">
+            <div class="relative h-52 w-full mt-2 flex items-center justify-center">
                 <canvas id="radar-{{ $level }}"></canvas>
             </div>
-            <div class="mt-6 flex-1 flex flex-col justify-end">
-                <p class="text-[9px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Area to Improve</p>
-                <div class="card-3d-inner p-3 rounded-xl" id="gap-{{ $level }}">
+            <div class="mt-4 flex-1 flex flex-col justify-end">
+                <p class="text-[9px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Area to Improve</p>
+                <div class="card-3d-inner p-3 rounded-xl min-h-[142px] flex items-center justify-center" id="gap-{{ $level }}">
                     <!-- JS Injected Gaps -->
                 </div>
             </div>
@@ -218,7 +218,7 @@
                 <div class="px-6 py-5 flex justify-between items-start bg-white">
                     <div>
                         <h2 class="text-lg font-bold text-gray-900">Competency Assessment Detail</h2>
-                        <p class="text-xs text-gray-500 mt-1">Level: <span class="capitalize" x-text="levelDetail === 'unit_head_group_head' ? 'Unit Head / Group Head' : (levelDetail === 'head' ? 'Department Head' : (levelDetail ? levelDetail.replace(/_/g, ' ') : ''))"></span> &bull; Period: <span class="font-semibold text-[#0ea5e9]">{{ $selectedYear === 'latest' ? 'Latest Assessment' : 'Year ' . $selectedYear }}</span></p>
+                        <p class="text-xs text-gray-500 mt-1">Level: <span class="capitalize" x-text="levelDetail === 'unit_head_group_head' ? 'Unit Head / Group Head' : (levelDetail === 'head' ? 'Department / Section Head' : (levelDetail ? levelDetail.replace(/_/g, ' ') : ''))"></span> &bull; Period: <span class="font-semibold text-[#0ea5e9]">{{ $selectedYear === 'latest' ? 'Latest Assessment' : 'Year ' . $selectedYear }}</span></p>
                     </div>
                     <button @click="levelDetail = null" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors mt-1">
                         <i class="fas fa-times"></i>
@@ -497,10 +497,41 @@
         }
     });
 
+    // Radar Chart Label Formatter (Breaks long labels into 2 lines so the spiderweb stays large & centered)
+    function formatRadarLabel(label) {
+        if (Array.isArray(label)) return label;
+        if (!label || typeof label !== 'string') return label;
+        if (label.length <= 13) return label;
+
+        const words = label.trim().split(/\s+/);
+        if (words.length <= 1) return label;
+
+        if (words.length === 2) {
+            return [words[0], words[1]];
+        }
+
+        // For 3 or more words, find the cleanest split point
+        let bestSplit = 1;
+        let minDiff = 999;
+        for (let i = 1; i < words.length; i++) {
+            const line1 = words.slice(0, i).join(' ');
+            const line2 = words.slice(i).join(' ');
+            const diff = Math.abs(line1.length - line2.length);
+            if (diff < minDiff) {
+                minDiff = diff;
+                bestSplit = i;
+            }
+        }
+        return [words.slice(0, bestSplit).join(' '), words.slice(bestSplit).join(' ')];
+    }
+
     // Radar Chart Options
     const radarOptions = {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+            padding: { top: 6, bottom: 6, left: 6, right: 6 }
+        },
         scales: {
             r: {
                 min: 0,
@@ -508,7 +539,11 @@
                 beginAtZero: true,
                 angleLines: { color: '#e5e7eb' },
                 grid: { color: '#e5e7eb' },
-                pointLabels: { font: { size: 7.5, weight: '500', family: "'Outfit', sans-serif" }, color: '#6b7280' },
+                pointLabels: { 
+                    font: { size: 7.5, weight: '500', family: "'Outfit', sans-serif" }, 
+                    color: '#6b7280',
+                    padding: 3
+                },
                 ticks: { display: false, stepSize: 1 }
             }
         },
@@ -523,7 +558,8 @@
                 displayColors: true,
                 callbacks: {
                     title: function(context) {
-                        return context[0].label;
+                        const lbl = context[0].label;
+                        return Array.isArray(lbl) ? lbl.join(' ') : lbl;
                     },
                     label: function(context) {
                         return context.dataset.label + ': ' + parseFloat(context.raw).toFixed(2);
@@ -539,7 +575,7 @@
             let score = scores[index] || 0;
             let target = targets[index] || 5;
             return {
-                name: label,
+                name: Array.isArray(label) ? label.join(' ') : label,
                 score: score,
                 target: target,
                 gap: target - score
@@ -556,12 +592,12 @@
         if(!container) return;
         
         if(top3.length === 0 || (top3[0].score === 0 && top3[0].gap === 5)) {
-             container.className = 'card-3d-inner p-3 rounded-xl flex items-center justify-center min-h-[80px]';
+             container.className = 'card-3d-inner p-3 rounded-xl flex items-center justify-center min-h-[142px]';
              container.innerHTML = '<div class="text-center text-gray-400 text-xs py-2">No assessment data available</div>';
              return;
         }
 
-        container.className = 'bg-white border border-gray-100 shadow-sm p-3 rounded-xl';
+        container.className = 'bg-white border border-gray-100 shadow-sm p-3 rounded-xl min-h-[142px] flex flex-col justify-center';
         let html = '<div class="flex flex-col gap-2.5">';
         top3.forEach(item => {
             html += `<div class="flex items-center text-left py-1.5 px-2 rounded-lg hover:-translate-y-0.5 hover:shadow hover:bg-white hover:z-10 transition-all duration-200 cursor-default">
@@ -587,7 +623,8 @@
     for (const [level, data] of Object.entries(levelCompetency)) {
         if(window['radarInstance_' + level]) window['radarInstance_' + level].destroy();
         
-        const labels = data.competencies.map(c => c.label);
+        const rawLabels = data.competencies.map(c => c.label);
+        const formattedLabels = rawLabels.map(formatRadarLabel);
         const scores = data.competencies.map(c => c.score);
         const targets = data.competencies.map(c => c.target);
         
@@ -596,7 +633,7 @@
             window['radarInstance_' + level] = new Chart(canvas, {
                 type: 'radar',
                 data: {
-                    labels: labels,
+                    labels: formattedLabels,
                     datasets: [
                         {
                             label: 'Actual Score',
@@ -622,7 +659,7 @@
                 options: radarOptions
             });
             
-            calculateGap(labels, scores, targets, 'gap-' + level);
+            calculateGap(rawLabels, scores, targets, 'gap-' + level);
         }
     }
     })();
