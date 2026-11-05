@@ -111,10 +111,17 @@ class IdpController extends Controller implements HasMiddleware
 
         $employee = null;
         $idps = collect();
+        $availableChartGroups = collect();
         if ($request->filled('employee_id')) {
             $employee = Karyawan::with(['department', 'position', 'idps'])->find($request->employee_id);
             if ($employee) {
                 $idps = $employee->idps()->orderBy('tahun', 'desc')->get();
+                $posLower = strtolower(trim((string) ($employee->position?->nama_jabatan ?? '')));
+                if ($posLower !== '') {
+                    $availableChartGroups = IdpCompetencyGroup::whereRaw('LOWER(target_position) = ?', [$posLower])
+                        ->when(str_contains($posLower, 'section head'), fn ($q) => $q->orWhereRaw('LOWER(target_position) = ?', ['department head']))
+                        ->orderBy('order')->orderBy('id')->get();
+                }
             }
         }
 
@@ -124,6 +131,8 @@ class IdpController extends Controller implements HasMiddleware
             'departments' => $departments,
             'employee' => $employee,
             'idps' => $idps,
+            'allChartGroups' => $availableChartGroups,
+            'availableChartGroups' => $availableChartGroups,
         ]);
     }
 
@@ -171,7 +180,15 @@ class IdpController extends Controller implements HasMiddleware
             'grow_options' => 'nullable|string',
             'grow_wrap_up' => 'nullable|string',
             'grow_insight' => 'nullable|string',
+            'selected_charts' => 'nullable|array',
+            'selected_groups' => 'nullable|array',
         ]);
+
+        $selectedCharts = $request->input('selected_charts') ?? $request->input('selected_groups');
+        if (is_array($selectedCharts)) {
+            $validated['selected_charts'] = array_map('intval', $selectedCharts);
+        }
+        unset($validated['selected_groups']);
 
         $idp = Idp::create($validated);
 
@@ -247,8 +264,8 @@ class IdpController extends Controller implements HasMiddleware
 
         $jabatan = strtolower(trim((string) ($Idp->karyawan->position?->nama_jabatan ?? '')));
 
-        // Opsi A: Query chart groups HANYA untuk posisi yang sesuai dengan jabatan karyawan ini
-        $chartGroups = IdpCompetencyGroup::with(['competencies' => function ($q) {
+        // Query SEMUA chart group yang tersedia untuk posisi ini
+        $allChartGroups = IdpCompetencyGroup::with(['competencies' => function ($q) {
             $q->orderBy('order')->orderBy('id');
         }])
             ->where(function ($q) use ($jabatan) {
@@ -270,7 +287,7 @@ class IdpController extends Controller implements HasMiddleware
 
         // Satukan skor: jika belum ada di idp_competency_scores, coba fallback dari idp_penilain
         $competencyScores = [];
-        foreach ($chartGroups as $group) {
+        foreach ($allChartGroups as $group) {
             foreach ($group->competencies as $comp) {
                 if (isset($savedScores[$comp->id])) {
                     $competencyScores[$comp->id] = (float) $savedScores[$comp->id];
@@ -283,7 +300,34 @@ class IdpController extends Controller implements HasMiddleware
             }
         }
 
-        return view('idp.show', compact('Idp', 'chartGroups', 'competencyScores'));
+        // Tentukan grup yang memiliki nilai terisi (> 0) pada IDP ini
+        $groupsWithScores = $allChartGroups->filter(function ($grp) use ($competencyScores) {
+            foreach ($grp->competencies as $comp) {
+                if (! empty($competencyScores[$comp->id]) && (float) $competencyScores[$comp->id] > 0) {
+                    return true;
+                }
+            }
+
+            return false;
+        })->pluck('id')->toArray();
+
+        // Filter chart yang ditampilkan:
+        // 1. Jika pengguna secara eksplisit memilih chart (selected_charts tidak null)
+        // 2. Jika belum pernah memilih: hanya tampilkan chart yang memang ada datanya pada IDP ini.
+        //    Bila belum ada data sama sekali (IDP baru), tampilkan chart pertama sebagai default.
+        if ($Idp->selected_charts !== null) {
+            $selectedIds = (array) $Idp->selected_charts;
+            $chartGroups = $allChartGroups->filter(fn ($g) => in_array($g->id, $selectedIds))->values();
+        } else {
+            if (! empty($groupsWithScores)) {
+                $chartGroups = $allChartGroups->filter(fn ($g) => in_array($g->id, $groupsWithScores))->values();
+            } else {
+                $chartGroups = $allChartGroups->take(1)->values();
+            }
+        }
+        $allChartGroups = $allChartGroups->values();
+
+        return view('idp.show', compact('Idp', 'chartGroups', 'allChartGroups', 'competencyScores', 'groupsWithScores'));
     }
 
     public function showEmployee($employee_id)
@@ -720,5 +764,15 @@ class IdpController extends Controller implements HasMiddleware
         }
 
         return redirect()->back()->with('success', 'Review schedule updated successfully.');
+    }
+
+    public function updateSelectedCharts(Request $request, $id)
+    {
+        $idp = Idp::findOrFail($id);
+        $selected = $request->input('selected_charts', []);
+        $idp->selected_charts = is_array($selected) ? array_map('intval', $selected) : [];
+        $idp->save();
+
+        return redirect()->back()->with('success', 'Chart IDP yang dinilai berhasil diperbarui.');
     }
 }

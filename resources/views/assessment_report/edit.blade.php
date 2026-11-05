@@ -86,6 +86,29 @@
                 <input type="text" name="periode" value="{{ old('periode', $report->periode) }}" required class="w-full rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 text-sm py-2.5 px-4 transition-all" placeholder="e.g. 1">
             </div>
 
+            <!-- Checklist Kategori Chart -->
+            <input type="hidden" name="has_selected_categories" value="1">
+            @if(isset($allCategories) && $allCategories->isNotEmpty())
+            <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Chart Penilaian yang Diujikan</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-200 rounded-xl p-3 bg-gray-50/60">
+                    @foreach($allCategories as $cat)
+                    @php
+                        $isChecked = is_array($report->selected_categories ?? null)
+                            ? in_array($cat->id, $report->selected_categories)
+                            : true;
+                    @endphp
+                    <label class="flex items-center gap-2.5 text-xs font-semibold text-gray-700 hover:text-gray-900 cursor-pointer p-2 rounded-lg hover:bg-white transition-colors bg-white/70 border border-gray-100 shadow-xs">
+                        <input type="checkbox" name="selected_categories[]" value="{{ $cat->id }}" {{ $isChecked ? 'checked' : '' }} class="rounded border-gray-300 text-[#0ea5e9] focus:ring-[#0ea5e9]">
+                        <span class="flex-1">{{ $cat->name }}</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium">{{ $cat->aspects->count() }} aspek</span>
+                    </label>
+                    @endforeach
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">Centang chart kategori yang ingin dinilai pada sesi assessment ini.</p>
+            </div>
+            @endif
+
             <!-- Provider -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1.5">Provider/Assessor *</label>

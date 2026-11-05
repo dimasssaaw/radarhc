@@ -80,7 +80,32 @@ class UserAssessmentReportController extends Controller
             }
         }
 
-        $categories = AssessmentCategory::with('aspects')->orderBy('order')->orderBy('id')->get();
+        $allCategories = AssessmentCategory::with('aspects')->orderBy('order')->orderBy('id')->get();
+
+        $catsWithScores = [];
+        if ($activeReport) {
+            $catsWithScores = $allCategories->filter(function ($cat) use ($activeReport) {
+                foreach ($cat->aspects as $aspect) {
+                    if ($activeReport->getAspectScore($aspect) > 0) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })->pluck('id')->toArray();
+        }
+
+        if ($activeReport && $activeReport->selected_charts !== null) {
+            $selectedIds = (array) $activeReport->selected_charts;
+            $categories = $allCategories->filter(fn ($c) => in_array($c->id, $selectedIds))->values();
+        } else {
+            if (! empty($catsWithScores)) {
+                $categories = $allCategories->filter(fn ($c) => in_array($c->id, $catsWithScores))->values();
+            } else {
+                $categories = $allCategories->take(4)->values();
+            }
+        }
+        $allCategories = $allCategories->values();
 
         return view('user.assessment_report.show', compact('karyawan', 'activeReport', 'categories'));
     }

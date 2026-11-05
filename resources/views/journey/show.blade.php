@@ -533,7 +533,9 @@
         @php
             // Helper closure to check if an IDP has actual assessment scores
             $hasScore = function($idp) {
-                if (!$idp || !$idp->penilaian) return false;
+                if (!$idp) return false;
+                if ($idp->relationLoaded('competencyScores') ? $idp->competencyScores->where('score', '>', 0)->isNotEmpty() : $idp->competencyScores()->where('score', '>', 0)->exists()) { return true; }
+                if (!$idp->penilaian) return false;
                 $scores = [
                     $idp->penilaian->head_managing_change, $idp->penilaian->head_empowerment, $idp->penilaian->head_fostering_teamwork,
                     $idp->penilaian->head_analysis_decision, $idp->penilaian->head_planning_controlling, $idp->penilaian->head_integrity_ethics,
@@ -673,6 +675,9 @@
 
         <!-- Area Konten IDP -->
         <div class="mt-2 flex flex-col flex-grow relative z-10">
+            <!-- Dynamic Chart Switcher Tabs (Segmented pill control, hanya tampil jika IDP memiliki lebih dari 1 chart) -->
+            <div id="idpChartTabsContainer" class="self-start inline-flex items-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 shadow-2xs gap-1 mb-3.5 max-w-full overflow-x-auto no-scrollbar" style="display: none;"></div>
+
             <!-- Chart -->
             <div class="w-full h-72 flex items-center justify-center relative bg-gray-50/50 rounded-xl border border-gray-100/50 p-2">
                 <canvas id="radarChart" style="width: 100%; height: 100%;"></canvas>
@@ -1878,110 +1883,150 @@
             
             const jabatan = @json(strtolower(trim($karyawan->position?->nama_jabatan ?? '')));
             
-            // Map all IDP history with their penilaian data
-            const idpHistory = {
-                @foreach($karyawan->idps as $idp)
-                "{{ $idp->id }}": {
-                    id: {{ $idp->id }},
-                    tahun: @json($idp->tahun ?? '-'),
-                    periode: @json($idp->periode ? 'Periode ' . $idp->periode : ''),
-                    status: @json(strtolower($idp->status_idp ?? 'pending')),
-                    statusLabel: @json(ucwords(str_replace('_', ' ', $idp->status_idp ?? 'Pending'))),
-                    mentor: @json($idp->mentor ?? '-'),
-                    detailUrl: @json(route('idp.show', $idp->id)),
-                    hasPenilaian: {{ $hasScore($idp) ? 'true' : 'false' }},
-                    penilaian: @json($idp->penilaian)
-                },
-                @endforeach
-            };
-
-            function parseScore(val) {
-                if (val === null || val === undefined || val === '') return 0;
-                let parsed = parseFloat(val);
-                return isNaN(parsed) ? 0 : parsed;
-            }
-
             @php
-                $masterHead = \App\Models\IdpCompetencyGroup::where('target_position', 'department head')->first();
-                $masterStaff = \App\Models\IdpCompetencyGroup::where('target_position', 'staff')->first();
-                $masterUnit = \App\Models\IdpCompetencyGroup::where('target_position', 'unit head')->first();
+                $empPos = strtolower(trim((string) ($karyawan->position?->nama_jabatan ?? '')));
+                $allGroupsForPos = \App\Models\IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])
+                    ->where(function ($q) use ($empPos) {
+                        if ($empPos !== '') {
+                            $q->whereRaw('LOWER(target_position) = ?', [$empPos]);
+                            if (str_contains($empPos, 'section head')) {
+                                $q->orWhereRaw('LOWER(target_position) = ?', ['department head']);
+                            }
+                            if (str_contains($empPos, 'group head')) {
+                                $q->orWhereRaw('LOWER(target_position) = ?', ['unit head']);
+                            }
+                        } else {
+                            $q->whereRaw('1 = 0');
+                        }
+                    })
+                    ->orderBy('order')
+                    ->orderBy('id')
+                    ->get();
 
-                $headLabels = $masterHead && $masterHead->competencies->isNotEmpty()
-                    ? $masterHead->competencies->pluck('name')->toArray()
-                    : ['Managing Change', 'Empowerment', 'Fostering Teamwork', 'Analysis & Decision Making', 'Planning & Controlling', 'Integrity & Ethics', 'Excellence', 'Compassion', 'Humility'];
-                $headTargets = $masterHead && $masterHead->competencies->isNotEmpty()
-                    ? $masterHead->competencies->pluck('target_score')->map(fn($v) => (float)$v)->toArray()
-                    : array_fill(0, count($headLabels), 4);
+                $legacyMap = [
+                    'Managing Change' => 'head_managing_change',
+                    'Empowerment' => 'head_empowerment',
+                    'Fostering Teamwork' => 'head_fostering_teamwork',
+                    'Analysis & Decision Making' => 'head_analysis_decision',
+                    'Analysis & Decision' => 'head_analysis_decision',
+                    'Planning & Controlling' => 'head_planning_controlling',
+                    'Integrity & Ethics' => 'head_integrity_ethics',
+                    'Excellence' => 'head_excellence',
+                    'Compassion' => 'head_compassion',
+                    'Humility' => 'head_humility',
+                    'Leads Courageously' => 'staff_leads_courageously',
+                    'Coach & Develop Others' => 'staff_coach_develop',
+                    'Coach & Develop' => 'staff_coach_develop',
+                    'Teamwork' => 'staff_teamwork',
+                    'Trouble Shooting' => 'staff_trouble_shooting',
+                    'Customer Satisfaction' => 'staff_customer_satisfaction',
+                    'Cross Functional Capability' => 'staff_cross_functional',
+                    'Cross Functional' => 'staff_cross_functional',
+                    'Quality Focus' => 'staff_quality_focus',
+                    'Continuous Improvement' => 'staff_continuous_improvement',
+                    'Planning Monitoring' => 'staff_planning_monitoring',
+                    'Planning & Monitoring' => 'staff_planning_monitoring',
+                    'Personal Integrity' => 'staff_personal_integrity',
+                    'Drive For Result' => 'staff_drive_for_result',
+                    'Drive for Result' => 'staff_drive_for_result',
+                    'Learning' => 'staff_learning',
+                    'Directiveness' => 'unit_directiveness',
+                    'Monitoring' => 'unit_monitoring',
+                    'Quality & Customer Focus' => 'unit_quality_customer',
+                    'Quality Customer' => 'unit_quality_customer',
+                ];
 
-                $staffLabels = $masterStaff && $masterStaff->competencies->isNotEmpty()
-                    ? $masterStaff->competencies->pluck('name')->toArray()
-                    : ['Leads Courageously', 'Coach & Develop Others', 'Teamwork', 'Trouble Shooting', 'Customer Satisfaction', 'Cross Functional Capability', 'Quality Focus', 'Continuous Improvement', 'Planning Monitoring', 'Personal Integrity', 'Drive For Result', 'Learning'];
-                $staffTargets = $masterStaff && $masterStaff->competencies->isNotEmpty()
-                    ? $masterStaff->competencies->pluck('target_score')->map(fn($v) => (float)$v)->toArray()
-                    : array_fill(0, count($staffLabels), 4);
+                $formattedIdpHistory = [];
+                foreach ($karyawan->idps as $idp) {
+                    $savedScores = $idp->competencyScores->pluck('score', 'idp_competency_id')->toArray();
 
-                $unitLabels = $masterUnit && $masterUnit->competencies->isNotEmpty()
-                    ? $masterUnit->competencies->pluck('name')->toArray()
-                    : ['Directiveness', 'Monitoring', 'Teamwork', 'Quality & Customer Focus', 'Continuous Improvement', 'Personal Integrity'];
-                $unitTargets = $masterUnit && $masterUnit->competencies->isNotEmpty()
-                    ? $masterUnit->competencies->pluck('target_score')->map(fn($v) => (float)$v)->toArray()
-                    : array_fill(0, count($unitLabels), 4);
+                    $groupsToInclude = collect();
+                    if ($idp->selected_charts !== null) {
+                        $selectedIds = (array) $idp->selected_charts;
+                        $groupsToInclude = $allGroupsForPos->filter(fn ($g) => in_array($g->id, $selectedIds));
+                    } else {
+                        $withScores = $allGroupsForPos->filter(function ($g) use ($savedScores, $idp, $legacyMap) {
+                            foreach ($g->competencies as $c) {
+                                if (isset($savedScores[$c->id]) && (float) $savedScores[$c->id] > 0) return true;
+                                if ($idp->penilaian && isset($legacyMap[$c->name])) {
+                                    $col = $legacyMap[$c->name];
+                                    if (isset($idp->penilaian->$col) && (float) $idp->penilaian->$col > 0) return true;
+                                }
+                            }
+                            return false;
+                        });
+                        $groupsToInclude = $withScores->isNotEmpty() ? $withScores : $allGroupsForPos->take(1);
+                    }
+
+                    $chartsList = [];
+                    if ($groupsToInclude->isEmpty() && $allGroupsForPos->isEmpty()) {
+                        $chartsList[] = [
+                            'id' => 0,
+                            'title' => 'Core Competencies',
+                            'labels' => ['Managing Change', 'Empowerment', 'Teamwork', 'Decision Making', 'Planning', 'Integrity'],
+                            'targets' => [5, 5, 5, 5, 5, 5],
+                            'scores' => [0, 0, 0, 0, 0, 0],
+                            'avg' => '0.0',
+                            'hasScore' => false,
+                        ];
+                    } else {
+                        foreach ($groupsToInclude as $grp) {
+                            $labels = [];
+                            $targets = [];
+                            $scores = [];
+                            $totalScore = 0;
+                            $scoreCount = 0;
+
+                            foreach ($grp->competencies as $comp) {
+                                $labels[] = $comp->name;
+                                $targets[] = (float) ($comp->target_score ?? 5.0);
+
+                                $val = 0;
+                                if (isset($savedScores[$comp->id])) {
+                                    $val = (float) $savedScores[$comp->id];
+                                } elseif ($idp->penilaian && isset($legacyMap[$comp->name])) {
+                                    $col = $legacyMap[$comp->name];
+                                    $val = (float) ($idp->penilaian->$col ?? 0);
+                                }
+                                $scores[] = $val;
+                                if ($val > 0) {
+                                    $totalScore += $val;
+                                    $scoreCount++;
+                                }
+                            }
+
+                            $cleanTitle = trim(preg_replace('/\s*\([^)]*\)\s*$/', '', $grp->title));
+                            $chartsList[] = [
+                                'id' => $grp->id,
+                                'title' => $cleanTitle ?: $grp->title,
+                                'full_title' => $grp->title,
+                                'labels' => $labels,
+                                'targets' => $targets,
+                                'scores' => $scores,
+                                'avg' => $scoreCount > 0 ? number_format($totalScore / $scoreCount, 1) : '0.0',
+                                'hasScore' => $scoreCount > 0,
+                            ];
+                        }
+                    }
+
+                    $formattedIdpHistory[$idp->id] = [
+                        'id' => $idp->id,
+                        'tahun' => $idp->tahun ?? '-',
+                        'periode' => $idp->periode ? 'Periode ' . $idp->periode : '',
+                        'status' => strtolower($idp->status_idp ?? 'pending'),
+                        'statusLabel' => ucwords(str_replace('_', ' ', $idp->status_idp ?? 'Pending')),
+                        'mentor' => $idp->mentor ?? '-',
+                        'detailUrl' => route('idp.show', $idp->id),
+                        'hasPenilaian' => collect($chartsList)->contains('hasScore', true),
+                        'charts' => $chartsList,
+                    ];
+                }
             @endphp
 
-            // Define competency models from Master IDP
-            const competencyModels = {
-                head: {
-                    labels: {!! json_encode($headLabels) !!},
-                    dbKeys: ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'],
-                    target: {!! json_encode($headTargets) !!}
-                },
-                staff: {
-                    labels: {!! json_encode($staffLabels) !!},
-                    dbKeys: ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'],
-                    target: {!! json_encode($staffTargets) !!}
-                },
-                unit: {
-                    labels: {!! json_encode($unitLabels) !!},
-                    dbKeys: ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'],
-                    target: {!! json_encode($unitTargets) !!}
-                }
-            };
-
-            function resolveModel(penilaianObj) {
-                // If penilaian specifically has filled scores in a category, use that category
-                if (penilaianObj) {
-                    if (competencyModels.head.dbKeys.some(k => parseScore(penilaianObj[k]) > 0)) return 'head';
-                    if (competencyModels.staff.dbKeys.some(k => parseScore(penilaianObj[k]) > 0)) return 'staff';
-                    if (competencyModels.unit.dbKeys.some(k => parseScore(penilaianObj[k]) > 0)) return 'unit';
-                }
-                // Fallback based on employee position
-                if (jabatan === 'department head' || jabatan === 'section head' || jabatan === 'group head' || (jabatan.includes('head') && !jabatan.includes('unit'))) {
-                    return 'head';
-                } else if (jabatan.includes('staff')) {
-                    return 'staff';
-                } else {
-                    return 'unit';
-                }
-            }
-
-            function calculateScores(penilaianObj, dbKeys) {
-                let scores = [];
-                let total = 0;
-                let count = 0;
-                dbKeys.forEach(key => { 
-                    const score = penilaianObj ? parseScore(penilaianObj[key]) : 0;
-                    scores.push(score);
-                    if (score > 0) {
-                        total += score;
-                        count++;
-                    }
-                });
-                return {
-                    scores: scores,
-                    avg: count > 0 ? (total / count).toFixed(1) : '0.0',
-                    hasScore: count > 0
-                };
-            }
+            // Map all IDP history with dynamic multi-chart data
+            const idpHistory = @json($formattedIdpHistory);
+            let currentIdpId = "{{ $activeIdp?->id }}";
+            let activeChartIndex = 0;
 
             function getMultilineLabel(key) {
                 if (typeof key !== 'string') return key;
@@ -1994,25 +2039,58 @@
                 return key;
             }
 
-            const initialIdpId = "{{ $activeIdp?->id }}";
-            const initialIdp = idpHistory[initialIdpId] || null;
-            const initialModelKey = resolveModel(initialIdp ? initialIdp.penilaian : null);
-            const initialModel = competencyModels[initialModelKey];
-            const initialResult = calculateScores(initialIdp ? initialIdp.penilaian : null, initialModel.dbKeys);
+            function renderChartTabs(idp) {
+                const container = document.getElementById('idpChartTabsContainer');
+                if (!container) return;
+                if (!idp || !idp.charts || idp.charts.length <= 1) {
+                    container.style.display = 'none';
+                    container.innerHTML = '';
+                    return;
+                }
+                container.style.display = 'inline-flex';
+
+                container.innerHTML = idp.charts.map((c, idx) => {
+                    const isActive = idx === activeChartIndex;
+                    if (isActive) {
+                        return `<button type="button" onclick="window.switchIdpChart(${idx})" title="${c.full_title || c.title}" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#0ea5e9] text-white shadow-xs flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer transition-all duration-200 hover:bg-[#0284c7]">
+                            <i class="fas fa-bullseye text-[10px] text-white"></i>
+                            <span>${c.title}</span>
+                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-white/20 text-white">${c.labels.length}</span>
+                        </button>`;
+                    } else {
+                        return `<button type="button" onclick="window.switchIdpChart(${idx})" title="${c.full_title || c.title}" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer transition-all duration-200">
+                            <i class="fas fa-bullseye text-[10px] text-slate-400"></i>
+                            <span>${c.title}</span>
+                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-200/80 text-slate-600">${c.labels.length}</span>
+                        </button>`;
+                    }
+                }).join('');
+            }
+
+            const initialIdp = idpHistory[currentIdpId] || null;
+            const initialChart = (initialIdp && initialIdp.charts && initialIdp.charts[0]) ? initialIdp.charts[0] : {
+                labels: ['Managing Change', 'Empowerment', 'Teamwork'],
+                scores: [0, 0, 0],
+                targets: [5, 5, 5],
+                avg: '0.0',
+                hasScore: false
+            };
+
+            renderChartTabs(initialIdp);
 
             // Update average score in UI on initial load
             const initialAvgEl = document.getElementById('idpScoreAvg');
             if (initialAvgEl) {
-                initialAvgEl.textContent = parseFloat(initialResult.avg) > 0 ? `Average: ${initialResult.avg}/5` : '';
+                initialAvgEl.textContent = parseFloat(initialChart.avg) > 0 ? `Average: ${initialChart.avg}/5` : '';
             }
 
             radarCanvas.chartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: initialModel.labels.map(getMultilineLabel),
+                    labels: initialChart.labels.map(getMultilineLabel),
                     datasets: [{
                         label: 'Current Score',
-                        data: initialResult.scores,
+                        data: initialChart.scores,
                         fill: true,
                         backgroundColor: 'rgba(14, 165, 233, 0.25)', // Sky blue with opacity
                         borderColor: 'rgb(14, 165, 233)',
@@ -2024,8 +2102,8 @@
                         pointHoverBackgroundColor: '#fff',
                         pointHoverBorderColor: 'rgb(14, 165, 233)'
                     }, {
-                        label: 'Target (4.0)',
-                        data: initialModel.target,
+                        label: 'Target',
+                        data: initialChart.targets,
                         fill: true,
                         backgroundColor: 'rgba(16, 185, 129, 0.08)', // Emerald
                         borderColor: 'rgb(16, 185, 129)',
@@ -2065,44 +2143,59 @@
                 }
             });
 
-            // Function to dynamically switch active IDP period and update chart + UI
-            
-        window.exportPdfWithCurrentFilters = function(event, baseUrl) {
-            event.preventDefault();
-            const params = new URLSearchParams();
-            if (window.selectedAssessmentId) params.set('assessment_id', window.selectedAssessmentId);
-            if (window.selectedIdpId) params.set('idp_id', window.selectedIdpId);
-            if (window.selectedMentoringId) params.set('mentoring_id', window.selectedMentoringId);
-            const finalUrl = baseUrl + (params.toString() ? '?' + params.toString() : '');
-            window.open(finalUrl, '_blank');
-        };
+            window.exportPdfWithCurrentFilters = function(event, baseUrl) {
+                event.preventDefault();
+                const params = new URLSearchParams();
+                if (window.selectedAssessmentId) params.set('assessment_id', window.selectedAssessmentId);
+                if (window.selectedIdpId) params.set('idp_id', window.selectedIdpId);
+                if (typeof activeChartIndex !== 'undefined') params.set('chart_index', activeChartIndex);
+                if (window.selectedMentoringId) params.set('mentoring_id', window.selectedMentoringId);
+                const finalUrl = baseUrl + (params.toString() ? '?' + params.toString() : '');
+                window.open(finalUrl, '_blank');
+            };
+
+            window.switchIdpChart = function(chartIndex) {
+                activeChartIndex = chartIndex;
+                const idp = idpHistory[currentIdpId];
+                if (!idp || !idp.charts || !idp.charts[chartIndex]) return;
+                const chart = idp.charts[chartIndex];
+
+                renderChartTabs(idp);
+
+                if (radarCanvas && radarCanvas.chartInstance) {
+                    radarCanvas.chartInstance.data.labels = chart.labels.map(getMultilineLabel);
+                    radarCanvas.chartInstance.data.datasets[0].data = chart.scores;
+                    radarCanvas.chartInstance.data.datasets[1].data = chart.targets;
+                    radarCanvas.chartInstance.update();
+                }
+
+                const avgScoreEl = document.getElementById('idpScoreAvg');
+                if (avgScoreEl) {
+                    avgScoreEl.textContent = parseFloat(chart.avg) > 0 ? `Average: ${chart.avg}/5` : '';
+                }
+
+                const alertEl = document.getElementById('idpEmptyAlert');
+                if (alertEl) {
+                    if (!chart.hasScore) {
+                        alertEl.classList.remove('hidden');
+                    } else {
+                        alertEl.classList.add('hidden');
+                    }
+                }
+            };
 
             window.switchIdpPeriod = function(selectedId) {
+                currentIdpId = selectedId;
                 window.selectedIdpId = selectedId;
+                activeChartIndex = 0;
                 const idp = idpHistory[selectedId];
                 if (!idp) return;
 
-                const modelKey = resolveModel(idp.penilaian);
-                const model = competencyModels[modelKey];
-                const res = calculateScores(idp.penilaian, model.dbKeys);
-                
-                // Update radar chart dataset & labels smoothly
-                if (radarCanvas && radarCanvas.chartInstance) {
-                    radarCanvas.chartInstance.data.labels = model.labels.map(getMultilineLabel);
-                    radarCanvas.chartInstance.data.datasets[0].data = res.scores;
-                    radarCanvas.chartInstance.data.datasets[1].data = model.target;
-                    radarCanvas.chartInstance.update();
-                }
+                window.switchIdpChart(0);
 
                 // Update Mentor text
                 const mentorEl = document.getElementById('idpMentorText');
                 if (mentorEl) mentorEl.textContent = idp.mentor || '-';
-
-                // Update Average Score text
-                const avgScoreEl = document.getElementById('idpScoreAvg');
-                if (avgScoreEl) {
-                    avgScoreEl.textContent = parseFloat(res.avg) > 0 ? `Average: ${res.avg}/5` : '';
-                }
 
                 // Update Detail Link
                 const detailLink = document.getElementById('idpDetailLink');
@@ -2125,16 +2218,6 @@
                         badgeContainer.innerHTML = `<span class="bg-sky-50 border border-sky-200 text-sky-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
                             <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> ${idp.statusLabel.toUpperCase()}
                         </span>`;
-                    }
-                }
-
-                // Update Notice if no penilaian
-                const alertEl = document.getElementById('idpEmptyAlert');
-                if (alertEl) {
-                    if (!res.hasScore) {
-                        alertEl.classList.remove('hidden');
-                    } else {
-                        alertEl.classList.add('hidden');
                     }
                 }
             };

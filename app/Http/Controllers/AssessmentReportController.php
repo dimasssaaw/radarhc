@@ -123,12 +123,15 @@ class AssessmentReportController extends Controller implements HasMiddleware
             }
         }
 
+        $allCategories = AssessmentCategory::with('aspects')->orderBy('order')->orderBy('id')->get();
+
         return view('assessment_report.create', [
             'employees' => $tableEmployees,
             'allEmployees' => $employees,
             'departments' => $departments,
             'employee' => $employee,
             'reports' => $reports,
+            'allCategories' => $allCategories,
         ]);
     }
 
@@ -148,6 +151,11 @@ class AssessmentReportController extends Controller implements HasMiddleware
         }
 
         $data = $request->except(['_token', 'redirect_to', 'aspect_scores']);
+        $selectedCharts = $request->input('selected_charts') ?? $request->input('selected_categories');
+        if (is_array($selectedCharts)) {
+            $data['selected_charts'] = array_map('intval', $selectedCharts);
+        }
+        unset($data['selected_categories'], $data['has_selected_categories']);
 
         $report = AssessmentReport::create($data);
 
@@ -368,5 +376,15 @@ class AssessmentReportController extends Controller implements HasMiddleware
         $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
 
         return redirect()->route($indexRoute)->with('success', 'Assessment report data deleted successfully.');
+    }
+
+    public function updateSelectedCharts(Request $request, $id)
+    {
+        $report = AssessmentReport::findOrFail($id);
+        $selected = $request->input('selected_charts', []);
+        $report->selected_charts = is_array($selected) ? array_map('intval', $selected) : [];
+        $report->save();
+
+        return redirect()->back()->with('success', 'Chart Assessment yang dinilai berhasil diperbarui.');
     }
 }

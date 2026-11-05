@@ -227,7 +227,12 @@
                     if (typeof window.renderSpiderChart === 'function') {
                         window.renderSpiderChart(groupId);
                     }
-                }, 50);
+                }, 60);
+                setTimeout(() => {
+                    if (typeof window.renderSpiderChart === 'function') {
+                        window.renderSpiderChart(groupId);
+                    }
+                }, 320);
             });
         }
     }">
@@ -351,7 +356,8 @@
 </div>
 
 <script>
-    const chartGroupsData = @json($chartGroups);
+    const rawChartGroups = @json($chartGroups);
+    const chartGroupsData = Array.isArray(rawChartGroups) ? rawChartGroups : Object.values(rawChartGroups || {});
     const competencyScoresMap = @json($competencyScores);
     window.idpChartInstances = window.idpChartInstances || {};
 
@@ -366,7 +372,7 @@
     }
 
     function renderSpiderChart(groupId) {
-        const group = chartGroupsData.find(g => g.id === groupId);
+        const group = chartGroupsData.find(g => g && g.id == groupId);
         if (!group) return;
 
         const ctxEl = document.getElementById('competencyChart_' + groupId);
@@ -479,14 +485,18 @@
         });
     }
 
+    window.renderSpiderChart = renderSpiderChart;
+
     const initialGroupId = {{ $chartGroups->first()?->id ?? 0 }};
     if (initialGroupId) {
         setTimeout(() => renderSpiderChart(initialGroupId), 100);
+        setTimeout(() => renderSpiderChart(initialGroupId), 350);
     }
 
     document.body.addEventListener('htmx:afterSwap', function() {
         if (initialGroupId) {
             setTimeout(() => renderSpiderChart(initialGroupId), 100);
+            setTimeout(() => renderSpiderChart(initialGroupId), 350);
         }
     });
 </script>

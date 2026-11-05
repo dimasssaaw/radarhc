@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('employee-data/template', [EmployeeController::class, 'template'])->name('employee.template');
     Route::post('employee-data/import', [EmployeeController::class, 'import'])->name('employee.import');
     Route::get('assessment-report/employee/{employee_id}', [AssessmentReportController::class, 'showEmployee'])->name('assessment-report.show-employee');
+    Route::post('assessment-report/{id}/selected-charts', [AssessmentReportController::class, 'updateSelectedCharts'])->name('assessment-report.update-selected-charts');
     Route::resource('assessment-report', AssessmentReportController::class)->names('assessment-report');
     Route::resource('employee-data', EmployeeController::class)->names('employee');
 
@@ -116,6 +117,7 @@ Route::middleware('auth')->group(function (): void {
     // Master IDP Routes
     Route::get('master-idp', [MasterIdpController::class, 'index'])->name('master-idp.index');
     Route::post('master-idp/group', [MasterIdpController::class, 'storeGroup'])->name('master-idp.group.store');
+    Route::post('master-idp/group/copy', [MasterIdpController::class, 'copyGroup'])->name('master-idp.group.copy');
     Route::put('master-idp/group/{id}', [MasterIdpController::class, 'updateGroup'])->name('master-idp.group.update');
     Route::delete('master-idp/group/{id}', [MasterIdpController::class, 'destroyGroup'])->name('master-idp.group.destroy');
     Route::post('master-idp/group/{groupId}/competency', [MasterIdpController::class, 'storeCompetency'])->name('master-idp.competency.store');
@@ -164,6 +166,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('idp/employee/{employee_id}/jadwal', [IdpController::class, 'updateEmployeeJadwal'])->name('idp.update-employee-jadwal');
     Route::post('idp/{idp}/jadwal', [IdpController::class, 'updateJadwal'])->name('idp.update-jadwal');
 
+    Route::post('idp/{id}/selected-charts', [IdpController::class, 'updateSelectedCharts'])->name('idp.update-selected-charts');
     Route::resource('idp', IdpController::class)->names('idp');
     Route::get('/training', [TrainingController::class, 'index'])->name('training.index');
     Route::get('/training/{id}', [TrainingController::class, 'show'])->name('training.show');

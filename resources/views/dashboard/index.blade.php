@@ -529,6 +529,7 @@
     const radarOptions = {
         responsive: true,
         maintainAspectRatio: false,
+        devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2),
         layout: {
             padding: { top: 6, bottom: 6, left: 6, right: 6 }
         },

@@ -13,6 +13,10 @@ class AssessmentReport extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'selected_charts' => 'array',
+    ];
+
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'id_karyawan');

@@ -67,7 +67,7 @@ class UserIdpController extends Controller
 
         $jabatan = strtolower(trim((string) ($Idp->karyawan->position?->nama_jabatan ?? '')));
 
-        $chartGroups = IdpCompetencyGroup::with(['competencies' => function ($q) {
+        $allChartGroups = IdpCompetencyGroup::with(['competencies' => function ($q) {
             $q->orderBy('order')->orderBy('id');
         }])
             ->where(function ($q) use ($jabatan) {
@@ -86,13 +86,35 @@ class UserIdpController extends Controller
 
         $savedScores = $Idp->competencyScores->pluck('score', 'idp_competency_id')->toArray();
         $competencyScores = [];
-        foreach ($chartGroups as $group) {
+        foreach ($allChartGroups as $group) {
             foreach ($group->competencies as $comp) {
                 $competencyScores[$comp->id] = isset($savedScores[$comp->id]) ? (float) $savedScores[$comp->id] : 0.0;
             }
         }
 
-        return view('user.idp.show', compact('Idp', 'chartGroups', 'competencyScores'));
+        $groupsWithScores = $allChartGroups->filter(function ($grp) use ($competencyScores) {
+            foreach ($grp->competencies as $comp) {
+                if (! empty($competencyScores[$comp->id]) && (float) $competencyScores[$comp->id] > 0) {
+                    return true;
+                }
+            }
+
+            return false;
+        })->pluck('id')->toArray();
+
+        if ($Idp->selected_charts !== null) {
+            $selectedIds = (array) $Idp->selected_charts;
+            $chartGroups = $allChartGroups->filter(fn ($g) => in_array($g->id, $selectedIds))->values();
+        } else {
+            if (! empty($groupsWithScores)) {
+                $chartGroups = $allChartGroups->filter(fn ($g) => in_array($g->id, $groupsWithScores))->values();
+            } else {
+                $chartGroups = $allChartGroups->take(1)->values();
+            }
+        }
+        $allChartGroups = $allChartGroups->values();
+
+        return view('user.idp.show', compact('Idp', 'chartGroups', 'allChartGroups', 'competencyScores'));
     }
 
     public function showEmployee($employee_id)

@@ -201,29 +201,51 @@
                     if (typeof window.renderSpiderChart === 'function') {
                         window.renderSpiderChart(groupId);
                     }
-                }, 50);
+                }, 60);
+                setTimeout(() => {
+                    if (typeof window.renderSpiderChart === 'function') {
+                        window.renderSpiderChart(groupId);
+                    }
+                }, 320);
             });
         }
     }">
-        <!-- Tab Navigation Buttons -->
-        @if($chartGroups->count() > 1)
-        <div class="bg-slate-100 p-1.5 rounded-2xl border border-gray-200/80 shadow-inner flex items-center gap-2 overflow-x-auto no-scrollbar">
-            @foreach($chartGroups as $grp)
-            <button type="button"
-                @click="switchTab({{ $grp->id }})"
-                :class="activeTab === {{ $grp->id }} 
-                    ? 'bg-[#0ea5e9] text-white shadow-md font-bold' 
-                    : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-white/80 font-medium'"
-                class="px-4 py-2.5 rounded-xl text-xs transition-all duration-200 flex items-center gap-2 shrink-0">
-                <i class="fas fa-bullseye text-sm" :class="activeTab === {{ $grp->id }} ? 'text-white' : 'text-sky-500'"></i>
-                <span>{{ $grp->title }}</span>
-                <span :class="activeTab === {{ $grp->id }} ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-full text-[10px] font-bold">
-                    {{ $grp->competencies->count() }}
-                </span>
-            </button>
-            @endforeach
+        <!-- Tab Navigation Buttons & Kelola Chart -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            @if($chartGroups->count() > 1)
+            <div class="bg-slate-100 p-1.5 rounded-2xl border border-gray-200/80 shadow-inner flex items-center gap-2 overflow-x-auto no-scrollbar flex-1">
+                @foreach($chartGroups as $grp)
+                <button type="button"
+                    @click="switchTab({{ $grp->id }})"
+                    :class="activeTab === {{ $grp->id }} 
+                        ? 'bg-[#0ea5e9] text-white shadow-md font-bold' 
+                        : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-white/80 font-medium'"
+                    class="px-4 py-2.5 rounded-xl text-xs transition-all duration-200 flex items-center gap-2 shrink-0">
+                    <i class="fas fa-bullseye text-sm" :class="activeTab === {{ $grp->id }} ? 'text-white' : 'text-sky-500'"></i>
+                    <span>{{ $grp->title }}</span>
+                    <span :class="activeTab === {{ $grp->id }} ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-full text-[10px] font-bold">
+                        {{ $grp->competencies->count() }}
+                    </span>
+                </button>
+                @endforeach
+            </div>
+            @endif
+
+            @can('edit_idp')
+            <div class="shrink-0 flex items-center gap-2 {{ $chartGroups->count() <= 1 ? 'ml-auto' : '' }}">
+                <button type="button" 
+                        onclick="document.getElementById('modal-manage-idp-charts').classList.remove('hidden')"
+                        class="bg-white hover:bg-sky-50 text-[#0ea5e9] border border-sky-200 hover:border-[#0ea5e9] px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 shadow-sm flex items-center gap-1.5 hover:shadow hover:-translate-y-0.5"
+                        title="Klik untuk menambah atau memilih chart yang dinilai tahun ini">
+                    <i class="fas fa-plus-circle text-sky-500"></i>
+                    <span>Tambah / Pilih Chart</span>
+                    <span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 rounded-full text-[10px] font-bold">
+                        {{ $chartGroups->count() }} aktif
+                    </span>
+                </button>
+            </div>
+            @endcan
         </div>
-        @endif
 
         <!-- Tab Content Cards -->
         @forelse($chartGroups as $grp)
@@ -319,17 +341,17 @@
         </div>
         @empty
         <div class="bg-white rounded-2xl p-10 text-center border border-gray-200 shadow-sm">
-            <div class="w-14 h-14 rounded-2xl bg-sky-50 text-[#0ea5e9] flex items-center justify-center mx-auto mb-3 border border-sky-100">
-                <i class="fas fa-bullseye text-2xl"></i>
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-3 border border-amber-100">
+                <i class="fas fa-layer-group text-2xl"></i>
             </div>
-            <h4 class="font-bold text-gray-800 text-base mb-1">No Spider Chart Available for This Position</h4>
+            <h4 class="font-bold text-gray-800 text-base mb-1">Tidak Ada Spider Chart yang Dipilih untuk Periode Ini</h4>
             <p class="text-xs text-gray-500 max-w-sm mx-auto mb-4">
-                This employee holds the position <span class="font-bold text-gray-700">{{ $Idp->karyawan->position?->nama_jabatan ?? 'Belum ditentukan' }}</span>. There is no Spider Chart targeted for this position yet.
+                Pada IDP tahun {{ $Idp->tahun ?? '-' }} ini belum ada spider chart yang diaktifkan untuk dinilai.
             </p>
-            @can('lihat_idp')
-            <a href="{{ route('master-idp.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold rounded-lg shadow-sm transition-all">
-                <i class="fas fa-cog"></i> Configure in Master IDP
-            </a>
+            @can('edit_idp')
+            <button type="button" onclick="document.getElementById('modal-manage-idp-charts').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold rounded-lg shadow-sm transition-all">
+                <i class="fas fa-plus"></i> Pilih Chart yang Akan Dinilai
+            </button>
             @endcan
         </div>
         @endforelse
@@ -338,7 +360,8 @@
 </div>
 
 <script>
-    const chartGroupsData = @json($chartGroups);
+    const rawChartGroups = @json($chartGroups);
+    const chartGroupsData = Array.isArray(rawChartGroups) ? rawChartGroups : Object.values(rawChartGroups || {});
     const competencyScoresMap = @json($competencyScores);
     window.idpChartInstances = window.idpChartInstances || {};
 
@@ -353,7 +376,7 @@
     }
 
     function renderSpiderChart(groupId) {
-        const group = chartGroupsData.find(g => g.id === groupId);
+        const group = chartGroupsData.find(g => g && g.id == groupId);
         if (!group) return;
 
         const ctxEl = document.getElementById('competencyChart_' + groupId);
@@ -405,6 +428,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2),
                 layout: {
                     padding: {
                         top: 20,
@@ -466,16 +490,20 @@
         });
     }
 
+    window.renderSpiderChart = renderSpiderChart;
+
     // Inisialisasi render chart tab pertama
     const initialGroupId = {{ $chartGroups->first()?->id ?? 0 }};
     if (initialGroupId) {
         setTimeout(() => renderSpiderChart(initialGroupId), 100);
+        setTimeout(() => renderSpiderChart(initialGroupId), 350);
     }
 
     // Untuk HTMX SPA swap
     document.body.addEventListener('htmx:afterSwap', function() {
         if (initialGroupId) {
             setTimeout(() => renderSpiderChart(initialGroupId), 100);
+            setTimeout(() => renderSpiderChart(initialGroupId), 350);
         }
     });
 </script>
@@ -727,6 +755,73 @@
         </div>
     </div>
 </div>
+
+@can('edit_idp')
+<!-- Modal Kelola Chart IDP yang Dinilai -->
+<div id="modal-manage-idp-charts" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-up">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-50 text-[#0ea5e9] flex items-center justify-center font-bold text-sm">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-base">Tambah / Pilih Chart IDP</h3>
+                    <p class="text-[11px] text-gray-400">Pilih chart yang ingin dinilai pada IDP tahun {{ $Idp->tahun ?? '-' }}</p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('modal-manage-idp-charts').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+        <form action="{{ route('idp.update-selected-charts', $Idp->id) }}" method="POST" class="p-6">
+            @csrf
+            <div class="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-4 flex items-start gap-2.5">
+                <i class="fas fa-info-circle text-[#0ea5e9] text-xs mt-0.5 shrink-0"></i>
+                <p class="text-xs text-sky-800 leading-relaxed">
+                    Centang chart yang ingin ditampilkan dan dinilai di tahun ini. Chart yang tidak dicentang tidak akan muncul pada riwayat IDP ini.
+                </p>
+            </div>
+
+            <div class="space-y-2.5 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                @forelse($allChartGroups as $grpOption)
+                @php
+                    $isSelected = $chartGroups->contains('id', $grpOption->id);
+                    $hasData = in_array($grpOption->id, $groupsWithScores ?? []);
+                @endphp
+                <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:border-sky-300 hover:bg-sky-50/40 cursor-pointer transition-all">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" name="selected_charts[]" value="{{ $grpOption->id }}" {{ $isSelected ? 'checked' : '' }} class="rounded text-[#0ea5e9] focus:ring-[#0ea5e9] w-4 h-4 border-gray-300">
+                        <div>
+                            <span class="text-xs font-bold text-gray-800 block">{{ $grpOption->title }}</span>
+                            <span class="text-[10px] text-gray-400">{{ $grpOption->competencies->count() }} Aspek Kompetensi</span>
+                        </div>
+                    </div>
+                    @if($hasData)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                            <i class="fas fa-check text-[9px]"></i> Sudah Dinilai
+                        </span>
+                    @endif
+                </label>
+                @empty
+                <div class="text-center py-4 text-xs text-gray-400">
+                    Tidak ada spider chart master untuk posisi ini.
+                </div>
+                @endforelse
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2.5 pt-4 border-t border-gray-100">
+                <button type="button" onclick="document.getElementById('modal-manage-idp-charts').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                    <i class="fas fa-check text-xs"></i> Simpan Pilihan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endcan
 @endpush
 
 @endsection

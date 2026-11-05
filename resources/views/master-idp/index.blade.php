@@ -86,9 +86,14 @@
                 <h2 class="font-bold text-gray-900 text-sm sm:text-base">Position: {{ $pos->nama_jabatan }}</h2>
                 <p class="text-xs text-gray-400 mt-0.5">Total {{ $posGroups->count() }} Spider chart for this position</p>
             </div>
-            <button type="button" onclick="openAddGroupModal('{{ $posSlug }}')" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center gap-1.5 shadow-sm">
-                <i class="fas fa-plus"></i> Add Spider Chart
-            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="openCopyGroupModal('{{ $posSlug }}', '{{ addslashes($pos->nama_jabatan) }}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm flex items-center gap-1.5 cursor-pointer">
+                    <i class="fas fa-copy text-sky-600"></i> Salin dari Posisi Lain
+                </button>
+                <button type="button" onclick="openAddGroupModal('{{ $posSlug }}')" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <i class="fas fa-plus"></i> Add Spider Chart
+                </button>
+            </div>
         </div>
 
         <!-- Charts for this position -->
@@ -383,6 +388,55 @@
     </div>
 </div>
 
+<!-- 5. Modal Salin Spider Chart dari Posisi Lain -->
+<div id="copyChartGroupModal" class="hidden fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-black/60 transition-opacity" aria-hidden="true" onclick="closeModal('copyChartGroupModal')"></div>
+
+        <!-- Modal panel -->
+        <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-md border border-gray-100 my-8 z-10 animate-fade-in-up">
+            <div class="px-5 py-4 bg-slate-50 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-copy text-[#0ea5e9]"></i> Salin Spider Chart dari Posisi Lain
+                </h3>
+                <button type="button" onclick="closeModal('copyChartGroupModal')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            <form action="{{ route('master-idp.group.copy') }}" method="POST" hx-boost="false" data-hx-boost="false">
+                @csrf
+                <input type="hidden" id="copyTargetPosition" name="target_position" value="">
+                <div class="p-5 space-y-3.5">
+                    <div class="bg-sky-50 border border-sky-100 rounded-xl p-3 text-xs text-sky-800">
+                        <i class="fas fa-info-circle text-[#0ea5e9] mr-1"></i>
+                        Akan disalin ke jabatan: <span id="copyTargetPositionLabel" class="font-bold text-sky-950"></span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Pilih Chart Sumber <span class="text-red-500">*</span></label>
+                        <select name="source_group_id" required class="w-full rounded-lg border-gray-300 text-xs border p-2.5 font-medium focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
+                            <option value="">-- Pilih Chart Yang Ingin Disalin --</option>
+                            @foreach($groups as $grp)
+                                <option value="{{ $grp->id }}">
+                                    [{{ ucwords($grp->target_position) }}] {{ $grp->title }} ({{ $grp->competencies_count }} Aspek)
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[11px] text-gray-400 mt-1">Seluruh aspek kompetensi dan target nilai di dalam chart ini akan otomatis disalin ke jabatan tujuan.</p>
+                    </div>
+                </div>
+                <div class="px-5 py-3.5 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('copyChartGroupModal')" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Batal</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shadow-md shadow-sky-500/20 transition-all flex items-center gap-1.5">
+                        <i class="fas fa-clone"></i> Salin Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     const baseUrl = "{{ url('/') }}";
 
@@ -391,6 +445,12 @@
         if (modal) {
             modal.classList.add('hidden');
         }
+    }
+
+    function openCopyGroupModal(targetPosSlug, targetPosName) {
+        document.getElementById('copyTargetPosition').value = targetPosSlug;
+        document.getElementById('copyTargetPositionLabel').innerText = targetPosName;
+        document.getElementById('copyChartGroupModal').classList.remove('hidden');
     }
 
     function openAddGroupModal(position = '') {

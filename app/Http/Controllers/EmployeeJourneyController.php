@@ -74,6 +74,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
                 $q->latest();
             },
             'idps.penilaian',
+            'idps.competencyScores.competency.group',
             'trainings',
             'certifications',
             'scarf',
@@ -114,6 +115,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'idps' => function ($q) {
                 $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
+            'idps.competencyScores.competency.group',
             'idps.penilaian',
             'trainings',
             'certifications',
@@ -137,6 +139,9 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             $activeIdp = $karyawan->idps->firstWhere('id', $idpId);
         } else {
             $activeIdp = $karyawan->idps->first(function ($item) {
+                if ($item->relationLoaded('competencyScores') ? $item->competencyScores->where('score', '>', 0)->isNotEmpty() : $item->competencyScores()->where('score', '>', 0)->exists()) {
+                    return true;
+                }
                 $p = $item->penilaian;
                 if (! $p) {
                     return false;

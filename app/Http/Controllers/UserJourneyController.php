@@ -64,6 +64,7 @@ class UserJourneyController extends Controller
                 $q->latest();
             },
             'idps.penilaian',
+            'idps.competencyScores.competency.group',
             'trainings',
             'certifications',
             'scarf',
@@ -104,6 +105,7 @@ class UserJourneyController extends Controller
             'idps' => function ($q) {
                 $q->orderByDesc('tahun')->orderByDesc('periode')->orderByDesc('id');
             },
+            'idps.competencyScores.competency.group',
             'idps.penilaian',
             'trainings',
             'certifications',
@@ -127,6 +129,9 @@ class UserJourneyController extends Controller
             $activeIdp = $karyawan->idps->firstWhere('id', $idpId);
         } else {
             $activeIdp = $karyawan->idps->first(function ($item) {
+                if ($item->relationLoaded('competencyScores') ? $item->competencyScores->where('score', '>', 0)->isNotEmpty() : $item->competencyScores()->where('score', '>', 0)->exists()) {
+                    return true;
+                }
                 $p = $item->penilaian;
                 if (! $p) {
                     return false;

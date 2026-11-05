@@ -1121,86 +1121,156 @@
 
                 <!-- Radar Chart IDP -->
                 <div class="section-box" style="margin-bottom: 0;">
-                    <div class="section-title">6. IDP Competency Mapping (Radar) {{ $activeIdp ? '('.($activeIdp->tahun ?? '-').($activeIdp->periode ? ' P'.$activeIdp->periode : '').')' : '' }}</div>
-                    <div class="radar-container">
-                        @php
-                            $activeIdp = $activeIdp ?? $karyawan->idps->sortByDesc('created_at')->first();
-                            $penilaian = null;
-                            if ($activeIdp && $activeIdp->penilaian) {
-                                if (is_array($activeIdp->penilaian)) {
-                                    $penilaian = $activeIdp->penilaian;
-                                } elseif (is_object($activeIdp->penilaian)) {
-                                    $penilaian = method_exists($activeIdp->penilaian, 'toArray') ? $activeIdp->penilaian->toArray() : (array) $activeIdp->penilaian;
-                                } else {
-                                    $penilaian = json_decode($activeIdp->penilaian, true);
-                                }
+                    @php
+                        $activeIdp = $activeIdp ?? $karyawan->idps->sortByDesc('created_at')->first();
+                        $savedScores = $activeIdp ? $activeIdp->competencyScores->pluck('score', 'idp_competency_id')->toArray() : [];
+
+                        $penilaian = null;
+                        if ($activeIdp && $activeIdp->penilaian) {
+                            if (is_array($activeIdp->penilaian)) {
+                                $penilaian = $activeIdp->penilaian;
+                            } elseif (is_object($activeIdp->penilaian)) {
+                                $penilaian = method_exists($activeIdp->penilaian, 'toArray') ? $activeIdp->penilaian->toArray() : (array) $activeIdp->penilaian;
+                            } else {
+                                $penilaian = json_decode($activeIdp->penilaian, true);
                             }
+                        }
 
-                            $masterHead = \App\Models\IdpCompetencyGroup::where('target_position', 'department head')->first();
-                            $masterStaff = \App\Models\IdpCompetencyGroup::where('target_position', 'staff')->first();
-                            $masterUnit = \App\Models\IdpCompetencyGroup::where('target_position', 'unit head')->first();
+                        $legacyMap = [
+                            'Managing Change' => 'head_managing_change',
+                            'Empowerment' => 'head_empowerment',
+                            'Fostering Teamwork' => 'head_fostering_teamwork',
+                            'Analysis & Decision Making' => 'head_analysis_decision',
+                            'Analysis & Decision' => 'head_analysis_decision',
+                            'Planning & Controlling' => 'head_planning_controlling',
+                            'Integrity & Ethics' => 'head_integrity_ethics',
+                            'Excellence' => 'head_excellence',
+                            'Compassion' => 'head_compassion',
+                            'Humility' => 'head_humility',
+                            'Leads Courageously' => 'staff_leads_courageously',
+                            'Coach & Develop Others' => 'staff_coach_develop',
+                            'Coach & Develop' => 'staff_coach_develop',
+                            'Teamwork' => 'staff_teamwork',
+                            'Trouble Shooting' => 'staff_trouble_shooting',
+                            'Customer Satisfaction' => 'staff_customer_satisfaction',
+                            'Cross Functional Capability' => 'staff_cross_functional',
+                            'Cross Functional' => 'staff_cross_functional',
+                            'Quality Focus' => 'staff_quality_focus',
+                            'Continuous Improvement' => 'staff_continuous_improvement',
+                            'Planning Monitoring' => 'staff_planning_monitoring',
+                            'Planning & Monitoring' => 'staff_planning_monitoring',
+                            'Personal Integrity' => 'staff_personal_integrity',
+                            'Drive For Result' => 'staff_drive_for_result',
+                            'Drive for Result' => 'staff_drive_for_result',
+                            'Learning' => 'staff_learning',
+                            'Directiveness' => 'unit_directiveness',
+                            'Monitoring' => 'unit_monitoring',
+                            'Quality & Customer Focus' => 'unit_quality_customer',
+                            'Quality Customer' => 'unit_quality_customer',
+                        ];
 
-                            $competencyModels = [
-                                'head' => [
-                                    'labels' => $masterHead && $masterHead->competencies->isNotEmpty()
-                                        ? $masterHead->competencies->pluck('name')->toArray()
-                                        : ['Managing Change', 'Empowerment', 'Teamwork', 'Analysis & Dec.', 'Planning & Ctrl', 'Integrity', 'Excellence', 'Compassion', 'Humility'],
-                                    'dbKeys' => ['head_managing_change', 'head_empowerment', 'head_fostering_teamwork', 'head_analysis_decision', 'head_planning_controlling', 'head_integrity_ethics', 'head_excellence', 'head_compassion', 'head_humility'],
-                                ],
-                                'staff' => [
-                                    'labels' => $masterStaff && $masterStaff->competencies->isNotEmpty()
-                                        ? $masterStaff->competencies->pluck('name')->toArray()
-                                        : ['Courageous', 'Coach Others', 'Teamwork', 'Troubleshoot', 'Customer Focus', 'Cross Functional', 'Quality Focus', 'Cont. Imprv', 'Plan & Monitor', 'Integrity', 'Result Drive', 'Learning'],
-                                    'dbKeys' => ['staff_leads_courageously', 'staff_coach_develop', 'staff_teamwork', 'staff_trouble_shooting', 'staff_customer_satisfaction', 'staff_cross_functional', 'staff_quality_focus', 'staff_continuous_improvement', 'staff_planning_monitoring', 'staff_personal_integrity', 'staff_drive_for_result', 'staff_learning'],
-                                ],
-                                'unit' => [
-                                    'labels' => $masterUnit && $masterUnit->competencies->isNotEmpty()
-                                        ? $masterUnit->competencies->pluck('name')->toArray()
-                                        : ['Directiveness', 'Monitoring', 'Teamwork', 'Quality Focus', 'Cont. Imprv', 'Integrity'],
-                                    'dbKeys' => ['unit_directiveness', 'unit_monitoring', 'unit_teamwork', 'unit_quality_customer', 'unit_continuous_improvement', 'unit_personal_integrity'],
-                                ],
-                            ];
+                        $empPos = strtolower(trim((string) ($karyawan->position?->nama_jabatan ?? '')));
+                        $allGroupsForPos = \App\Models\IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])
+                            ->where(function ($q) use ($empPos) {
+                                if ($empPos !== '') {
+                                    $q->whereRaw('LOWER(target_position) = ?', [$empPos]);
+                                    if (str_contains($empPos, 'section head')) {
+                                        $q->orWhereRaw('LOWER(target_position) = ?', ['department head']);
+                                    }
+                                    if (str_contains($empPos, 'group head')) {
+                                        $q->orWhereRaw('LOWER(target_position) = ?', ['unit head']);
+                                    }
+                                } else {
+                                    $q->whereRaw('1 = 0');
+                                }
+                            })
+                            ->orderBy('order')
+                            ->orderBy('id')
+                            ->get();
 
-                            $modelKey = 'unit';
-                            $jabatan = strtolower(trim($karyawan->position?->nama_jabatan ?? ''));
-                            if ($penilaian) {
-                                foreach (['head', 'staff', 'unit'] as $mk) {
-                                    foreach ($competencyModels[$mk]['dbKeys'] as $k) {
-                                        if (!empty($penilaian[$k]) && is_numeric($penilaian[$k]) && (float)$penilaian[$k] > 0) {
-                                            $modelKey = $mk;
-                                            break 2;
-                                        }
+                        $groupsToInclude = collect();
+                        if ($activeIdp && $activeIdp->selected_charts !== null) {
+                            $selectedIds = (array) $activeIdp->selected_charts;
+                            $groupsToInclude = $allGroupsForPos->filter(fn ($g) => in_array($g->id, $selectedIds));
+                        } elseif ($activeIdp) {
+                            $withScores = $allGroupsForPos->filter(function ($g) use ($savedScores, $penilaian, $legacyMap) {
+                                foreach ($g->competencies as $c) {
+                                    if (isset($savedScores[$c->id]) && (float) $savedScores[$c->id] > 0) return true;
+                                    if ($penilaian && isset($legacyMap[$c->name])) {
+                                        $col = $legacyMap[$c->name];
+                                        if (isset($penilaian[$col]) && (float) $penilaian[$col] > 0) return true;
                                     }
                                 }
-                            } else {
-                                if (str_contains($jabatan, 'head') || str_contains($jabatan, 'section')) {
-                                    $modelKey = 'head';
-                                } elseif (str_contains($jabatan, 'staff')) {
-                                    $modelKey = 'staff';
-                                } else {
-                                    $modelKey = 'unit';
+                                return false;
+                            });
+                            $groupsToInclude = $withScores->isNotEmpty() ? $withScores : $allGroupsForPos->take(1);
+                        }
+
+                        $chartsList = [];
+                        foreach ($groupsToInclude as $grp) {
+                            $labels = [];
+                            $scores = [];
+                            $hasScore = false;
+                            $totalScore = 0;
+                            $scoreCount = 0;
+
+                            foreach ($grp->competencies as $comp) {
+                                $labels[] = $comp->name;
+                                $val = 0;
+                                if (isset($savedScores[$comp->id])) {
+                                    $val = (float) $savedScores[$comp->id];
+                                } elseif ($penilaian && isset($legacyMap[$comp->name])) {
+                                    $col = $legacyMap[$comp->name];
+                                    $val = (float) ($penilaian[$col] ?? 0);
+                                }
+                                $scores[] = $val;
+                                if ($val > 0) {
+                                    $hasScore = true;
+                                    $totalScore += $val;
+                                    $scoreCount++;
                                 }
                             }
 
-                            $radarLabels = $competencyModels[$modelKey]['labels'];
-                            $keys = $competencyModels[$modelKey]['dbKeys'];
+                            $cleanTitle = trim(preg_replace('/\s*\([^)]*\)\s*$/', '', $grp->title));
+                            $chartsList[] = [
+                                'id' => $grp->id,
+                                'title' => $cleanTitle ?: $grp->title,
+                                'labels' => $labels,
+                                'scores' => $scores,
+                                'avg' => $scoreCount > 0 ? number_format($totalScore / $scoreCount, 1) : '0.0',
+                                'hasScore' => $hasScore,
+                            ];
+                        }
 
-                            $radarScores = [];
-                            $hasIdpPenilaian = false;
-                            foreach ($keys as $idx => $k) {
-                                $val = $penilaian[$k] ?? null;
-                                if ($val !== null && is_numeric($val) && (float) $val > 0) {
-                                    $radarScores[] = (float) $val;
-                                    $hasIdpPenilaian = true;
-                                } else {
-                                    $radarScores[] = 0.0;
-                                }
-                            }
+                        $reqChartIndex = request()->query('chart_index');
+                        $reqChartId = request()->query('chart_id');
+                        $selectedChart = null;
 
+                        if ($reqChartIndex !== null && isset($chartsList[(int) $reqChartIndex])) {
+                            $selectedChart = $chartsList[(int) $reqChartIndex];
+                        } elseif ($reqChartId !== null) {
+                            $selectedChart = collect($chartsList)->firstWhere('id', (int) $reqChartId);
+                        }
+
+                        if (! $selectedChart) {
+                            $selectedChart = collect($chartsList)->firstWhere('hasScore', true) ?? ($chartsList[0] ?? null);
+                        }
+
+                        $radarLabels = $selectedChart['labels'] ?? [];
+                        $radarScores = $selectedChart['scores'] ?? [];
+                        $hasIdpPenilaian = $selectedChart['hasScore'] ?? false;
+                        $selectedChartTitle = $selectedChart['title'] ?? 'IDP Competencies';
+                        $selectedChartAvg = $selectedChart['avg'] ?? '0.0';
+                        $otherCharts = collect($chartsList)->filter(fn($c) => $c['id'] !== ($selectedChart['id'] ?? null));
+                    @endphp
+
+                    <div class="section-title">6. IDP: {{ $selectedChartTitle }} {{ $activeIdp ? '('.($activeIdp->tahun ?? '-').($activeIdp->periode ? ' P'.$activeIdp->periode : '').')' : '' }}</div>
+                    <div class="radar-container">
+                        @php
                             $N = count($radarLabels);
                             $R = 52;
                             $cx = 120;
-                            $cy = 82;
+                            $cy = 76;
 
                             $gridOuter = [];
                             $gridMid = [];
@@ -1208,39 +1278,41 @@
                             $axisLines = [];
                             $labelNodes = [];
 
-                            for ($i = 0; $i < $N; $i++) {
-                                $angle = -M_PI/2 + $i * (2 * M_PI / $N);
-                                $gx = round($cx + $R * cos($angle), 1);
-                                $gy = round($cy + $R * sin($angle), 1);
-                                $gridOuter[] = "$gx,$gy";
+                            if ($N > 0) {
+                                for ($i = 0; $i < $N; $i++) {
+                                    $angle = -M_PI/2 + $i * (2 * M_PI / $N);
+                                    $gx = round($cx + $R * cos($angle), 1);
+                                    $gy = round($cy + $R * sin($angle), 1);
+                                    $gridOuter[] = "$gx,$gy";
 
-                                $mx = round($cx + ($R * 0.6) * cos($angle), 1);
-                                $my = round($cy + ($R * 0.6) * sin($angle), 1);
-                                $gridMid[] = "$mx,$my";
+                                    $mx = round($cx + ($R * 0.6) * cos($angle), 1);
+                                    $my = round($cy + ($R * 0.6) * sin($angle), 1);
+                                    $gridMid[] = "$mx,$my";
 
-                                $score = $radarScores[$i] ?? 0;
-                                $rd = $R * (min(5.0, max(0.5, $score)) / 5.0);
-                                $dx = round($cx + $rd * cos($angle), 1);
-                                $dy = round($cy + $rd * sin($angle), 1);
-                                $dataPoints[] = "$dx,$dy";
+                                    $score = $radarScores[$i] ?? 0;
+                                    $rd = $R * (min(5.0, max(0.5, $score)) / 5.0);
+                                    $dx = round($cx + $rd * cos($angle), 1);
+                                    $dy = round($cy + $rd * sin($angle), 1);
+                                    $dataPoints[] = "$dx,$dy";
 
-                                $axisLines[] = ['x1' => $cx, 'y1' => $cy, 'x2' => $gx, 'y2' => $gy];
+                                    $axisLines[] = ['x1' => $cx, 'y1' => $cy, 'x2' => $gx, 'y2' => $gy];
 
-                                $lx = round($cx + ($R + 12) * cos($angle), 1);
-                                $ly = round($cy + ($R + 12) * sin($angle), 1);
-                                $cosVal = cos($angle);
-                                $anchor = ($cosVal > 0.3) ? 'start' : (($cosVal < -0.3) ? 'end' : 'middle');
+                                    $lx = round($cx + ($R + 12) * cos($angle), 1);
+                                    $ly = round($cy + ($R + 12) * sin($angle), 1);
+                                    $cosVal = cos($angle);
+                                    $anchor = ($cosVal > 0.3) ? 'start' : (($cosVal < -0.3) ? 'end' : 'middle');
 
-                                $labelNodes[] = [
-                                    'x' => $lx,
-                                    'y' => $ly + 2,
-                                    'anchor' => $anchor,
-                                    'text' => $radarLabels[$i] . ' (' . number_format($score, 1) . ')'
-                                ];
+                                    $labelNodes[] = [
+                                        'x' => $lx,
+                                        'y' => $ly + 2,
+                                        'anchor' => $anchor,
+                                        'text' => $radarLabels[$i] . ' (' . number_format($score, 1) . ')'
+                                    ];
+                                }
                             }
                         @endphp
-                        @if($hasIdpPenilaian)
-                            <svg width="235" height="130" viewBox="0 0 250 165" style="overflow: visible;">
+                        @if($hasIdpPenilaian && $N > 0)
+                            <svg width="235" height="130" viewBox="0 0 250 160" style="overflow: visible;">
                                 <polygon points="{{ implode(' ', $gridOuter) }}" fill="none" stroke="#e2e8f0" stroke-width="1.2" />
                                 <polygon points="{{ implode(' ', $gridMid) }}" fill="none" stroke="#f1f5f9" stroke-width="0.9" />
 
@@ -1256,9 +1328,23 @@
                                 @endforeach
 
                                 @foreach($labelNodes as $lbl)
-                                    <text x="{{ $lbl['x'] }}" y="{{ $lbl['y'] }}" font-size="7.8" font-weight="700" fill="#334155" text-anchor="{{ $lbl['anchor'] }}">{{ $lbl['text'] }}</text>
+                                    <text x="{{ $lbl['x'] }}" y="{{ $lbl['y'] }}" font-size="7.5" font-weight="700" fill="#334155" text-anchor="{{ $lbl['anchor'] }}">{{ $lbl['text'] }}</text>
                                 @endforeach
                             </svg>
+
+                            <div style="width: 100%; display: flex; justify-content: space-between; font-size: 8px; color: #64748b; margin-top: 4px; padding: 0 4px; border-top: 1px dashed #e2e8f0; padding-top: 3px;">
+                                <span>Mentor: <strong style="color: #334155;">{{ $activeIdp->mentor ?? '-' }}</strong></span>
+                                <span>Average: <strong style="color: #0284c7;">{{ $selectedChartAvg }}/5</strong></span>
+                            </div>
+
+                            @if($otherCharts->isNotEmpty())
+                            <div style="font-size: 7.2px; color: #94a3b8; text-align: center; margin-top: 2px;">
+                                Other IDP Chart: 
+                                @foreach($otherCharts as $oc)
+                                    <strong>{{ $oc['title'] }}</strong> (Avg: {{ $oc['avg'] }}/5){{ !$loop->last ? ', ' : '' }}
+                                @endforeach
+                            </div>
+                            @endif
                         @else
                             <div style="text-align: center; color: #94a3b8; font-style: italic; font-size: 8.8px; padding: 42px 10px;">
                                 No IDP assessment data recorded yet.

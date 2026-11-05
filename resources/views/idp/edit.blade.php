@@ -106,6 +106,28 @@
                         </select>
                     </div>
 
+                    <input type="hidden" name="has_selected_groups" value="1">
+                    @if(isset($allChartGroups) && $allChartGroups->isNotEmpty())
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Spider Chart yang Dinilai</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-200 rounded-xl p-3 bg-gray-50/60">
+                            @foreach($allChartGroups as $grpItem)
+                            @php
+                                $isChecked = is_array($Idp->selected_groups ?? null)
+                                    ? in_array($grpItem->id, $Idp->selected_groups)
+                                    : true;
+                            @endphp
+                            <label class="flex items-center gap-2.5 text-xs font-semibold text-gray-700 hover:text-gray-900 cursor-pointer p-2 rounded-lg hover:bg-white transition-colors bg-white/70 border border-gray-100 shadow-xs">
+                                <input type="checkbox" name="selected_groups[]" value="{{ $grpItem->id }}" {{ $isChecked ? 'checked' : '' }} class="rounded border-gray-300 text-[#0ea5e9] focus:ring-[#0ea5e9]">
+                                <span class="flex-1">{{ $grpItem->title }}</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium">{{ $grpItem->competencies->count() }} aspek</span>
+                            </label>
+                            @endforeach
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">Centang spider chart yang ingin dinilai pada sesi IDP ini.</p>
+                    </div>
+                    @endif
+
                     <!-- Development Area -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Development Area</label>

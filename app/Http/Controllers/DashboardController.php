@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Idp;
 use App\Models\IdpCompetencyGroup;
-use App\Models\IdpPenilain;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 
@@ -54,9 +53,23 @@ class DashboardController extends Controller
         ];
 
         // Mappings for competencies with dynamic names & targets from Master IDP
-        $masterHead = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])->where('target_position', 'department head')->first();
-        $masterStaff = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])->where('target_position', 'staff')->first();
-        $masterUnit = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])->where('target_position', 'unit head')->first();
+        $masterHead = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])
+            ->whereIn('target_position', ['department head', 'section head'])
+            ->orderBy('order')
+            ->orderBy('id')
+            ->first();
+
+        $masterStaff = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])
+            ->where('target_position', 'staff')
+            ->orderBy('order')
+            ->orderBy('id')
+            ->first();
+
+        $masterUnit = IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])
+            ->whereIn('target_position', ['unit head', 'group head'])
+            ->orderBy('order')
+            ->orderBy('id')
+            ->first();
 
         $defaultHeadCols = [
             'head_managing_change' => ['Managing Change', 5.0],
@@ -94,47 +107,69 @@ class DashboardController extends Controller
             'unit_personal_integrity' => ['Personal Integrity', 5.0],
         ];
 
-        $buildMap = function ($group, array $defaultCols) {
-            $cols = array_keys($defaultCols);
-            $map = [];
-            $targets = [];
+        $legacyMap = [
+            'Managing Change' => 'head_managing_change',
+            'Empowerment' => 'head_empowerment',
+            'Fostering Teamwork' => 'head_fostering_teamwork',
+            'Analysis & Decision Making' => 'head_analysis_decision',
+            'Analysis & Decision' => 'head_analysis_decision',
+            'Planning & Controlling' => 'head_planning_controlling',
+            'Integrity & Ethics' => 'head_integrity_ethics',
+            'Excellence' => 'head_excellence',
+            'Compassion' => 'head_compassion',
+            'Humility' => 'head_humility',
+            'Leads Courageously' => 'staff_leads_courageously',
+            'Coach & Develop Others' => 'staff_coach_develop',
+            'Coach & Develop' => 'staff_coach_develop',
+            'Teamwork' => 'staff_teamwork',
+            'Trouble Shooting' => 'staff_trouble_shooting',
+            'Customer Satisfaction' => 'staff_customer_satisfaction',
+            'Cross Functional Capability' => 'staff_cross_functional',
+            'Cross Functional' => 'staff_cross_functional',
+            'Quality Focus' => 'staff_quality_focus',
+            'Continuous Improvement' => 'staff_continuous_improvement',
+            'Planning Monitoring' => 'staff_planning_monitoring',
+            'Planning & Monitoring' => 'staff_planning_monitoring',
+            'Personal Integrity' => 'staff_personal_integrity',
+            'Drive For Result' => 'staff_drive_for_result',
+            'Drive for Result' => 'staff_drive_for_result',
+            'Learning' => 'staff_learning',
+            'Directiveness' => 'unit_directiveness',
+            'Monitoring' => 'unit_monitoring',
+            'Quality & Customer Focus' => 'unit_quality_customer',
+            'Quality Customer' => 'unit_quality_customer',
+        ];
+
+        $buildDynamicCompetencyList = function ($group, array $defaultCols) use ($legacyMap) {
+            $items = [];
             if ($group && $group->competencies->isNotEmpty()) {
-                $comps = $group->competencies->values();
-                foreach ($cols as $idx => $col) {
-                    if (isset($comps[$idx])) {
-                        $label = $comps[$idx]->name;
-                        $target = (float) ($comps[$idx]->target_score ?? 5.0);
-                    } else {
-                        $label = $defaultCols[$col][0];
-                        $target = (float) $defaultCols[$col][1];
-                    }
-                    $map[$label] = $col;
-                    $targets[$label] = $target;
+                foreach ($group->competencies->values() as $idx => $comp) {
+                    $defaultColKey = array_keys($defaultCols)[$idx] ?? null;
+                    $items[] = [
+                        'id' => $comp->id,
+                        'label' => $comp->name,
+                        'target' => (float) ($comp->target_score ?? 5.0),
+                        'legacy_col' => $legacyMap[$comp->name] ?? $defaultColKey,
+                    ];
                 }
             } else {
                 foreach ($defaultCols as $col => $data) {
-                    $map[$data[0]] = $col;
-                    $targets[$data[0]] = (float) $data[1];
+                    $items[] = [
+                        'id' => null,
+                        'label' => $data[0],
+                        'target' => (float) $data[1],
+                        'legacy_col' => $col,
+                    ];
                 }
             }
 
-            return [$map, $targets];
+            return $items;
         };
 
-        [$headMap, $headTargets] = $buildMap($masterHead, $defaultHeadCols);
-        [$staffMap, $staffTargets] = $buildMap($masterStaff, $defaultStaffCols);
-        [$unitMap, $unitTargets] = $buildMap($masterUnit, $defaultUnitCols);
-
-        $compMaps = [
-            'head' => $headMap,
-            'staff' => $staffMap,
-            'unit_head_group_head' => $unitMap,
-        ];
-
-        $compTargetMaps = [
-            'head' => $headTargets,
-            'staff' => $staffTargets,
-            'unit_head_group_head' => $unitTargets,
+        $levelCompetencyLists = [
+            'head' => $buildDynamicCompetencyList($masterHead, $defaultHeadCols),
+            'staff' => $buildDynamicCompetencyList($masterStaff, $defaultStaffCols),
+            'unit_head_group_head' => $buildDynamicCompetencyList($masterUnit, $defaultUnitCols),
         ];
 
         // Define db jabatan lookup
@@ -145,7 +180,9 @@ class DashboardController extends Controller
         ];
 
         // Fetch all distinct years from IDPs that have penilaian data
-        $availableYears = Idp::whereHas('penilaian')
+        $availableYears = Idp::where(function ($q) {
+            $q->whereHas('penilaian')->orWhereHas('competencyScores');
+        })
             ->whereNotNull('tahun')
             ->distinct()
             ->orderBy('tahun', 'desc')
@@ -158,70 +195,103 @@ class DashboardController extends Controller
         $IDP_LEVEL_COMPETENCY = [];
         $IDP_LEVEL_EMPLOYEES = [];
 
-        foreach ($compMaps as $level => $map) {
+        foreach ($levelCompetencyLists as $level => $competencyList) {
             $dbJabatan = $jabatanLookup[$level];
 
-            // Get idp penilaian for this level, latest first
-            $query = IdpPenilain::whereHas('idp.karyawan', function ($q) use ($dbJabatan) {
-                $q->whereHas('position', function ($qPos) use ($dbJabatan) {
-                    $qPos->whereIn('nama_jabatan', $dbJabatan);
-                });
-            })->with(['idp.karyawan.department', 'idp.karyawan.position']);
+            // Get IDP records for employees with this jabatan level
+            $query = Idp::whereHas('karyawan.position', function ($qPos) use ($dbJabatan) {
+                $qPos->whereIn('nama_jabatan', $dbJabatan);
+            })->with([
+                'karyawan.department',
+                'karyawan.position',
+                'penilaian',
+                'competencyScores',
+            ]);
 
             // Apply year filter if specific year selected
             if ($selectedYear !== 'latest' && ! empty($selectedYear)) {
-                $query->whereHas('idp', function ($q) use ($selectedYear) {
-                    $q->where('tahun', $selectedYear);
-                });
+                $query->where('tahun', $selectedYear);
             }
 
-            $rawRecords = $query->orderBy('id', 'desc')->get();
+            $rawRecords = $query->orderBy('tahun', 'desc')->orderBy('periode', 'desc')->orderBy('id', 'desc')->get();
 
-            // Prioritize records that actually have filled evaluation scores over empty ones
-            $sortedRecords = $rawRecords->sortByDesc(function ($item) use ($map) {
+            // Helper to get score for a competency item from an IDP record
+            $getCompScore = function ($idp, $compItem) {
+                if ($idp->relationLoaded('competencyScores') && $compItem['id']) {
+                    $cs = $idp->competencyScores->firstWhere('idp_competency_id', $compItem['id']);
+                    if ($cs && $cs->score !== null && is_numeric($cs->score) && (float) $cs->score > 0) {
+                        return (float) $cs->score;
+                    }
+                }
+                if ($idp->penilaian && ! empty($compItem['legacy_col'])) {
+                    $col = $compItem['legacy_col'];
+                    $val = $idp->penilaian->$col ?? null;
+                    if ($val !== null && is_numeric($val) && (float) $val > 0) {
+                        return (float) $val;
+                    }
+                }
+
+                return null;
+            };
+
+            // Group by employee and select the best/latest evaluated IDP record
+            $employeeRecords = [];
+            foreach ($rawRecords as $record) {
+                $empId = $record->id_karyawan;
+                if (! $empId) {
+                    continue;
+                }
+
+                // Calculate whether this record has any score
                 $hasScore = false;
-                foreach ($map as $col) {
-                    if ($item->$col !== null && $item->$col !== '') {
+                foreach ($competencyList as $compItem) {
+                    if ($getCompScore($record, $compItem) !== null) {
                         $hasScore = true;
                         break;
                     }
                 }
 
-                return ($hasScore ? 1000000 : 0) + $item->id;
-            });
+                if (! isset($employeeRecords[$empId])) {
+                    $employeeRecords[$empId] = [
+                        'record' => $record,
+                        'has_score' => $hasScore,
+                    ];
+                } elseif (! $employeeRecords[$empId]['has_score'] && $hasScore) {
+                    $employeeRecords[$empId] = [
+                        'record' => $record,
+                        'has_score' => $hasScore,
+                    ];
+                }
+            }
 
-            // Unique record per employee
-            $penilaianRecords = $sortedRecords->unique(function ($item) {
-                return $item->idp ? $item->idp->id_karyawan : $item->id;
-            });
+            // Filter to only records that have evaluated scores
+            $evaluatedEmployeeData = array_filter($employeeRecords, fn ($item) => $item['has_score']);
+            $totalEmployees = count($evaluatedEmployeeData);
 
-            // Only consider records that have at least one score evaluated
-            $evaluatedRecords = $penilaianRecords->filter(function ($item) use ($map) {
-                foreach ($map as $col) {
-                    if ($item->$col !== null && $item->$col !== '') {
-                        return true;
+            // Calculate aggregate competency scores across all evaluated employees
+            $compAverages = [];
+            $allScoresSum = 0;
+            $itemsCount = count($competencyList);
+
+            foreach ($competencyList as $compItem) {
+                $label = $compItem['label'];
+                $targetVal = $compItem['target'];
+
+                $compScores = [];
+                foreach ($evaluatedEmployeeData as $item) {
+                    $score = $getCompScore($item['record'], $compItem);
+                    if ($score !== null) {
+                        $compScores[] = $score;
                     }
                 }
 
-                return false;
-            });
-
-            $totalEmployees = $evaluatedRecords->count();
-
-            // Calculate aggregate competency scores
-            $compAverages = [];
-            $allScoresSum = 0;
-            $itemsCount = count($map);
-
-            foreach ($map as $label => $column) {
-                $avg = $totalEmployees > 0 ? $evaluatedRecords->avg($column) : 0;
-                $targetVal = $compTargetMaps[$level][$label] ?? 5.0;
+                $avg = count($compScores) > 0 ? (array_sum($compScores) / count($compScores)) : 0;
                 $compAverages[] = [
                     'label' => $label,
-                    'score' => round($avg ?? 0, 2),
+                    'score' => round($avg, 2),
                     'target' => $targetVal,
                 ];
-                $allScoresSum += ($avg ?? 0);
+                $allScoresSum += $avg;
             }
 
             $overallAvg = $itemsCount > 0 ? ($allScoresSum / $itemsCount) : 0;
@@ -241,28 +311,26 @@ class DashboardController extends Controller
                 'competencies' => $compAverages,
             ];
 
-            // Calculate per employee details
+            // Calculate per employee details for the modal table
             $employeesList = [];
-            foreach ($evaluatedRecords as $record) {
-                $emp = $record->idp ? $record->idp->karyawan : null;
+            foreach ($evaluatedEmployeeData as $item) {
+                $record = $item['record'];
+                $emp = $record->karyawan;
                 if (! $emp) {
                     continue;
                 }
 
-                $empScores = [];
-                $empSum = 0;
                 $empScoresArray = [];
-                $weaknessItems = [];
+                $empSum = 0;
+                $validCount = 0;
 
-                foreach ($map as $label => $column) {
-                    $val = $record->$column;
-                    $numVal = $val ?? 0;
-
-                    $empScores[$label] = $numVal;
-                    $empSum += $numVal;
-
-                    if ($val !== null && $val > 0) {
-                        $empScoresArray[] = ['label' => $label, 'score' => (float) $val];
+                foreach ($competencyList as $compItem) {
+                    $label = $compItem['label'];
+                    $score = $getCompScore($record, $compItem);
+                    if ($score !== null && $score > 0) {
+                        $empScoresArray[] = ['label' => $label, 'score' => (float) $score];
+                        $empSum += (float) $score;
+                        $validCount++;
                     }
                 }
 
@@ -315,15 +383,15 @@ class DashboardController extends Controller
                     }
                 }
 
-                $empAvg = $itemsCount > 0 ? ($empSum / $itemsCount) : 0;
+                $empAvg = $validCount > 0 ? ($empSum / $validCount) : 0;
 
                 $employeesList[] = [
                     'id' => $emp->id,
                     'nama' => $emp->nama,
                     'foto' => $emp->foto ? asset('storage/'.$emp->foto) : null,
                     'department' => $emp->department ? $emp->department->nama_departemen : '-',
-                    'tahun' => $record->idp?->tahun,
-                    'periode' => $record->idp?->periode,
+                    'tahun' => $record->tahun,
+                    'periode' => $record->periode,
                     'average_score' => round($empAvg, 2),
                     'weakest_competency' => $weakestLabel,
                     'weakest_score' => round($weakestVal, 2),

@@ -318,10 +318,14 @@
         </div>
     </div>
     @empty
-    <div class="col-span-2 bg-white rounded-2xl p-12 text-center border border-gray-200">
-        <i class="fas fa-clipboard-list text-gray-300 text-4xl mb-3"></i>
-        <h3 class="font-bold text-gray-700 text-base">Belum Ada Kategori Assessment</h3>
-        <p class="text-xs text-gray-400 mt-1">Silakan atur kategori dan aspek penilaian pada Master Data Assessment terlebih dahulu.</p>
+    <div class="col-span-2 bg-white rounded-2xl p-10 text-center border border-gray-200 shadow-sm">
+        <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-3 border border-amber-100">
+            <i class="fas fa-layer-group text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-base mb-1">Belum Ada Kategori Assessment</h3>
+        <p class="text-xs text-gray-500 max-w-sm mx-auto">
+            Silakan tambahkan kategori assessment di Master Assessment terlebih dahulu.
+        </p>
     </div>
     @endforelse
 </div>
@@ -332,6 +336,7 @@
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
+            devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2),
             scales: {
                 r: {
                     angleLines: { color: 'rgba(0, 0, 0, 0.08)' },

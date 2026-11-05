@@ -22,7 +22,7 @@ class MasterIdpController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('can:lihat_master_idp', only: ['index']),
-            new Middleware('can:tambah_master_idp', only: ['storeGroup', 'storeCompetency']),
+            new Middleware('can:tambah_master_idp', only: ['storeGroup', 'storeCompetency', 'copyGroup']),
             new Middleware('can:edit_master_idp', only: ['updateGroup', 'updateCompetency']),
             new Middleware('can:hapus_master_idp', only: ['destroyGroup', 'destroyCompetency']),
         ];
@@ -63,6 +63,41 @@ class MasterIdpController extends Controller implements HasMiddleware
         return redirect()->route('master-idp.index')
             ->with('active_position', $validated['target_position'])
             ->with('success', 'Kelompok Chart IDP berhasil ditambahkan.');
+    }
+
+    /**
+     * Copy an existing competency group and all its competencies to a target position.
+     */
+    public function copyGroup(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'source_group_id' => 'required|exists:idp_competency_groups,id',
+            'target_position' => 'required|string|max:100',
+        ]);
+
+        $sourceGroup = IdpCompetencyGroup::with('competencies')->findOrFail($validated['source_group_id']);
+        $maxOrder = IdpCompetencyGroup::where('target_position', $validated['target_position'])->max('order') ?? 0;
+
+        $newGroup = IdpCompetencyGroup::create([
+            'title' => $sourceGroup->title,
+            'target_position' => $validated['target_position'],
+            'description' => $sourceGroup->description,
+            'order' => $maxOrder + 1,
+        ]);
+
+        foreach ($sourceGroup->competencies as $comp) {
+            $newGroup->competencies()->create([
+                'name' => $comp->name,
+                'code' => $comp->code,
+                'target_score' => $comp->target_score,
+                'description' => $comp->description,
+                'order' => $comp->order,
+            ]);
+        }
+
+        return redirect()->route('master-idp.index')
+            ->with('active_position', $validated['target_position'])
+            ->with('success', "Chart '{$sourceGroup->title}' beserta seluruh kompetensinya berhasil disalin ke jabatan ".ucwords($validated['target_position']).'.');
     }
 
     /**
