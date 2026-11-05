@@ -180,23 +180,48 @@
                 <div class="flex-1 min-w-0 pr-1">
                     <h3 class="font-bold text-gray-900 text-sm leading-snug"><?php echo e($data['title']); ?></h3>
                     <p class="text-[10px] text-gray-400 mt-0.5">
-                        <?php echo e($data['total_employees']); ?> employee • average <?php echo e($data['overall_average']); ?> / 5.0
-                        <?php if($selectedYear !== 'latest'): ?>
-                            <span class="inline-block font-semibold text-[#0ea5e9] ml-1">(<?php echo e($selectedYear); ?>)</span>
+                        <?php if(!empty($data['is_configured'])): ?>
+                            <?php echo e($data['total_employees']); ?> employee • average <?php echo e($data['overall_average']); ?> / 5.0
+                            <?php if($selectedYear !== 'latest'): ?>
+                                <span class="inline-block font-semibold text-[#0ea5e9] ml-1">(<?php echo e($selectedYear); ?>)</span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span class="inline-flex items-center gap-1 text-amber-500 font-semibold">
+                                <i class="fas fa-exclamation-circle text-[9px]"></i> Belum dikonfigurasi
+                            </span>
                         <?php endif; ?>
                     </p>
                 </div>
-                <button @click="levelDetail = '<?php echo e($level); ?>'" class="btn-3d text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-wide shrink-0 whitespace-nowrap shadow-xs mt-0.5">View Details</button>
+                <?php if(!empty($data['is_configured'])): ?>
+                    <button @click="levelDetail = '<?php echo e($level); ?>'" class="btn-3d text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-wide shrink-0 whitespace-nowrap shadow-xs mt-0.5">View Details</button>
+                <?php endif; ?>
             </div>
-            <div class="relative h-52 w-full mt-2 flex items-center justify-center">
-                <canvas id="radar-<?php echo e($level); ?>"></canvas>
-            </div>
-            <div class="mt-4 flex-1 flex flex-col justify-end">
-                <p class="text-[9px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Area to Improve</p>
-                <div class="card-3d-inner p-3 rounded-xl min-h-[142px] flex items-center justify-center" id="gap-<?php echo e($level); ?>">
-                    <!-- JS Injected Gaps -->
+
+            <?php if(!empty($data['is_configured'])): ?>
+                <div class="relative h-52 w-full mt-2 flex items-center justify-center">
+                    <canvas id="radar-<?php echo e($level); ?>"></canvas>
                 </div>
-            </div>
+                <div class="mt-4 flex-1 flex flex-col justify-end">
+                    <p class="text-[9px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Area to Improve</p>
+                    <div class="card-3d-inner p-3 rounded-xl min-h-[142px] flex items-center justify-center" id="gap-<?php echo e($level); ?>">
+                        <!-- JS Injected Gaps -->
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="flex-1 flex flex-col items-center justify-center text-center p-6 my-2 bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-500 mb-3 shadow-2xs">
+                        <i class="fas fa-layer-group text-lg"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-slate-800">Master Chart Belum Diatur</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 max-w-[210px] leading-relaxed">
+                        Kelompok kompetensi untuk level ini belum dibuat di Master Data IDP.
+                    </p>
+                    <a href="<?php echo e(route('master-idp.index')); ?>" class="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0ea5e9] hover:text-[#0ea5e9] text-slate-700 text-[11px] font-bold shadow-2xs hover:shadow-sm transition-all duration-200 group">
+                        <i class="fas fa-plus text-[10px] text-[#0ea5e9] group-hover:rotate-90 transition-transform"></i>
+                        <span>Atur di Master IDP</span>
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
@@ -531,6 +556,7 @@
     const radarOptions = {
         responsive: true,
         maintainAspectRatio: false,
+        devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2),
         layout: {
             padding: { top: 6, bottom: 6, left: 6, right: 6 }
         },
@@ -539,12 +565,23 @@
                 min: 0,
                 max: 5,
                 beginAtZero: true,
-                angleLines: { color: '#e5e7eb' },
-                grid: { color: '#e5e7eb' },
+                angleLines: { 
+                    display: true,
+                    color: '#e5e7eb', 
+                    lineWidth: 1 
+                },
+                grid: { 
+                    color: '#e5e7eb', 
+                    lineWidth: 1 
+                },
                 pointLabels: { 
-                    font: { size: 7.5, weight: '500', family: "'Outfit', sans-serif" }, 
-                    color: '#6b7280',
-                    padding: 3
+                    font: { 
+                        size: 8, 
+                        weight: '600', 
+                        family: "'Outfit', 'Inter', system-ui, sans-serif" 
+                    }, 
+                    color: '#334155',
+                    padding: 2
                 },
                 ticks: { display: false, stepSize: 1 }
             }
@@ -625,6 +662,10 @@
     for (const [level, data] of Object.entries(levelCompetency)) {
         if(window['radarInstance_' + level]) window['radarInstance_' + level].destroy();
         
+        if (!data.is_configured || !data.competencies || data.competencies.length === 0) {
+            continue;
+        }
+
         const rawLabels = data.competencies.map(c => c.label);
         const formattedLabels = rawLabels.map(formatRadarLabel);
         const scores = data.competencies.map(c => c.score);
@@ -664,6 +705,23 @@
             calculateGap(rawLabels, scores, targets, 'gap-' + level);
         }
     }
+
+    // Debounced window resize handler to maintain sharp, retina DPI on window resize
+    let radarResizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(radarResizeTimer);
+        radarResizeTimer = setTimeout(function() {
+            const dpr = Math.max(window.devicePixelRatio || 1, 2);
+            for (const [lvl] of Object.entries(levelCompetency)) {
+                const chart = window['radarInstance_' + lvl];
+                if (chart) {
+                    chart.options.devicePixelRatio = dpr;
+                    chart.resize();
+                    chart.update('none');
+                }
+            }
+        }, 150);
+    });
     })();
 </script>
 <?php $__env->stopSection(); ?>

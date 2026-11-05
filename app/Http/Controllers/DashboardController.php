@@ -152,24 +152,24 @@ class DashboardController extends Controller
                         'legacy_col' => $legacyMap[$comp->name] ?? $defaultColKey,
                     ];
                 }
-            } else {
-                foreach ($defaultCols as $col => $data) {
-                    $items[] = [
-                        'id' => null,
-                        'label' => $data[0],
-                        'target' => (float) $data[1],
-                        'legacy_col' => $col,
-                    ];
-                }
             }
 
             return $items;
         };
 
-        $levelCompetencyLists = [
-            'head' => $buildDynamicCompetencyList($masterHead, $defaultHeadCols),
-            'staff' => $buildDynamicCompetencyList($masterStaff, $defaultStaffCols),
-            'unit_head_group_head' => $buildDynamicCompetencyList($masterUnit, $defaultUnitCols),
+        $levelGroupInfo = [
+            'head' => [
+                'group' => $masterHead,
+                'list' => $buildDynamicCompetencyList($masterHead, $defaultHeadCols),
+            ],
+            'staff' => [
+                'group' => $masterStaff,
+                'list' => $buildDynamicCompetencyList($masterStaff, $defaultStaffCols),
+            ],
+            'unit_head_group_head' => [
+                'group' => $masterUnit,
+                'list' => $buildDynamicCompetencyList($masterUnit, $defaultUnitCols),
+            ],
         ];
 
         // Define db jabatan lookup
@@ -195,8 +195,33 @@ class DashboardController extends Controller
         $IDP_LEVEL_COMPETENCY = [];
         $IDP_LEVEL_EMPLOYEES = [];
 
-        foreach ($levelCompetencyLists as $level => $competencyList) {
+        foreach ($levelGroupInfo as $level => $info) {
+            $competencyList = $info['list'];
+            $groupObj = $info['group'];
+            $isConfigured = ! empty($competencyList);
             $dbJabatan = $jabatanLookup[$level];
+
+            if ($level === 'unit_head_group_head') {
+                $displayTitle = 'Unit Head / Group Head';
+            } elseif ($level === 'head') {
+                $displayTitle = 'Department / Section Head';
+            } else {
+                $displayTitle = ucfirst(str_replace('_', ' ', $level));
+            }
+
+            if (! $isConfigured) {
+                $IDP_LEVEL_COMPETENCY[$level] = [
+                    'title' => $displayTitle,
+                    'group_title' => null,
+                    'is_configured' => false,
+                    'total_employees' => 0,
+                    'overall_average' => 0,
+                    'competencies' => [],
+                ];
+                $IDP_LEVEL_EMPLOYEES[$level] = [];
+
+                continue;
+            }
 
             // Get IDP records for employees with this jabatan level
             $query = Idp::whereHas('karyawan.position', function ($qPos) use ($dbJabatan) {
@@ -296,16 +321,10 @@ class DashboardController extends Controller
 
             $overallAvg = $itemsCount > 0 ? ($allScoresSum / $itemsCount) : 0;
 
-            if ($level === 'unit_head_group_head') {
-                $displayTitle = 'Unit Head / Group Head';
-            } elseif ($level === 'head') {
-                $displayTitle = 'Department / Section Head';
-            } else {
-                $displayTitle = ucfirst(str_replace('_', ' ', $level));
-            }
-
             $IDP_LEVEL_COMPETENCY[$level] = [
                 'title' => $displayTitle,
+                'group_title' => $groupObj?->title ?? null,
+                'is_configured' => true,
                 'total_employees' => $totalEmployees,
                 'overall_average' => round($overallAvg, 2),
                 'competencies' => $compAverages,
