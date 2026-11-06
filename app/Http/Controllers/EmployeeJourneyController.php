@@ -65,6 +65,7 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
     public function show($id)
     {
         $karyawan = Karyawan::with([
+            'position',
             'department',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {

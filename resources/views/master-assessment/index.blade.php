@@ -295,7 +295,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Target Score (1.0 - 5.0) <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.1" min="1" max="5" id="addAspectTargetScore" name="target_score" value="4.0" required class="w-full rounded-lg border-gray-300 text-xs border p-2.5 font-bold focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
+                        <input type="number" step="0.1" min="1" max="5" id="addAspectTargetScore" name="target_score" value="5.0" required class="w-full rounded-lg border-gray-300 text-xs border p-2.5 font-bold focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
                     </div>
                 </div>
                 <div class="px-5 py-3.5 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
@@ -377,7 +377,7 @@
         form.action = baseUrl + '/master-assessment/category/' + categoryId + '/aspect';
         document.getElementById('addAspectCategorySubtitle').innerText = 'Kategori: ' + categoryName;
         document.getElementById('addAspectName').value = '';
-        document.getElementById('addAspectTargetScore').value = '4.0';
+        document.getElementById('addAspectTargetScore').value = '5.0';
 
         document.getElementById('addAspectModal').classList.remove('hidden');
     }
@@ -385,7 +385,7 @@
     function openEditAspectModal(btn) {
         const id = btn.getAttribute('data-id');
         const name = btn.getAttribute('data-name') || '';
-        const targetScore = btn.getAttribute('data-target-score') || '4.0';
+        const targetScore = btn.getAttribute('data-target-score') || '5.0';
 
         const form = document.getElementById('editAspectForm');
         form.action = baseUrl + '/master-assessment/aspect/' + id;

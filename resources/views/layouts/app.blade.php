@@ -44,35 +44,74 @@
         }
         .ts-dropdown {
             background-color: #ffffff !important;
-            border-radius: 0.5rem !important; /* rounded-lg */
-            border: 1px solid #e5e7eb !important; /* border-gray-200 */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; /* shadow-lg */
+            border-radius: 0.75rem !important; /* rounded-xl */
+            border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
             margin-top: 4px !important;
             font-size: 0.875rem !important;
-            z-index: 9999 !important; /* Ensure it stays above modals */
-            padding: 4px !important;
+            z-index: 999999 !important; /* Ensure it stays above modals and backdrops */
+            padding: 6px !important;
+        }
+        .ts-dropdown.is-dropup {
+            margin-top: 0 !important;
+            margin-bottom: 4px !important;
+            box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.12), 0 -8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+        }
+        .ts-dropdown .ts-dropdown-content {
+            max-height: 220px !important;
+            overflow-y: auto !important;
+        }
+        /* Completely remove WebKit scrollbar top and bottom arrow buttons */
+        .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-button,
+        .ts-dropdown *::-webkit-scrollbar-button,
+        .ts-dropdown::-webkit-scrollbar-button {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
         .ts-dropdown .ts-dropdown-content::-webkit-scrollbar {
-            width: 6px;
+            width: 5px !important;
         }
         .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-track {
-            background: transparent;
+            background: transparent !important;
+            margin: 4px 0 !important;
         }
         .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
+            background: #cbd5e1 !important;
+            border-radius: 9999px !important;
         }
         .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #94a3b8 !important;
+        }
+        .ts-dropdown .optgroup-header {
+            font-size: 0.68rem !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.06em !important;
+            color: #475569 !important; /* slate-600 */
+            background-color: #f1f5f9 !important; /* slate-100 */
+            padding: 5px 10px !important;
+            margin: 6px 2px 3px 2px !important;
+            border-radius: 6px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        .ts-dropdown .optgroup:first-child .optgroup-header {
+            margin-top: 2px !important;
+        }
+        .ts-dropdown .optgroup .option {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
         }
         .ts-dropdown .option {
             padding: 0.5rem 0.75rem !important;
-            border-radius: 0.375rem !important; /* rounded-md */
-            transition: all 0.2s !important;
-            color: #374151 !important;
+            border-radius: 0.5rem !important; /* rounded-md */
+            transition: all 0.15s ease !important;
+            color: #334155 !important;
         }
         .ts-dropdown .option:hover {
-            background-color: #f3f4f6 !important; /* bg-gray-100 */
+            background-color: #f8fafc !important;
         }
         .ts-dropdown .option.active {
             background-color: #e0f2fe !important; /* sky-100 */
@@ -694,24 +733,95 @@
                 
                 let isSearchable = el.classList.contains('searchable');
                 let isDropUp = el.classList.contains('drop-up');
+                let useBody = el.getAttribute('data-dropdown-parent') === 'body' || el.classList.contains('dropdown-body');
+                let isChartRender = el.getAttribute('data-custom-render') === 'chart';
+                
                 el.className = isDropUp ? 'drop-up' : '';
-                let ts = new TomSelect(el, {
-                    controlInput: isSearchable ? undefined : null
-                });
                 
-                let reposition = function() {
-                    let controlRect = ts.control.getBoundingClientRect();
-                    let dropdownHeight = Math.max(ts.dropdown.scrollHeight || 0, ts.dropdown.offsetHeight || 0, 240);
-                    let spaceBelow = window.innerHeight - controlRect.bottom;
-                    let spaceAbove = controlRect.top;
-                    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-                        ts.wrapper.classList.add('drop-up');
-                    } else {
-                        ts.wrapper.classList.remove('drop-up');
-                    }
+                let tomConfig = {
+                    controlInput: isSearchable ? undefined : null,
+                    dropdownParent: useBody ? 'body' : null,
+                    searchField: ['text', 'title', 'pos']
                 };
+
+                if (isChartRender) {
+                    tomConfig.render = {
+                        option: function(data, escape) {
+                            let aspek = data.aspek || '';
+                            let title = data.title || escape(data.text);
+                            return `<div class="flex items-center justify-between w-full py-0.5">
+                                <span class="font-semibold text-gray-800 text-xs">${escape(title)}</span>
+                                ${aspek ? `<span class="text-[10px] font-bold text-sky-600 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full shrink-0 ml-3">${escape(aspek)} Aspek</span>` : ''}
+                            </div>`;
+                        },
+                        item: function(data, escape) {
+                            let pos = data.pos || '';
+                            let title = data.title || escape(data.text);
+                            let aspek = data.aspek || '';
+                            return `<div class="flex items-center gap-1.5 text-xs">
+                                ${pos ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 shrink-0">[${escape(pos)}]</span>` : ''}
+                                <span class="font-semibold text-gray-800">${escape(title)}</span>
+                                ${aspek ? `<span class="text-gray-400 font-normal">(${escape(aspek)} Aspek)</span>` : ''}
+                            </div>`;
+                        }
+                    };
+                }
+
+                let ts = new TomSelect(el, tomConfig);
                 
-                ts.on('dropdown_open', reposition);
+                if (useBody) {
+                    ts.positionDropdown = function() {
+                        let context = ts.control;
+                        let rect = context.getBoundingClientRect();
+                        let scrollY = window.scrollY || document.documentElement.scrollTop;
+                        let scrollX = window.scrollX || document.documentElement.scrollLeft;
+                        
+                        let dd = ts.dropdown;
+                        let spaceBelow = window.innerHeight - rect.bottom;
+                        let spaceAbove = rect.top;
+                        
+                        let desiredHeight = Math.min(dd.scrollHeight || 220, 240);
+                        let shouldDropUp = ts.input.classList.contains('drop-up') || (spaceBelow < desiredHeight + 20 && spaceAbove > spaceBelow);
+                        
+                        let availableHeight = shouldDropUp ? spaceAbove - 20 : spaceBelow - 20;
+                        let contentEl = dd.querySelector('.ts-dropdown-content');
+                        if (contentEl) {
+                            contentEl.style.maxHeight = Math.max(120, Math.min(220, availableHeight)) + 'px';
+                        }
+                        
+                        let actualHeight = dd.offsetHeight || desiredHeight;
+                        let top, left = rect.left + scrollX;
+                        
+                        if (shouldDropUp) {
+                            top = rect.top + scrollY - actualHeight - 4;
+                            dd.classList.add('is-dropup');
+                            dd.classList.remove('is-dropdown');
+                            ts.wrapper.classList.add('drop-up');
+                        } else {
+                            top = rect.bottom + scrollY + 4;
+                            dd.classList.add('is-dropdown');
+                            dd.classList.remove('is-dropup');
+                            ts.wrapper.classList.remove('drop-up');
+                        }
+                        
+                        dd.style.width = rect.width + 'px';
+                        dd.style.top = Math.max(8, top) + 'px';
+                        dd.style.left = left + 'px';
+                    };
+                } else {
+                    let reposition = function() {
+                        let controlRect = ts.control.getBoundingClientRect();
+                        let dropdownHeight = Math.max(ts.dropdown.scrollHeight || 0, ts.dropdown.offsetHeight || 0, 240);
+                        let spaceBelow = window.innerHeight - controlRect.bottom;
+                        let spaceAbove = controlRect.top;
+                        if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                            ts.wrapper.classList.add('drop-up');
+                        } else {
+                            ts.wrapper.classList.remove('drop-up');
+                        }
+                    };
+                    ts.on('dropdown_open', reposition);
+                }
             });
         }
         window.initTomSelect = initTomSelect;

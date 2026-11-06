@@ -238,7 +238,7 @@
                 <div class="p-5 space-y-3.5">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Target Position <span class="text-red-500">*</span></label>
-                        <select id="addChartTargetPosition" name="target_position" required class="w-full rounded-lg border-gray-300 text-xs border p-2.5 font-medium focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
+                        <select id="addChartTargetPosition" name="target_position" required class="native-select w-full rounded-xl border border-gray-300 bg-white text-xs p-2.5 font-medium focus:ring-2 focus:ring-sky-100 focus:border-[#0ea5e9]">
                             <option value="">-- Select Position --</option>
                             @foreach($positions as $pos)
                                 <option value="{{ strtolower($pos->nama_jabatan) }}">{{ $pos->nama_jabatan }}</option>
@@ -285,7 +285,7 @@
                 <div class="p-5 space-y-3.5">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Target Jabatan <span class="text-red-500">*</span></label>
-                        <select id="editGroupTargetPosition" name="target_position" required class="w-full rounded-lg border-gray-300 text-xs border p-2.5 font-medium focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
+                        <select id="editGroupTargetPosition" name="target_position" required class="native-select w-full rounded-xl border border-gray-300 bg-white text-xs p-2.5 font-medium focus:ring-2 focus:ring-sky-100 focus:border-[#0ea5e9]">
                             <option value="">-- Pilih Jabatan --</option>
                             @foreach($positions as $pos)
                                 <option value="{{ strtolower($pos->nama_jabatan) }}">{{ $pos->nama_jabatan }}</option>
@@ -414,21 +414,53 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Pilih Chart Sumber <span class="text-red-500">*</span></label>
-                        <select name="source_group_id" required class="w-full rounded-lg border-gray-300 text-xs border p-2.5 font-medium focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Pilih Chart Sumber <span class="text-red-500">*</span></label>
+                        <select id="copySourceGroupId" name="source_group_id" required data-dropdown-parent="body" data-custom-render="chart" class="w-full text-xs font-medium focus:ring-[#0ea5e9] focus:border-[#0ea5e9]">
                             <option value="">-- Pilih Chart Yang Ingin Disalin --</option>
-                            @foreach($groups as $grp)
-                                <option value="{{ $grp->id }}">
-                                    [{{ ucwords($grp->target_position) }}] {{ $grp->title }} ({{ $grp->competencies_count }} Aspek)
-                                </option>
+                            @php
+                                $matchedSlugs = [];
+                            @endphp
+                            @foreach($positions as $pOpt)
+                                @php
+                                    $pSlug = strtolower($pOpt->nama_jabatan);
+                                    $matchedSlugs[] = $pSlug;
+                                    $pGroups = $groups->where('target_position', $pSlug);
+                                @endphp
+                                @if($pGroups->isNotEmpty())
+                                    <optgroup label="Posisi: {{ $pOpt->nama_jabatan }}">
+                                        @foreach($pGroups as $grp)
+                                            <option value="{{ $grp->id }}"
+                                                    data-pos="{{ $pOpt->nama_jabatan }}"
+                                                    data-title="{{ $grp->title }}"
+                                                    data-aspek="{{ $grp->competencies_count }}">
+                                                {{ $grp->title }} ({{ $grp->competencies_count }} Aspek)
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             @endforeach
+                            @php
+                                $orphanGroups = $groups->filter(fn ($g) => !in_array(strtolower($g->target_position), $matchedSlugs));
+                            @endphp
+                            @if($orphanGroups->isNotEmpty())
+                                <optgroup label="Posisi Lainnya">
+                                    @foreach($orphanGroups as $grp)
+                                        <option value="{{ $grp->id }}"
+                                                data-pos="{{ ucwords($grp->target_position) }}"
+                                                data-title="{{ $grp->title }}"
+                                                data-aspek="{{ $grp->competencies_count }}">
+                                            {{ $grp->title }} ({{ $grp->competencies_count }} Aspek)
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
                         </select>
-                        <p class="text-[11px] text-gray-400 mt-1">Seluruh aspek kompetensi dan target nilai di dalam chart ini akan otomatis disalin ke jabatan tujuan.</p>
+                        <p class="text-[11px] text-gray-400 mt-1.5">Seluruh aspek kompetensi dan target nilai di dalam chart ini akan otomatis disalin ke jabatan tujuan.</p>
                     </div>
                 </div>
                 <div class="px-5 py-3.5 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
                     <button type="button" onclick="closeModal('copyChartGroupModal')" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Batal</button>
-                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shadow-md shadow-sky-500/20 transition-all flex items-center gap-1.5">
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shadow-md shadow-sky-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
                         <i class="fas fa-clone"></i> Salin Sekarang
                     </button>
                 </div>
@@ -445,13 +477,34 @@
         if (modal) {
             modal.classList.add('hidden');
         }
+        const copySelectEl = document.getElementById('copySourceGroupId');
+        if (copySelectEl && copySelectEl.tomselect) {
+            copySelectEl.tomselect.close();
+        }
     }
 
     function openCopyGroupModal(targetPosSlug, targetPosName) {
         document.getElementById('copyTargetPosition').value = targetPosSlug;
         document.getElementById('copyTargetPositionLabel').innerText = targetPosName;
+        const copySelectEl = document.getElementById('copySourceGroupId');
+        if (copySelectEl && copySelectEl.tomselect) {
+            copySelectEl.tomselect.clear();
+            copySelectEl.tomselect.close();
+        }
         document.getElementById('copyChartGroupModal').classList.remove('hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const copyModal = document.getElementById('copyChartGroupModal');
+        if (copyModal) {
+            copyModal.addEventListener('scroll', function() {
+                const el = document.getElementById('copySourceGroupId');
+                if (el && el.tomselect && el.tomselect.isOpen) {
+                    el.tomselect.positionDropdown();
+                }
+            });
+        }
+    });
 
     function openAddGroupModal(position = '') {
         const selectEl = document.getElementById('addChartTargetPosition');

@@ -55,6 +55,7 @@ class UserJourneyController extends Controller
     public function show($id)
     {
         $karyawan = Karyawan::with([
+            'position',
             'department',
             'perjalananKarirs',
             'assessmentReports' => function ($q) {

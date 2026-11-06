@@ -531,6 +531,27 @@
     <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 flex flex-col h-full z-20">
         
         @php
+            $empPos = strtolower(trim((string) ($karyawan->position?->nama_jabatan ?? '')));
+            $allGroupsForPos = \App\Models\IdpCompetencyGroup::with(['competencies' => fn ($q) => $q->orderBy('order')->orderBy('id')])
+                ->where(function ($q) use ($empPos) {
+                    if ($empPos !== '') {
+                        $q->whereRaw('LOWER(target_position) = ?', [$empPos]);
+                        if (str_contains($empPos, 'section head')) {
+                            $q->orWhereRaw('LOWER(target_position) = ?', ['department head']);
+                        }
+                        if (str_contains($empPos, 'group head')) {
+                            $q->orWhereRaw('LOWER(target_position) = ?', ['unit head']);
+                        }
+                    } else {
+                        $q->whereRaw('1 = 0');
+                    }
+                })
+                ->orderBy('order')
+                ->orderBy('id')
+                ->get();
+
+            $hasMasterChart = $allGroupsForPos->contains(fn ($g) => $g->competencies->isNotEmpty());
+
             // Helper closure to check if an IDP has actual assessment scores
             $hasScore = function($idp) {
                 if (!$idp) return false;
@@ -650,7 +671,11 @@
 
                 <!-- Dynamic Status Badge Container -->
                 <div id="idpStatusBadgeContainer">
-                    @if($activeIdp)
+                    @if(!$hasMasterChart)
+                        <span class="bg-amber-50 border border-amber-200 text-amber-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
+                            <i class="fas fa-exclamation-circle text-[9px]"></i> Belum Dikonfigurasi
+                        </span>
+                    @elseif($activeIdp)
                         @if($activeIdp->status_idp === 'completed')
                             <span class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Completed
@@ -675,34 +700,66 @@
 
         <!-- Area Konten IDP -->
         <div class="mt-2 flex flex-col flex-grow relative z-10">
-            <!-- Dynamic Chart Switcher Tabs (Segmented pill control, hanya tampil jika IDP memiliki lebih dari 1 chart) -->
-            <div id="idpChartTabsContainer" class="self-start inline-flex items-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 shadow-2xs gap-1 mb-3.5 max-w-full overflow-x-auto no-scrollbar" style="display: none;"></div>
-
-            <!-- Chart -->
-            <div class="w-full h-72 flex items-center justify-center relative bg-gray-50/50 rounded-xl border border-gray-100/50 p-2">
-                <canvas id="radarChart" style="width: 100%; height: 100%;"></canvas>
-            </div>
-
-            @if($activeIdp)
-            <!-- Info Footer IDP (Mentor, Rata-rata Skor, dan Link Detail) -->
-            <div class="mt-3 flex items-center justify-between text-xs text-gray-500 px-1">
-                <div class="flex items-center gap-1.5">
-                    <span class="text-gray-400">Mentor:</span>
-                    <span id="idpMentorText" class="font-semibold text-gray-700">{{ $activeIdp->mentor ?? '-' }}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span id="idpScoreAvg" class="font-bold text-sky-600 text-xs"></span>
-                    <a id="idpDetailLink" href="{{ route('idp.show', $activeIdp->id) }}" class="text-xs text-sky-600 hover:text-sky-800 hover:underline inline-flex items-center gap-1 font-medium transition-colors">
-                        <span>IDP Details</span>
-                        <i class="fas fa-chevron-right text-[9px]"></i>
+            @if(!$hasMasterChart)
+                <div class="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto bg-slate-50/70 rounded-2xl border border-dashed border-slate-200 min-h-[280px]">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-500 mb-3 shadow-2xs">
+                        <i class="fas fa-layer-group text-lg"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-slate-800">Master Chart Belum Diatur</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 max-w-[260px] leading-relaxed">
+                        Kelompok kompetensi IDP untuk posisi <span class="font-semibold text-slate-700">{{ $karyawan->position->nama_jabatan ?? 'karyawan ini' }}</span> belum dibuat di Master Data IDP.
+                    </p>
+                    @if(auth()->check() && in_array(strtolower(auth()->user()->role ?? ''), ['admin', 'superadmin']))
+                    <a href="{{ route('master-idp.index') }}" class="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0ea5e9] hover:text-[#0ea5e9] text-slate-700 text-[11px] font-bold shadow-2xs hover:shadow-sm transition-all duration-200 group">
+                        <i class="fas fa-plus text-[10px] text-[#0ea5e9] group-hover:rotate-90 transition-transform"></i>
+                        <span>Atur di Master IDP</span>
                     </a>
+                    @endif
                 </div>
-            </div>
+            @elseif(!$activeIdp)
+                <div class="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto bg-slate-50/70 rounded-2xl border border-dashed border-slate-200 min-h-[280px]">
+                    <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200/60 flex items-center justify-center text-sky-500 mb-3 shadow-2xs">
+                        <i class="fas fa-file-signature text-lg"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-slate-800">Belum Ada Data IDP</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 max-w-[260px] leading-relaxed">
+                        Karyawan ini belum memiliki dokumen IDP untuk dievaluasi.
+                    </p>
+                    @if(auth()->check() && in_array(strtolower(auth()->user()->role ?? ''), ['admin', 'superadmin']))
+                    <a href="{{ route('idp.create') }}?id_karyawan={{ $karyawan->id }}" class="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0ea5e9] hover:text-[#0ea5e9] text-slate-700 text-[11px] font-bold shadow-2xs hover:shadow-sm transition-all duration-200 group">
+                        <i class="fas fa-plus text-[10px] text-[#0ea5e9] group-hover:rotate-90 transition-transform"></i>
+                        <span>Buat IDP Baru</span>
+                    </a>
+                    @endif
+                </div>
+            @else
+                <!-- Dynamic Chart Switcher Tabs (Segmented pill control, hanya tampil jika IDP memiliki lebih dari 1 chart) -->
+                <div id="idpChartTabsContainer" class="self-start inline-flex items-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 shadow-2xs gap-1 mb-3.5 max-w-full overflow-x-auto no-scrollbar" style="display: none;"></div>
 
-            <!-- Alert bila belum dinilai (otomatis tampil/hilang saat ganti pilihan di dropdown) -->
-            <div id="idpEmptyAlert" class="mt-2 text-center py-2 px-3 text-xs bg-amber-50 text-amber-700 border border-amber-200/60 rounded-xl transition-all duration-300 {{ $hasScore($activeIdp) ? 'hidden' : '' }}">
-                <i class="fas fa-info-circle mr-1 text-amber-500"></i> IDP assessment for this period has not been filled out yet.
-            </div>
+                <!-- Chart -->
+                <div class="w-full h-72 flex items-center justify-center relative bg-gray-50/50 rounded-xl border border-gray-100/50 p-2">
+                    <canvas id="radarChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+
+                <!-- Info Footer IDP (Mentor, Rata-rata Skor, dan Link Detail) -->
+                <div class="mt-3 flex items-center justify-between text-xs text-gray-500 px-1">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-gray-400">Mentor:</span>
+                        <span id="idpMentorText" class="font-semibold text-gray-700">{{ $activeIdp->mentor ?? '-' }}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="idpScoreAvg" class="font-bold text-sky-600 text-xs"></span>
+                        <a id="idpDetailLink" href="{{ route('idp.show', $activeIdp->id) }}" class="text-xs text-sky-600 hover:text-sky-800 hover:underline inline-flex items-center gap-1 font-medium transition-colors">
+                            <span>IDP Details</span>
+                            <i class="fas fa-chevron-right text-[9px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alert bila belum dinilai (otomatis tampil/hilang saat ganti pilihan di dropdown) -->
+                <div id="idpEmptyAlert" class="mt-2 text-center py-2 px-3 text-xs bg-amber-50 text-amber-700 border border-amber-200/60 rounded-xl transition-all duration-300 {{ $hasScore($activeIdp) ? 'hidden' : '' }}">
+                    <i class="fas fa-info-circle mr-1 text-amber-500"></i> IDP assessment for this period has not been filled out yet.
+                </div>
             @endif
         </div>
     </div>
@@ -1959,54 +2016,45 @@
                     }
 
                     $chartsList = [];
-                    if ($groupsToInclude->isEmpty() && $allGroupsForPos->isEmpty()) {
-                        $chartsList[] = [
-                            'id' => 0,
-                            'title' => 'Core Competencies',
-                            'labels' => ['Managing Change', 'Empowerment', 'Teamwork', 'Decision Making', 'Planning', 'Integrity'],
-                            'targets' => [5, 5, 5, 5, 5, 5],
-                            'scores' => [0, 0, 0, 0, 0, 0],
-                            'avg' => '0.0',
-                            'hasScore' => false,
-                        ];
-                    } else {
-                        foreach ($groupsToInclude as $grp) {
-                            $labels = [];
-                            $targets = [];
-                            $scores = [];
-                            $totalScore = 0;
-                            $scoreCount = 0;
-
-                            foreach ($grp->competencies as $comp) {
-                                $labels[] = $comp->name;
-                                $targets[] = (float) ($comp->target_score ?? 5.0);
-
-                                $val = 0;
-                                if (isset($savedScores[$comp->id])) {
-                                    $val = (float) $savedScores[$comp->id];
-                                } elseif ($idp->penilaian && isset($legacyMap[$comp->name])) {
-                                    $col = $legacyMap[$comp->name];
-                                    $val = (float) ($idp->penilaian->$col ?? 0);
-                                }
-                                $scores[] = $val;
-                                if ($val > 0) {
-                                    $totalScore += $val;
-                                    $scoreCount++;
-                                }
-                            }
-
-                            $cleanTitle = trim(preg_replace('/\s*\([^)]*\)\s*$/', '', $grp->title));
-                            $chartsList[] = [
-                                'id' => $grp->id,
-                                'title' => $cleanTitle ?: $grp->title,
-                                'full_title' => $grp->title,
-                                'labels' => $labels,
-                                'targets' => $targets,
-                                'scores' => $scores,
-                                'avg' => $scoreCount > 0 ? number_format($totalScore / $scoreCount, 1) : '0.0',
-                                'hasScore' => $scoreCount > 0,
-                            ];
+                    foreach ($groupsToInclude as $grp) {
+                        if ($grp->competencies->isEmpty()) {
+                            continue;
                         }
+                        $labels = [];
+                        $targets = [];
+                        $scores = [];
+                        $totalScore = 0;
+                        $scoreCount = 0;
+
+                        foreach ($grp->competencies as $comp) {
+                            $labels[] = $comp->name;
+                            $targets[] = (float) ($comp->target_score ?? 5.0);
+
+                            $val = 0;
+                            if (isset($savedScores[$comp->id])) {
+                                $val = (float) $savedScores[$comp->id];
+                            } elseif ($idp->penilaian && isset($legacyMap[$comp->name])) {
+                                $col = $legacyMap[$comp->name];
+                                $val = (float) ($idp->penilaian->$col ?? 0);
+                            }
+                            $scores[] = $val;
+                            if ($val > 0) {
+                                $totalScore += $val;
+                                $scoreCount++;
+                            }
+                        }
+
+                        $cleanTitle = trim(preg_replace('/\s*\([^)]*\)\s*$/', '', $grp->title));
+                        $chartsList[] = [
+                            'id' => $grp->id,
+                            'title' => $cleanTitle ?: $grp->title,
+                            'full_title' => $grp->title,
+                            'labels' => $labels,
+                            'targets' => $targets,
+                            'scores' => $scores,
+                            'avg' => $scoreCount > 0 ? number_format($totalScore / $scoreCount, 1) : '0.0',
+                            'hasScore' => $scoreCount > 0,
+                        ];
                     }
 
                     $formattedIdpHistory[$idp->id] = [
@@ -2068,13 +2116,11 @@
             }
 
             const initialIdp = idpHistory[currentIdpId] || null;
-            const initialChart = (initialIdp && initialIdp.charts && initialIdp.charts[0]) ? initialIdp.charts[0] : {
-                labels: ['Managing Change', 'Empowerment', 'Teamwork'],
-                scores: [0, 0, 0],
-                targets: [5, 5, 5],
-                avg: '0.0',
-                hasScore: false
-            };
+            const initialChart = (initialIdp && initialIdp.charts && initialIdp.charts.length > 0) ? initialIdp.charts[0] : null;
+
+            if (!initialChart || !initialChart.labels || initialChart.labels.length === 0) {
+                return;
+            }
 
             renderChartTabs(initialIdp);
 
@@ -2190,6 +2236,16 @@
                 activeChartIndex = 0;
                 const idp = idpHistory[selectedId];
                 if (!idp) return;
+
+                if (!idp.charts || idp.charts.length === 0) {
+                    if (radarCanvas && radarCanvas.chartInstance) {
+                        radarCanvas.chartInstance.destroy();
+                        radarCanvas.chartInstance = null;
+                    }
+                    const container = document.getElementById('idpChartTabsContainer');
+                    if (container) container.style.display = 'none';
+                    return;
+                }
 
                 window.switchIdpChart(0);
 
