@@ -154,13 +154,18 @@ class MentoringController extends Controller implements HasMiddleware
 
         Mentoring::create($validated);
 
-        if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Mentoring data added successfully.');
+        $msg = 'Mentoring data added successfully.';
+        $targetUrl = $request->filled('redirect_to')
+            ? $request->redirect_to
+            : route($isAdmin ? 'mentoring.index' : 'user-mentoring.index');
+
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'mentoring.index' : 'user-mentoring.index';
-
-        return redirect()->route($indexRoute)->with('success', 'Mentoring data added successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function show($id)
@@ -295,13 +300,18 @@ class MentoringController extends Controller implements HasMiddleware
 
         $mentoring->update($validated);
 
-        if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Mentoring data updated successfully.');
+        $msg = 'Mentoring data updated successfully.';
+        $targetUrl = $request->filled('redirect_to')
+            ? $request->redirect_to
+            : route($isAdmin ? 'mentoring.index' : 'user-mentoring.index');
+
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'mentoring.index' : 'user-mentoring.index';
-
-        return redirect()->route($indexRoute)->with('success', 'Mentoring data updated successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function destroy($id)
@@ -318,13 +328,18 @@ class MentoringController extends Controller implements HasMiddleware
 
         $mentoring->delete();
 
-        if (request()->has('redirect_to')) {
-            return redirect(request()->redirect_to)->with('success', 'Mentoring data deleted successfully.');
+        $msg = 'Mentoring data deleted successfully.';
+        $targetUrl = request()->filled('redirect_to')
+            ? request()->redirect_to
+            : route($isAdmin ? 'mentoring.index' : 'user-mentoring.index');
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'mentoring.index' : 'user-mentoring.index';
-
-        return redirect()->route($indexRoute)->with('success', 'Mentoring data deleted successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function updateMetrics(Request $request, $id)

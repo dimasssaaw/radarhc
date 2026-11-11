@@ -205,7 +205,7 @@
                             </a>
                             @endcan
                             @can('hapus_karyawan')
-                            <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this employee?');">
+                            <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this employee?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Delete">

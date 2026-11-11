@@ -97,7 +97,7 @@
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">NPK</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Position</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Department</th>
-                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Total Sertifikat</th>
+                    <th class="px-5 py-4 font-semibold tracking-wider text-center">Total Certificates</th>
                     <th class="px-5 py-4 font-semibold tracking-wider text-center">Actions</th>
                 </tr>
             </thead>

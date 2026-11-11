@@ -89,7 +89,7 @@
                 <button type="button" onclick="openCopyGroupModal('<?php echo e($posSlug); ?>', '<?php echo e(addslashes($pos->nama_jabatan)); ?>')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm flex items-center gap-1.5 cursor-pointer">
                     <i class="fas fa-copy text-sky-600"></i> Salin dari Posisi Lain
                 </button>
-                <button type="button" onclick="openAddGroupModal('<?php echo e($posSlug); ?>')" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center gap-1.5 shadow-sm cursor-pointer">
+                <button type="button" data-position="<?php echo e($posSlug); ?>" onclick="document.getElementById('addChartTargetPosition').value=this.dataset.position;document.getElementById('addChartGroupModal').classList.remove('hidden')" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center gap-1.5 shadow-sm cursor-pointer">
                     <i class="fas fa-plus"></i> Add Spider Chart
                 </button>
             </div>
@@ -114,22 +114,24 @@
 
                 <div class="flex items-center gap-1.5">
                     <button type="button" 
-                        onclick="openAddCompetencyModal(this)"
+                        onclick="const form=document.getElementById('addCompetencyForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('addCompGroupSubtitle').innerText='Ke Chart: '+this.dataset.groupTitle;document.getElementById('addCompName').value='';document.getElementById('addCompTargetScore').value='5.0';document.getElementById('addCompetencyModal').classList.remove('hidden')"
                         data-group-id="<?php echo e($group->id); ?>"
                         data-group-title="<?php echo e($group->title); ?>"
+                        data-form-action="<?php echo e(route('master-idp.competency.store', $group->id)); ?>"
                         class="bg-white hover:bg-sky-50 text-[#0ea5e9] border border-sky-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm flex items-center gap-1.5 shadow-sm">
                         <i class="fas fa-plus text-[10px]"></i> Add Competency
                     </button>
                     <button type="button"
-                        onclick="openEditGroupModal(this)"
+                        onclick="document.getElementById('editGroupForm').action=this.dataset.formAction;document.getElementById('editGroupTitle').value=this.dataset.title;document.getElementById('editGroupTargetPosition').value=this.dataset.targetPosition;document.getElementById('editGroupDescription').value=this.dataset.description;document.getElementById('editChartGroupModal').classList.remove('hidden')"
                         data-id="<?php echo e($group->id); ?>"
+                        data-form-action="<?php echo e(route('master-idp.group.update', $group->id)); ?>"
                         data-title="<?php echo e($group->title); ?>"
                         data-target-position="<?php echo e($group->target_position); ?>"
                         data-description="<?php echo e($group->description); ?>"
                         class="text-gray-400 hover:text-[#0ea5e9] p-1.5 rounded-lg hover:bg-sky-50 transition-colors" title="Edit Judul Chart">
                         <i class="fas fa-edit text-xs"></i>
                     </button>
-                    <form action="<?php echo e(route('master-idp.group.destroy', $group->id)); ?>" method="POST" hx-boost="false" data-hx-boost="false" class="inline-block" onsubmit="return confirm('Hapus chart <?php echo e(addslashes($group->title)); ?> ini? Seluruh kompetensi di dalamnya akan ikut terhapus.');">
+                    <form action="<?php echo e(route('master-idp.group.destroy', $group->id)); ?>" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Hapus chart <?php echo e(addslashes($group->title)); ?> ini? Seluruh kompetensi di dalamnya akan ikut terhapus.');">
                         <?php echo csrf_field(); ?>
                         <?php echo method_field('DELETE'); ?>
                         <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Hapus Chart">
@@ -166,14 +168,15 @@
                             <td class="px-5 py-2.5 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button type="button"
-                                        onclick="openEditCompetencyModal(this)"
+                                        onclick="const form=document.getElementById('editCompetencyForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('editCompName').value=this.dataset.name;document.getElementById('editCompTargetScore').value=this.dataset.targetScore;document.getElementById('editCompetencyModal').classList.remove('hidden')"
                                         data-id="<?php echo e($comp->id); ?>"
+                                        data-form-action="<?php echo e(route('master-idp.competency.update', $comp->id)); ?>"
                                         data-name="<?php echo e($comp->name); ?>"
                                         data-target-score="<?php echo e($comp->target_score ?? 5.0); ?>"
                                         class="text-gray-400 hover:text-[#0ea5e9] p-1 rounded hover:bg-sky-50 transition-colors" title="Edit Kompetensi">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    <form action="<?php echo e(route('master-idp.competency.destroy', $comp->id)); ?>" method="POST" hx-boost="false" data-hx-boost="false" class="inline-block" onsubmit="return confirm('Hapus kompetensi <?php echo e(addslashes($comp->name)); ?>?');">
+                                    <form action="<?php echo e(route('master-idp.competency.destroy', $comp->id)); ?>" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Hapus kompetensi <?php echo e(addslashes($comp->name)); ?>?');">
                                         <?php echo csrf_field(); ?>
                                         <?php echo method_field('DELETE'); ?>
                                         <button type="submit" class="text-gray-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors" title="Hapus Kompetensi">
@@ -188,9 +191,10 @@
                             <td colspan="4" class="px-5 py-4 text-center text-gray-400 text-xs">
                                 Belum ada kompetensi. 
                                 <button type="button" 
-                                    onclick="openAddCompetencyModal(this)"
+                                    onclick="const form=document.getElementById('addCompetencyForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('addCompGroupSubtitle').innerText='Ke Chart: '+this.dataset.groupTitle;document.getElementById('addCompName').value='';document.getElementById('addCompTargetScore').value='5.0';document.getElementById('addCompetencyModal').classList.remove('hidden')"
                                     data-group-id="<?php echo e($group->id); ?>"
                                     data-group-title="<?php echo e($group->title); ?>"
+                                    data-form-action="<?php echo e(route('master-idp.competency.store', $group->id)); ?>"
                                     class="text-[#0ea5e9] font-bold hover:underline ml-1">
                                     + Tambah Kompetensi
                                 </button>
@@ -204,7 +208,7 @@
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
         <div class="bg-white rounded-2xl p-8 text-center border border-dashed border-gray-300">
             <p class="text-xs text-gray-500 mb-3">There is no Spider Chart for the position yet <strong><?php echo e($pos->nama_jabatan); ?></strong></p>
-            <button type="button" onclick="openAddGroupModal('<?php echo e($posSlug); ?>')" class="px-3.5 py-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold rounded-lg shadow-sm transition-all inline-flex items-center gap-1.5">
+            <button type="button" data-position="<?php echo e($posSlug); ?>" onclick="document.getElementById('addChartTargetPosition').value=this.dataset.position;document.getElementById('addChartGroupModal').classList.remove('hidden')" class="px-3.5 py-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold rounded-lg shadow-sm transition-all inline-flex items-center gap-1.5">
                 <i class="fas fa-plus"></i> Add Spider Chart
             </button>
         </div>
@@ -235,7 +239,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form action="<?php echo e(route('master-idp.group.store')); ?>" method="POST" hx-boost="false" data-hx-boost="false">
+            <form action="<?php echo e(route('master-idp.group.store')); ?>" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 <?php echo csrf_field(); ?>
                 <div class="p-5 space-y-3.5">
                     <div>
@@ -281,7 +285,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form id="editGroupForm" method="POST" hx-boost="false" data-hx-boost="false">
+            <form id="editGroupForm" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 <?php echo csrf_field(); ?>
                 <?php echo method_field('PUT'); ?>
                 <div class="p-5 space-y-3.5">
@@ -331,7 +335,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form id="addCompetencyForm" method="POST" hx-boost="false" data-hx-boost="false">
+            <form id="addCompetencyForm" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 <?php echo csrf_field(); ?>
                 <div class="p-5 space-y-4">
                     <div>
@@ -368,7 +372,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form id="editCompetencyForm" method="POST" hx-boost="false" data-hx-boost="false">
+            <form id="editCompetencyForm" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 <?php echo csrf_field(); ?>
                 <?php echo method_field('PUT'); ?>
                 <div class="p-5 space-y-4">
@@ -406,7 +410,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form action="<?php echo e(route('master-idp.group.copy')); ?>" method="POST" hx-boost="false" data-hx-boost="false">
+            <form action="<?php echo e(route('master-idp.group.copy')); ?>" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" id="copyTargetPosition" name="target_position" value="">
                 <div class="p-5 space-y-3.5">
@@ -472,7 +476,7 @@
 </div>
 
 <script>
-    const baseUrl = "<?php echo e(url('/')); ?>";
+    window.radarBaseUrl = "<?php echo e(url('/')); ?>";
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -523,7 +527,7 @@
         const description = btn.getAttribute('data-description') || '';
 
         const form = document.getElementById('editGroupForm');
-        form.action = baseUrl + '/master-idp/group/' + id;
+        form.action = window.radarBaseUrl + '/master-idp/group/' + id;
         document.getElementById('editGroupTitle').value = title;
         document.getElementById('editGroupTargetPosition').value = targetPosition;
         document.getElementById('editGroupDescription').value = description;
@@ -535,7 +539,7 @@
         const groupTitle = btn.getAttribute('data-group-title') || '';
 
         const form = document.getElementById('addCompetencyForm');
-        form.action = baseUrl + '/master-idp/group/' + groupId + '/competency';
+        form.action = window.radarBaseUrl + '/master-idp/group/' + groupId + '/competency';
         document.getElementById('addCompGroupSubtitle').innerText = 'Ke Chart: ' + groupTitle;
         document.getElementById('addCompName').value = '';
         document.getElementById('addCompTargetScore').value = '5.0';
@@ -549,7 +553,7 @@
         const targetScore = btn.getAttribute('data-target-score') || '5.0';
 
         const form = document.getElementById('editCompetencyForm');
-        form.action = baseUrl + '/master-idp/competency/' + id;
+        form.action = window.radarBaseUrl + '/master-idp/competency/' + id;
         document.getElementById('editCompName').value = name;
         document.getElementById('editCompTargetScore').value = targetScore;
 

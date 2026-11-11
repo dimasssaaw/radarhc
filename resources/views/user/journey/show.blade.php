@@ -196,7 +196,7 @@
                             </button>
                             @endcan
                             @can('hapus_journey')
-                            <form action="{{ route('employee-journey.destroy', $pk->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this career journey?');">
+                            <form action="{{ route('employee-journey.destroy', $pk->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline" onsubmit="return confirm('Are you sure you want to delete this career journey?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="px-4 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-lg transition-all flex items-center gap-1.5">
@@ -991,7 +991,7 @@
                             <td class="px-3 py-3.5 text-center bg-white">
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button" onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                    <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
+                                    <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
@@ -1042,7 +1042,7 @@
                             <td class="px-3 py-3.5 text-center bg-white">
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button" onclick="document.getElementById('editStrengthModal{{ $sw->id }}').classList.remove('hidden')" class="text-[#0ea5e9] hover:text-[#0284c7] transition-colors p-1.5 rounded-lg hover:bg-sky-50 shadow-sm border border-transparent hover:border-sky-100" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                                    <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
+                                    <form action="{{ route('employee-strength.destroy', $sw->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50 shadow-sm border border-transparent hover:border-rose-100" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
@@ -1435,7 +1435,7 @@
         </div>
 
         <!-- Form Body -->
-        <form action="{{ route('employee-journey.store') }}" method="POST" class="flex flex-col overflow-hidden">
+        <form action="{{ route('employee-journey.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col overflow-hidden">
             @csrf
             <input type="hidden" name="employee_id" value="{{ $karyawan->id }}">
             
@@ -1729,7 +1729,7 @@
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <form action="{{ route('employee-via-character.store') }}" method="POST" class="p-6">
+        <form action="{{ route('employee-via-character.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-6">
             @csrf
             <input type="hidden" name="id_karyawan" value="{{ $karyawan->id }}">
             <div class="space-y-4 mb-6">
@@ -1792,7 +1792,7 @@
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <form action="{{ route('employee-strength.store') }}" method="POST" class="p-6">
+        <form action="{{ route('employee-strength.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-6">
             @csrf
             <input type="hidden" name="id_karyawan" value="{{ $karyawan->id }}">
             <div class="space-y-4 mb-6">
@@ -2275,4 +2275,3 @@
 @endsection
 
 @endsection
-

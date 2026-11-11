@@ -17,7 +17,7 @@
             </a>
         </div>
 
-        <form action="{{ route('employee.store') }}" method="POST" enctype="multipart/form-data" novalidate class="flex flex-col flex-1 overflow-hidden">
+        <form action="{{ route('employee.store') }}" method="POST" enctype="multipart/form-data" novalidate hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden">
             @csrf
 
             <!-- Body -->

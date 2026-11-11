@@ -204,6 +204,12 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'operational_award' => $request->operational_award,
         ]);
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Career journey added successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
+
         return back()->with('success', 'Career journey added successfully.');
     }
 
@@ -238,6 +244,12 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
             'operational_award' => $request->operational_award,
         ]);
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Career journey updated successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
+
         return back()->with('success', 'Career journey updated successfully.');
     }
 
@@ -245,6 +257,12 @@ class EmployeeJourneyController extends Controller implements HasMiddleware
     {
         $pk = PerjalananKarir::findOrFail($id);
         $pk->delete();
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', 'Career journey deleted successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
 
         return back()->with('success', 'Career journey deleted successfully.');
     }

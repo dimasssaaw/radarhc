@@ -128,7 +128,10 @@ class TrainingController extends Controller implements HasMiddleware
         if (! $isAdmin) {
             $userKaryawan = Karyawan::where('npk', auth()->user()->npk)->first();
             $targetEmployee = Karyawan::find($employeeId);
-            if (! $userKaryawan || ! $targetEmployee || $targetEmployee->department_id !== $userKaryawan->department_id) {
+            if (! $userKaryawan || ! $targetEmployee) {
+                abort(403, 'Access not authorized for other departments.');
+            }
+            if ($userKaryawan->id !== $targetEmployee->id && $targetEmployee->department_id !== $userKaryawan->department_id) {
                 abort(403, 'Access not authorized for other departments.');
             }
         }
@@ -355,6 +358,12 @@ class TrainingController extends Controller implements HasMiddleware
         }
 
         $riwayat->delete();
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', 'Training record deleted successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
 
         return redirect()->back()->with('success', 'Training record deleted successfully.');
     }

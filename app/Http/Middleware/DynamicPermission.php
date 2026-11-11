@@ -20,6 +20,15 @@ class DynamicPermission
             return $next($request);
         }
 
+        // Jika akun berstatus nonaktif, langsung logout dan arahkan ke login
+        if (strtolower((string) auth()->user()->status) !== 'aktif') {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors(['npk' => 'Akun Anda berstatus nonaktif. Silakan hubungi administrator.']);
+        }
+
         // Ambil nama fungsi yang sedang dipanggil di Controller (misal: 'index', 'store', dll)
         $actionMethod = $request->route()->getActionMethod();
 

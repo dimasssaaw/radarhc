@@ -50,7 +50,7 @@
                         @canany(['edit_karyawan', 'hapus_karyawan'])
                         <td class="px-6 py-4 text-center flex justify-center gap-2">
                             <button onclick="document.getElementById('editViaCharacterModal{{ $via->id }}').classList.remove('hidden')" class="text-emerald-500 hover:text-emerald-700 transition-colors p-1 rounded hover:bg-emerald-50" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                            <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
+                            <form action="{{ route('employee-via-character.destroy', $via->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
@@ -97,7 +97,7 @@
                         @canany(['edit_karyawan', 'hapus_karyawan'])
                         <td class="px-6 py-4 text-center flex justify-center gap-2">
                             <button onclick="document.getElementById('editStrengthModal{{ $st->id }}').classList.remove('hidden')" class="text-emerald-500 hover:text-emerald-700 transition-colors p-1 rounded hover:bg-emerald-50" title="Edit"><i class="fas fa-edit text-xs"></i></button>
-                            <form action="{{ route('employee-strength.destroy', $st->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
+                            <form action="{{ route('employee-strength.destroy', $st->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
@@ -380,7 +380,7 @@
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <form action="{{ route('employee-via-character.store') }}" method="POST" class="p-6">
+        <form action="{{ route('employee-via-character.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-6">
             @csrf
             <input type="hidden" name="id_karyawan" value="{{ $employee->id }}">
             <div class="space-y-4 mb-6">
@@ -410,7 +410,7 @@
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <form action="{{ route('employee-strength.store') }}" method="POST" class="p-6">
+        <form action="{{ route('employee-strength.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-6">
             @csrf
             <input type="hidden" name="id_karyawan" value="{{ $employee->id }}">
             <div class="space-y-4 mb-6">
@@ -441,7 +441,7 @@
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <form action="{{ route('employee-via-character.update', $via->id) }}" method="POST" class="p-6">
+        <form action="{{ route('employee-via-character.update', $via->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="id_karyawan" value="{{ $employee->id }}">
@@ -474,7 +474,7 @@
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <form action="{{ route('employee-strength.update', $st->id) }}" method="POST" class="p-6">
+        <form action="{{ route('employee-strength.update', $st->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="id_karyawan" value="{{ $employee->id }}">

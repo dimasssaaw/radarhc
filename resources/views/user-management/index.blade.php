@@ -18,12 +18,12 @@
 
 <div class="card-3d overflow-visible relative">
     <!-- Header / Actions / Filters -->
-    <form method="GET" action="{{ route('user-management.index') }}" class="p-4 border-b border-gray-100 flex justify-between items-center bg-white relative z-20 rounded-t-[20px]">
+    <form method="GET" action="{{ route('user-management.index') }}" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="p-4 border-b border-gray-100 flex justify-between items-center bg-white relative z-20 rounded-t-[20px]">
         <div class="relative w-72">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 text-sm"></i>
             </div>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Name or Role..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Name, NPK, or Email..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all">
             <button type="submit" class="hidden"></button>
         </div>
 
@@ -67,16 +67,22 @@
                 <div class="space-y-3">
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Role</label>
-                        <select name="role" onchange="this.form.submit()" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
+                        <select name="role" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
                             <option value="">All</option>
-                            <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="head" {{ request('role') == 'head' ? 'selected' : '' }}>Department Head</option>
+                            @if(isset($dbRoles))
+                                @foreach($dbRoles as $r)
+                                    <option value="{{ $r->name }}" {{ strtolower((string) request('role')) === strtolower((string) $r->name) ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
+                                @endforeach
+                            @else
+                                <option value="admin" {{ strtolower((string) request('role')) === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="head" {{ strtolower((string) request('role')) === 'head' ? 'selected' : '' }}>Head</option>
+                            @endif
                         </select>
                     </div>
                     
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Status</label>
-                        <select name="status" onchange="this.form.submit()" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
+                        <select name="status" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()" class="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-[#06b6d4]">
                             <option value="">All</option>
                             <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Active</option>
                             <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Inactive</option>
@@ -151,7 +157,7 @@
                             </a>
                             @endcan
                             @can('hapus_user')
-                            <form action="{{ route('user-management.destroy', $user->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            <form action="{{ route('user-management.destroy', $user->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-rose-500 transition-colors rounded-lg hover:bg-rose-50">

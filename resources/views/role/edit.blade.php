@@ -2,7 +2,7 @@
 
 @push('modals')
 <!-- Full screen modal overlay -->
-<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 sm:p-6 transition-opacity">
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 sm:p-6 transition-opacity" onclick="if(event.target === this) { const a = document.getElementById('closeModalLink'); if(a) a.click(); else window.location.href='{{ route('role.index') }}'; }">
     <!-- Modal Card -->
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[95vh] flex flex-col overflow-hidden animate-fade-in-up">
         
@@ -12,12 +12,12 @@
                 <h2 class="text-xl font-bold text-gray-900">Edit Role</h2>
                 <p class="text-sm text-gray-500 mt-1">Modify role data</p>
             </div>
-            <a href="{{ route('role.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <a id="closeModalLink" href="{{ route('role.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
             </a>
         </div>
 
-        <form action="{{ route('role.update', $role->id) }}" method="POST" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+        <form action="{{ route('role.update', $role->id) }}" method="POST" novalidate hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden">
             @csrf
             @method('PUT')
 
@@ -44,10 +44,9 @@
                 <a href="{{ route('role.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
                     Cancel
                 </a>
-                <button type="submit" :disabled="isSubmitting" class="bg-[#0ea5e9] hover:bg-sky-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">
-                    <i class="fas fa-save" x-show="!isSubmitting"></i>
-                    <i class="fas fa-spinner fa-spin" x-show="isSubmitting" style="display: none;"></i>
-                    <span x-text="isSubmitting ? 'Saving...' : 'Save Changes'"></span>
+                <button type="submit" class="bg-[#0ea5e9] hover:bg-sky-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-sky-500/30 transition-all flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    <span>Save Changes</span>
                 </button>
             </div>
         </form>

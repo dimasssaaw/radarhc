@@ -254,7 +254,7 @@
 
                             @can('hapus_karyawan')
                             <div class="relative group/tooltip">
-                                <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this data?');">
+                                <form action="{{ route('employee.destroy', $emp->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline" onsubmit="return confirm('Are you sure you want to delete this data?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-all">

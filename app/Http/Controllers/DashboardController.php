@@ -12,6 +12,10 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         if (strtolower($request->user()->role ?? '') !== 'admin') {
+            if ($request->header('HX-Request')) {
+                return response('', 200)->header('HX-Redirect', route('user.dashboard'));
+            }
+
             return redirect()->route('user.dashboard');
         }
 

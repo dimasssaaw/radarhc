@@ -64,7 +64,7 @@
                     <h2 class="font-bold text-gray-900 text-sm sm:text-base">Assessment Report Chart</h2>
                 </div>
             </div>
-            @can('tambah_assessment')
+            @can('tambah_master_assessment')
             <button type="button" onclick="openAddCategoryModal()" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center gap-1.5 shadow-sm">
                 <i class="fas fa-plus"></i> Add Chart
             </button>
@@ -89,28 +89,30 @@
                 </div>
 
                 <div class="flex items-center gap-2 self-end sm:self-auto">
-                    @can('tambah_assessment')
+                    @can('tambah_master_assessment')
                     <button type="button" 
                         data-category-id="{{ $category->id }}"
                         data-category-name="{{ $category->name }}"
-                        onclick="openAddAspectModal(this)"
+                        data-form-action="{{ route('master-assessment.aspect.store', $category->id) }}"
+                        onclick="const form=document.getElementById('addAspectForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('addAspectCategorySubtitle').innerText='Kategori: '+this.dataset.categoryName;document.getElementById('addAspectName').value='';document.getElementById('addAspectTargetScore').value='5.0';document.getElementById('addAspectModal').classList.remove('hidden')"
                         class="bg-white hover:bg-gray-50 text-[#0ea5e9] border border-[#0ea5e9]/30 hover:border-[#0ea5e9] px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm flex items-center gap-1.5">
                         <i class="fas fa-plus"></i> Add Aspect
                     </button>
                     @endcan
 
-                    @can('edit_assessment')
+                    @can('edit_master_assessment')
                     <button type="button"
                         data-id="{{ $category->id }}"
                         data-name="{{ $category->name }}"
-                        onclick="openEditCategoryModal(this)"
+                        data-form-action="{{ route('master-assessment.category.update', $category->id) }}"
+                        onclick="const form=document.getElementById('editCategoryForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('editCatName').value=this.dataset.name;document.getElementById('editCategoryModal').classList.remove('hidden')"
                         class="text-gray-500 hover:text-[#0ea5e9] p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Edit Kategori">
                         <i class="fas fa-pen text-xs"></i>
                     </button>
                     @endcan
 
-                    @can('hapus_assessment')
-                    <form action="{{ route('master-assessment.category.destroy', $category->id) }}" method="POST" hx-boost="false" data-hx-boost="false" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori \'{{ $category->name }}\' dan semua aspek penilaian di dalamnya?');" class="inline">
+                    @can('hapus_master_assessment')
+                    <form action="{{ route('master-assessment.category.destroy', $category->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori \'{{ $category->name }}\' dan semua aspek penilaian di dalamnya?');" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Hapus Kategori">
@@ -145,19 +147,20 @@
                                 </span>
                             </td>
                             <td class="py-3 px-5 text-right space-x-1">
-                                @can('edit_assessment')
+                                @can('edit_master_assessment')
                                 <button type="button"
                                     data-id="{{ $aspect->id }}"
                                     data-name="{{ $aspect->name }}"
                                     data-target-score="{{ $aspect->target_score }}"
-                                    onclick="openEditAspectModal(this)"
+                                    data-form-action="{{ route('master-assessment.aspect.update', $aspect->id) }}"
+                                    onclick="const form=document.getElementById('editAspectForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('editAspectName').value=this.dataset.name;document.getElementById('editAspectTargetScore').value=this.dataset.targetScore;document.getElementById('editAspectModal').classList.remove('hidden')"
                                     class="text-gray-400 hover:text-[#0ea5e9] p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Edit Aspek">
                                     <i class="fas fa-edit text-xs"></i>
                                 </button>
                                 @endcan
 
-                                @can('hapus_assessment')
-                                <form action="{{ route('master-assessment.aspect.destroy', $aspect->id) }}" method="POST" hx-boost="false" data-hx-boost="false" onsubmit="return confirm('Apakah Anda yakin ingin menghapus aspek penilaian \'{{ $aspect->name }}\'?');" class="inline">
+                                @can('hapus_master_assessment')
+                                <form action="{{ route('master-assessment.aspect.destroy', $aspect->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" onsubmit="return confirm('Apakah Anda yakin ingin menghapus aspek penilaian \'{{ $aspect->name }}\'?');" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Hapus Aspek">
@@ -173,11 +176,13 @@
                                 <div class="flex flex-col items-center justify-center py-2">
                                     <i class="fas fa-clipboard-list text-gray-300 text-2xl mb-2"></i>
                                     <p class="font-medium text-gray-500">There are no assessment criteria in this category yet.</p>
-                                    @can('tambah_assessment')
+                                    @can('tambah_master_assessment')
                                     <button type="button" 
                                         data-category-id="{{ $category->id }}"
                                         data-category-name="{{ $category->name }}"
-                                        onclick="openAddAspectModal(this)"
+                                        onclick="const form=document.getElementById('addAspectForm');form.setAttribute('action',this.dataset.formAction);form.setAttribute('hx-post',this.dataset.formAction);htmx.process(form);document.getElementById('addAspectCategorySubtitle').innerText='Kategori: '+this.dataset.categoryName;document.getElementById('addAspectName').value='';document.getElementById('addAspectTargetScore').value='5.0';document.getElementById('addAspectModal').classList.remove('hidden')"
+                                        data-form-action="{{ route('master-assessment.aspect.store', $category->id) }}"
+                                        data-category-name="{{ $category->name }}"
                                         class="mt-2 text-xs text-[#0ea5e9] font-bold hover:underline">
                                         + Add Aspect Now
                                     </button>
@@ -195,7 +200,7 @@
             <i class="fas fa-folder-open text-gray-300 text-4xl mb-3"></i>
             <h3 class="font-bold text-gray-700 text-base">No Assessment Chart Available Yet</h3>
             <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">Create a new chart to categorize the assessment evaluation aspects.</p>
-            @can('tambah_assessment')
+            @can('tambah_master_assessment')
             <button type="button" onclick="openAddCategoryModal()" class="mt-4 bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm">
                 <i class="fas fa-plus mr-1"></i> Create Your First Chart
             </button>
@@ -222,7 +227,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form action="{{ route('master-assessment.category.store') }}" method="POST" hx-boost="false" data-hx-boost="false">
+            <form action="{{ route('master-assessment.category.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 @csrf
                 <div class="p-5">
                     <div>
@@ -252,7 +257,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form id="editCategoryForm" method="POST" hx-boost="false" data-hx-boost="false">
+            <form id="editCategoryForm" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 @csrf
                 @method('PUT')
                 <div class="p-5">
@@ -286,7 +291,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form id="addAspectForm" method="POST" hx-boost="false" data-hx-boost="false">
+            <form id="addAspectForm" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 @csrf
                 <div class="p-5 space-y-4">
                     <div>
@@ -320,7 +325,7 @@
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <form id="editAspectForm" method="POST" hx-boost="false" data-hx-boost="false">
+            <form id="editAspectForm" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 @csrf
                 @method('PUT')
                 <div class="p-5 space-y-4">
@@ -343,7 +348,7 @@
 </div>
 
 <script>
-    const baseUrl = "{{ url('/') }}";
+    window.radarBaseUrl = "{{ url('/') }}";
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -362,7 +367,7 @@
         const name = btn.getAttribute('data-name') || '';
 
         const form = document.getElementById('editCategoryForm');
-        form.action = baseUrl + '/master-assessment/category/' + id;
+        form.action = window.radarBaseUrl + '/master-assessment/category/' + id;
         document.getElementById('editCatName').value = name;
 
         document.getElementById('editCategoryModal').classList.remove('hidden');
@@ -374,7 +379,7 @@
         const categoryName = btn.getAttribute('data-category-name') || '';
 
         const form = document.getElementById('addAspectForm');
-        form.action = baseUrl + '/master-assessment/category/' + categoryId + '/aspect';
+        form.action = window.radarBaseUrl + '/master-assessment/category/' + categoryId + '/aspect';
         document.getElementById('addAspectCategorySubtitle').innerText = 'Kategori: ' + categoryName;
         document.getElementById('addAspectName').value = '';
         document.getElementById('addAspectTargetScore').value = '5.0';
@@ -388,7 +393,7 @@
         const targetScore = btn.getAttribute('data-target-score') || '5.0';
 
         const form = document.getElementById('editAspectForm');
-        form.action = baseUrl + '/master-assessment/aspect/' + id;
+        form.action = window.radarBaseUrl + '/master-assessment/aspect/' + id;
         document.getElementById('editAspectName').value = name;
         document.getElementById('editAspectTargetScore').value = targetScore;
 

@@ -726,6 +726,123 @@
     </div>
     
     <script>
+        window.radarBaseUrl = window.radarBaseUrl || window.location.origin;
+
+        if (typeof window.closeModal !== 'function') {
+            window.closeModal = function (modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            };
+        }
+
+        if (typeof window.openAddCategoryModal !== 'function') {
+            window.openAddCategoryModal = function () {
+                const modal = document.getElementById('addCategoryModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            };
+        }
+
+        if (typeof window.openEditCategoryModal !== 'function') {
+            window.openEditCategoryModal = function (button) {
+                const form = document.getElementById('editCategoryForm');
+                if (!form) {
+                    return;
+                }
+
+                form.action = window.radarBaseUrl + '/master-assessment/category/' + button.dataset.id;
+                document.getElementById('editCatName').value = button.dataset.name || '';
+                document.getElementById('editCategoryModal').classList.remove('hidden');
+            };
+        }
+
+        if (typeof window.openAddAspectModal !== 'function') {
+            window.openAddAspectModal = function (button) {
+                const form = document.getElementById('addAspectForm');
+                if (!form) {
+                    return;
+                }
+
+                form.action = window.radarBaseUrl + '/master-assessment/category/' + button.dataset.categoryId + '/aspect';
+                document.getElementById('addAspectCategorySubtitle').innerText = 'Kategori: ' + (button.dataset.categoryName || '');
+                document.getElementById('addAspectName').value = '';
+                document.getElementById('addAspectTargetScore').value = '5.0';
+                document.getElementById('addAspectModal').classList.remove('hidden');
+            };
+        }
+
+        if (typeof window.openEditAspectModal !== 'function') {
+            window.openEditAspectModal = function (button) {
+                const form = document.getElementById('editAspectForm');
+                if (!form) {
+                    return;
+                }
+
+                form.action = window.radarBaseUrl + '/master-assessment/aspect/' + button.dataset.id;
+                document.getElementById('editAspectName').value = button.dataset.name || '';
+                document.getElementById('editAspectTargetScore').value = button.dataset.targetScore || '5.0';
+                document.getElementById('editAspectModal').classList.remove('hidden');
+            };
+        }
+
+        if (typeof window.openAddGroupModal !== 'function') {
+            window.openAddGroupModal = function (position) {
+                const select = document.getElementById('addChartTargetPosition');
+                if (select && position) {
+                    select.value = position;
+                }
+
+                document.getElementById('addChartGroupModal').classList.remove('hidden');
+            };
+        }
+
+        if (typeof window.openEditGroupModal !== 'function') {
+            window.openEditGroupModal = function (button) {
+                const form = document.getElementById('editGroupForm');
+                if (!form) {
+                    return;
+                }
+
+                form.action = window.radarBaseUrl + '/master-idp/group/' + button.dataset.id;
+                document.getElementById('editGroupTitle').value = button.dataset.title || '';
+                document.getElementById('editGroupTargetPosition').value = button.dataset.targetPosition || '';
+                document.getElementById('editGroupDescription').value = button.dataset.description || '';
+                document.getElementById('editChartGroupModal').classList.remove('hidden');
+            };
+        }
+
+        if (typeof window.openAddCompetencyModal !== 'function') {
+            window.openAddCompetencyModal = function (button) {
+                const form = document.getElementById('addCompetencyForm');
+                if (!form) {
+                    return;
+                }
+
+                form.action = window.radarBaseUrl + '/master-idp/group/' + button.dataset.groupId + '/competency';
+                document.getElementById('addCompGroupSubtitle').innerText = 'Ke Chart: ' + (button.dataset.groupTitle || '');
+                document.getElementById('addCompName').value = '';
+                document.getElementById('addCompTargetScore').value = '5.0';
+                document.getElementById('addCompetencyModal').classList.remove('hidden');
+            };
+        }
+
+        if (typeof window.openEditCompetencyModal !== 'function') {
+            window.openEditCompetencyModal = function (button) {
+                const form = document.getElementById('editCompetencyForm');
+                if (!form) {
+                    return;
+                }
+
+                form.action = window.radarBaseUrl + '/master-idp/competency/' + button.dataset.id;
+                document.getElementById('editCompName').value = button.dataset.name || '';
+                document.getElementById('editCompTargetScore').value = button.dataset.targetScore || '5.0';
+                document.getElementById('editCompetencyModal').classList.remove('hidden');
+            };
+        }
+
         function initTomSelect(container) {
             let root = (container instanceof HTMLElement) ? container : document;
             root.querySelectorAll('select').forEach(function(el) {
@@ -1157,6 +1274,9 @@
             initFlatpickr();
         });
         document.addEventListener('htmx:afterSwap', (e) => {
+            if (window.Alpine) {
+                window.Alpine.initTree(e.detail?.target || document.body);
+            }
             initTomSelect(e.detail?.target);
             initFlatpickr(e.detail?.target);
         });
@@ -1315,5 +1435,4 @@
     </script>
 </body>
 </html>
-
 <?php /**PATH C:\laragon\www\radarhc\resources\views/layouts/app.blade.php ENDPATH**/ ?>

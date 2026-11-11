@@ -30,7 +30,7 @@
             </a>
         </div>
 
-        <form action="{{ route('assessment-report.store') }}" method="POST" novalidate class="flex flex-col flex-1 overflow-hidden">
+        <form action="{{ route('assessment-report.store') }}" method="POST" novalidate hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden">
         @csrf
         <!-- Body -->
         <div class="p-6 overflow-y-auto flex-1 bg-white custom-scrollbar">
@@ -293,7 +293,6 @@
 }
 </style>
 @endpush
-
 
 
 

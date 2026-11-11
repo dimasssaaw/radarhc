@@ -175,6 +175,13 @@
                         'key_prefix' => 'rmn'
                     ]
                 ];
+
+                // Kolom Action hanya tampil jika user punya izin edit/hapus.
+                // Lebar kolom dibuat dinamis agar total selalu 100% (tidak ada ruang kosong di kanan header).
+                $showAction = auth()->check() && (auth()->user()->can('edit_training') || auth()->user()->can('hapus_training'));
+                $w = $showAction
+                    ? ['name' => 20, 'status' => 20, 'date' => 15, 'eva' => 18, 'att' => 17, 'act' => 10]
+                    : ['name' => 22, 'status' => 22, 'date' => 17, 'eva' => 20, 'att' => 19];
             @endphp
 
             @foreach ($sections as $section)
@@ -202,12 +209,14 @@
                         <table class="w-full text-left text-sm border-collapse table-fixed">
                             <thead class="text-white text-[11px] uppercase tracking-wider font-semibold" style="background-color: {{ $section['color'] }};">
                                 <tr>
-                                    <th class="px-4 py-3 font-semibold text-left" style="width: 20%;">Training Name</th>
-                                    <th class="px-4 py-3 font-semibold text-center" style="width: 20%;">Status</th>
-                                    <th class="px-4 py-3 font-semibold text-center" style="width: 15%;">Date</th>
-                                    <th class="px-4 py-3 font-semibold text-center" style="width: 18%;">Evaluation</th>
-                                    <th class="px-4 py-3 font-semibold text-center" style="width: 17%;">Attachment</th>
-                                    <th class="px-4 py-3 font-semibold text-center" style="width: 10%;">Action</th>
+                                    <th class="px-4 py-3 font-semibold text-left" style="width: {{ $w['name'] }}%;">Training Name</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: {{ $w['status'] }}%;">Status</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: {{ $w['date'] }}%;">Date</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: {{ $w['eva'] }}%;">Evaluation</th>
+                                    <th class="px-4 py-3 font-semibold text-center" style="width: {{ $w['att'] }}%;">Attachment</th>
+                                    @if ($showAction)
+                                        <th class="px-4 py-3 font-semibold text-center" style="width: {{ $w['act'] }}%;">Action</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -304,7 +313,9 @@
                                                         this.isUpdatingStatus = false;
                                                         window.location.reload();
                                                     } else {
-                                                        alert('Failed to update status');
+                                                        let data = {};
+                                                        try { data = await res.json(); } catch(e) {}
+                                                        alert(data.message || 'Failed to update status');
                                                         this.evaStatus[this.selectedEva] = prevStatus;
                                                         this.isUpdatingStatus = false;
                                                     }
@@ -324,6 +335,7 @@
                                         
                                         <!-- Status Evaluasi Dropdown -->
                                         <td class="px-4 py-3 text-center align-middle">
+                                            @can('edit_training')
                                             <div class="relative inline-block w-[160px]" 
                                                 :class="openStatusDropdown ? 'z-50' : 'z-0'"
                                                 @click.outside="openStatusDropdown = false">
@@ -366,6 +378,19 @@
                                                     </template>
                                                 </div>
                                             </div>
+                                            @else
+                                            <div class="inline-flex items-center justify-center px-3 h-[38px] rounded-lg text-xs font-semibold border"
+                                                :class="{
+                                                    'bg-amber-50 text-amber-700 border-amber-200': getCurrentStatusLabel() === 'Pending',
+                                                    'bg-gray-50 text-gray-600 border-gray-200': getCurrentStatusLabel() === 'Not Started',
+                                                    'bg-blue-50 text-blue-700 border-blue-200': getCurrentStatusLabel() === 'In Progress',
+                                                    'bg-emerald-50 text-emerald-700 border-emerald-200': getCurrentStatusLabel() === 'Completed',
+                                                    'bg-rose-50 text-rose-700 border-rose-200': getCurrentStatusLabel() === 'Remedial',
+                                                    'bg-gray-50 text-gray-400 border-gray-200': !getCurrentStatusLabel() || getCurrentStatusLabel() === 'Select Status' || getCurrentStatusLabel() === '-- Select Status --'
+                                                }">
+                                                <span x-text="getCurrentStatusLabel() && getCurrentStatusLabel() !== 'Select Status' && getCurrentStatusLabel() !== '-- Select Status --' ? getCurrentStatusLabel() : '-'"></span>
+                                            </div>
+                                            @endcan
                                         </td>
 
                                         <!-- Tanggal -->
@@ -426,6 +451,7 @@
                                                             <span class="truncate">{{ strtoupper($eva) }} PDF</span>
                                                         </a>
                                                     @else
+                                                        @can('edit_training')
                                                         <button type="button" x-data
                                                             @click="$dispatch('open-upload-modal', { eva: '{{ $eva }}', id: {{ $item->id }} })"
                                                             style="color: {{ $section['color'] }};"
@@ -434,12 +460,16 @@
                                                             <i class="fas fa-plus text-[10px]"></i>
                                                             <span>Attachment</span>
                                                         </button>
+                                                        @else
+                                                        <span class="text-xs text-gray-400 italic">No File</span>
+                                                        @endcan
                                                     @endif
                                                 </div>
                                             @endforeach
                                         </td>
 
                                         <!-- Aksi -->
+                                        @if ($showAction)
                                         <td class="px-4 py-3 text-center align-middle">
                                             <div class="flex items-center justify-center gap-1.5">
                                                 @can('edit_training')
@@ -453,7 +483,7 @@
 
                                                 @can('hapus_training')
                                                     <form action="{{ route('training.destroy-history', $item->id) }}"
-                                                        method="POST" hx-boost="false"
+                                                        method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true"
                                                         onsubmit="return confirm('Are you sure you want to delete this history?');"
                                                         class="inline">
                                                         @csrf
@@ -467,10 +497,11 @@
                                                 @endcan
                                             </div>
                                         </td>
+                                        @endif
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-4 py-8 text-center text-gray-400 text-xs">
+                                        <td colspan="{{ $showAction ? 6 : 5 }}" class="px-4 py-8 text-center text-gray-400 text-xs">
                                             <div class="flex flex-col items-center justify-center gap-1.5">
                                                 <i class="fas fa-folder-open text-2xl text-gray-300"></i>
                                                 <p>No {{ strtolower($section['title']) }} history found</p>
@@ -828,7 +859,7 @@
 
     <!-- Quick Upload Modal -->
     <div x-data="{ showUploadModal: false, uploadEva: '', uploadId: null, isUploading: false }"
-        @open-upload-modal.window="showUploadModal = true; uploadEva = $event.detail.eva; uploadId = $event.detail.id; isUploading = false"
+        @open-upload-modal.window="showUploadModal = true; uploadEva = $event.detail.eva; uploadId = $event.detail.id; isUploading = false; $nextTick(() => { if ($refs.uploadEvaForm) $refs.uploadEvaForm.action = '{{ url('training/history') }}/' + $event.detail.id + '/upload-eva'; })"
         class="relative z-[110]">
         
         <div x-show="showUploadModal" style="display: none;" 
@@ -857,11 +888,13 @@
                             </button>
                         </div>
                         
-                        <form :action="'{{ url('training/history') }}/' + uploadId + '/upload-eva'"
-                            method="POST" enctype="multipart/form-data" hx-boost="false"
-                            x-data="{ isUploading: false }" @submit="isUploading = true">
+                        <form x-ref="uploadEvaForm"
+                            :action="'{{ url('training/history') }}/' + uploadId + '/upload-eva'"
+                            method="POST" enctype="multipart/form-data"
+                            hx-boost="false" data-hx-boost="false" hx-disable
+                            @submit="isUploading = true; if (window.NProgress) window.NProgress.start();">
                             @csrf
-                            <input type="hidden" name="eva" :value="uploadEva" x-model="uploadEva">
+                            <input type="hidden" name="eva" :value="uploadEva">
 
                             <div class="p-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">

@@ -6,6 +6,7 @@ use App\Models\AssessmentAspect;
 use App\Models\AssessmentCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
@@ -27,6 +28,18 @@ class MasterAssessmentController extends Controller implements HasMiddleware
         ];
     }
 
+    private function hxOrRedirect(Request $request, string $msg): Response|RedirectResponse
+    {
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Redirect', route('master-assessment.index'));
+        }
+
+        return redirect()->route('master-assessment.index')->with('success', $msg);
+    }
+
     /**
      * Display a listing of assessment categories and aspects.
      */
@@ -44,7 +57,7 @@ class MasterAssessmentController extends Controller implements HasMiddleware
     /**
      * Store a newly created category.
      */
-    public function storeCategory(Request $request): RedirectResponse
+    public function storeCategory(Request $request): Response|RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -55,14 +68,13 @@ class MasterAssessmentController extends Controller implements HasMiddleware
 
         AssessmentCategory::create($validated);
 
-        return redirect()->route('master-assessment.index')
-            ->with('success', 'Kategori Penilaian Assessment berhasil ditambahkan.');
+        return $this->hxOrRedirect($request, 'Kategori Penilaian Assessment berhasil ditambahkan.');
     }
 
     /**
      * Update the specified category.
      */
-    public function updateCategory(Request $request, int|string $id): RedirectResponse
+    public function updateCategory(Request $request, int|string $id): Response|RedirectResponse
     {
         $category = AssessmentCategory::findOrFail($id);
 
@@ -72,26 +84,24 @@ class MasterAssessmentController extends Controller implements HasMiddleware
 
         $category->update($validated);
 
-        return redirect()->route('master-assessment.index')
-            ->with('success', 'Kategori Penilaian Assessment berhasil diperbarui.');
+        return $this->hxOrRedirect($request, 'Kategori Penilaian Assessment berhasil diperbarui.');
     }
 
     /**
      * Remove the specified category.
      */
-    public function destroyCategory(int|string $id): RedirectResponse
+    public function destroyCategory(Request $request, int|string $id): Response|RedirectResponse
     {
         $category = AssessmentCategory::findOrFail($id);
         $category->delete();
 
-        return redirect()->route('master-assessment.index')
-            ->with('success', 'Kategori dan seluruh aspek penilaian di dalamnya berhasil dihapus.');
+        return $this->hxOrRedirect($request, 'Kategori dan seluruh aspek penilaian di dalamnya berhasil dihapus.');
     }
 
     /**
      * Store a newly created aspect under a category.
      */
-    public function storeAspect(Request $request, int|string $categoryId): RedirectResponse
+    public function storeAspect(Request $request, int|string $categoryId): Response|RedirectResponse
     {
         $category = AssessmentCategory::findOrFail($categoryId);
 
@@ -106,14 +116,13 @@ class MasterAssessmentController extends Controller implements HasMiddleware
 
         AssessmentAspect::create($validated);
 
-        return redirect()->route('master-assessment.index')
-            ->with('success', "Aspek Penilaian berhasil ditambahkan ke kategori '{$category->name}'.");
+        return $this->hxOrRedirect($request, "Aspek Penilaian berhasil ditambahkan ke kategori '{$category->name}'.");
     }
 
     /**
      * Update the specified aspect.
      */
-    public function updateAspect(Request $request, int|string $id): RedirectResponse
+    public function updateAspect(Request $request, int|string $id): Response|RedirectResponse
     {
         $aspect = AssessmentAspect::findOrFail($id);
 
@@ -124,19 +133,17 @@ class MasterAssessmentController extends Controller implements HasMiddleware
 
         $aspect->update($validated);
 
-        return redirect()->route('master-assessment.index')
-            ->with('success', 'Aspek Penilaian berhasil diperbarui.');
+        return $this->hxOrRedirect($request, 'Aspek Penilaian berhasil diperbarui.');
     }
 
     /**
      * Remove the specified aspect.
      */
-    public function destroyAspect(int|string $id): RedirectResponse
+    public function destroyAspect(Request $request, int|string $id): Response|RedirectResponse
     {
         $aspect = AssessmentAspect::findOrFail($id);
         $aspect->delete();
 
-        return redirect()->route('master-assessment.index')
-            ->with('success', 'Aspek Penilaian berhasil dihapus.');
+        return $this->hxOrRedirect($request, 'Aspek Penilaian berhasil dihapus.');
     }
 }

@@ -304,7 +304,9 @@
                                                         this.isUpdatingStatus = false;
                                                         window.location.reload();
                                                     } else {
-                                                        alert('Failed to update status');
+                                                        let data = {};
+                                                        try { data = await res.json(); } catch(e) {}
+                                                        alert(data.message || 'Failed to update status');
                                                         this.evaStatus[this.selectedEva] = prevStatus;
                                                         this.isUpdatingStatus = false;
                                                     }
@@ -324,6 +326,7 @@
                                         
                                         <!-- Status Evaluasi Dropdown -->
                                         <td class="px-4 py-3 text-center align-middle">
+                                            @can('edit_training')
                                             <div class="relative inline-block w-[160px]" 
                                                 :class="openStatusDropdown ? 'z-50' : 'z-0'"
                                                 @click.outside="openStatusDropdown = false">
@@ -366,6 +369,19 @@
                                                     </template>
                                                 </div>
                                             </div>
+                                            @else
+                                            <div class="inline-flex items-center justify-center px-3 h-[38px] rounded-lg text-xs font-semibold border"
+                                                :class="{
+                                                    'bg-amber-50 text-amber-700 border-amber-200': getCurrentStatusLabel() === 'Pending',
+                                                    'bg-gray-50 text-gray-600 border-gray-200': getCurrentStatusLabel() === 'Not Started',
+                                                    'bg-blue-50 text-blue-700 border-blue-200': getCurrentStatusLabel() === 'In Progress',
+                                                    'bg-emerald-50 text-emerald-700 border-emerald-200': getCurrentStatusLabel() === 'Completed',
+                                                    'bg-rose-50 text-rose-700 border-rose-200': getCurrentStatusLabel() === 'Remedial',
+                                                    'bg-gray-50 text-gray-400 border-gray-200': !getCurrentStatusLabel() || getCurrentStatusLabel() === 'Select Status' || getCurrentStatusLabel() === '-- Select Status --'
+                                                }">
+                                                <span x-text="getCurrentStatusLabel() && getCurrentStatusLabel() !== 'Select Status' && getCurrentStatusLabel() !== '-- Select Status --' ? getCurrentStatusLabel() : '-'"></span>
+                                            </div>
+                                            @endcan
                                         </td>
 
                                         <!-- Tanggal -->
@@ -426,6 +442,7 @@
                                                             <span class="truncate">{{ strtoupper($eva) }} PDF</span>
                                                         </a>
                                                     @else
+                                                        @can('edit_training')
                                                         <button type="button" x-data
                                                             @click="$dispatch('open-upload-modal', { eva: '{{ $eva }}', id: {{ $item->id }} })"
                                                             style="color: {{ $section['color'] }};"
@@ -434,6 +451,9 @@
                                                             <i class="fas fa-plus text-[10px]"></i>
                                                             <span>Attachment</span>
                                                         </button>
+                                                        @else
+                                                        <span class="text-xs text-gray-400 italic">No File</span>
+                                                        @endcan
                                                     @endif
                                                 </div>
                                             @endforeach
@@ -453,7 +473,7 @@
 
                                                 @can('hapus_training')
                                                     <form action="{{ route('training.destroy-history', $item->id) }}"
-                                                        method="POST" hx-boost="false"
+                                                        method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true"
                                                         onsubmit="return confirm('Are you sure you want to delete this history?');"
                                                         class="inline">
                                                         @csrf
@@ -828,7 +848,7 @@
 
     <!-- Quick Upload Modal -->
     <div x-data="{ showUploadModal: false, uploadEva: '', uploadId: null, isUploading: false }"
-        @open-upload-modal.window="showUploadModal = true; uploadEva = $event.detail.eva; uploadId = $event.detail.id; isUploading = false"
+        @open-upload-modal.window="showUploadModal = true; uploadEva = $event.detail.eva; uploadId = $event.detail.id; isUploading = false; $nextTick(() => { if ($refs.uploadEvaForm) $refs.uploadEvaForm.action = '{{ url('training/history') }}/' + $event.detail.id + '/upload-eva'; })"
         class="relative z-[110]">
         
         <div x-show="showUploadModal" style="display: none;" 
@@ -857,9 +877,11 @@
                             </button>
                         </div>
                         
-                        <form :action="'{{ url('training/history') }}/' + uploadId + '/upload-eva'"
-                            method="POST" enctype="multipart/form-data" hx-boost="false"
-                            x-data="{ isUploading: false }" @submit="isUploading = true">
+                        <form x-ref="uploadEvaForm"
+                            :action="'{{ url('training/history') }}/' + uploadId + '/upload-eva'"
+                            method="POST" enctype="multipart/form-data"
+                            hx-boost="false" data-hx-boost="false" hx-disable
+                            @submit="isUploading = true; if (window.NProgress) window.NProgress.start();">
                             @csrf
                             <input type="hidden" name="eva" :value="uploadEva">
 

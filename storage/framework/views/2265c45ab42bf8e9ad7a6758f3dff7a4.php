@@ -33,9 +33,15 @@
             
             <!-- Navigation -->
             <nav class="mt-2 flex flex-col gap-1 pb-4">
-                <a href="<?php echo e(route('dashboard') ?? 'javascript:void(0);'); ?>" class="menu-3d flex items-center font-medium text-sm <?php echo e(request()->routeIs('dashboard') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600'); ?>" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
+                <?php if(strtolower(auth()->user()->role ?? '') === 'admin'): ?>
+                <a href="<?php echo e(route('dashboard')); ?>" class="menu-3d flex items-center font-medium text-sm <?php echo e(request()->routeIs('dashboard') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600'); ?>" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
                     <i class="fas fa-border-all w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Dashboard HC</span>
                 </a>
+                <?php else: ?>
+                <a href="<?php echo e(route('user.dashboard')); ?>" class="menu-3d flex items-center font-medium text-sm <?php echo e(request()->routeIs('user.dashboard') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600'); ?>" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
+                    <i class="fas fa-border-all w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Dashboard HC</span>
+                </a>
+                <?php endif; ?>
                 
                 <?php if(strtolower(auth()->user()->role ?? '') === 'admin'): ?>
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('lihat_karyawan')): ?>
@@ -87,9 +93,13 @@
                         <?php if(strtolower(auth()->user()->role ?? '') !== 'admin'): ?>
                             <a href="<?php echo e(route('user-idp.index')); ?>" class="submenu-3d flex items-center gap-2 <?php echo e(request()->is('user-idp*') ? 'active font-bold' : ''); ?>"><i class="fas fa-bullseye"></i> IDP</a>
                         <?php endif; ?>
+                        <?php if(strtolower(auth()->user()->role ?? '') === 'admin'): ?>
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('lihat_training')): ?>
                             <a href="<?php echo e(route('training.index')); ?>" class="submenu-3d flex items-center gap-2 <?php echo e(request()->is('training*') ? 'active font-bold' : ''); ?>"><i class="fas fa-graduation-cap"></i> Training</a>
-                        <?php else: ?>
+                        <?php endif; ?>
+                        <?php endif; ?>
+
+                        <?php if(strtolower(auth()->user()->role ?? '') !== 'admin'): ?>
                             <a href="<?php echo e(route('user-training.index')); ?>" class="submenu-3d flex items-center gap-2 <?php echo e(request()->is('user-training*') ? 'active font-bold' : ''); ?>"><i class="fas fa-graduation-cap"></i> Training</a>
                         <?php endif; ?>
                         <?php if(strtolower(auth()->user()->role ?? '') === 'admin'): ?>

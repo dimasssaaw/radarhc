@@ -46,7 +46,7 @@
                             <a href="{{ route('role.edit', $role->id) }}" class="text-gray-400 hover:text-amber-600 p-1.5 rounded-md hover:bg-amber-50 transition-colors" title="Edit">
                                 <i class="fas fa-edit w-4"></i>
                             </a>
-                            <form action="{{ route('role.destroy', $role->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this role?');">
+                            <form action="{{ route('role.destroy', $role->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this role?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors" title="Delete">

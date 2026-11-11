@@ -30,7 +30,7 @@
             </a>
         </div>
 
-        <form action="{{ route('idp.store') }}" method="POST" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true; if (window.NProgress) window.NProgress.start();">
+        <form action="{{ route('idp.store') }}" method="POST" novalidate hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
             @csrf
             <input type="hidden" name="redirect_to" value="{{ $closeUrl }}">
 
@@ -192,7 +192,6 @@
 }
 </style>
 @endpush
-
 
 
 

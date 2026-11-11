@@ -183,7 +183,14 @@ class EmployeeController extends Controller implements HasMiddleware
 
         Karyawan::create($validated);
 
-        return redirect()->route('employee.index')->with('success', 'Employee data added successfully.');
+        $msg = 'Employee data added successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('employee.index'));
+        }
+
+        return redirect()->route('employee.index')->with('success', $msg);
     }
 
     /**
@@ -329,7 +336,14 @@ class EmployeeController extends Controller implements HasMiddleware
 
         $employee->update($validated);
 
-        return redirect()->route('employee.index')->with('success', 'Employee data updated successfully.');
+        $msg = 'Employee data updated successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('employee.index'));
+        }
+
+        return redirect()->route('employee.index')->with('success', $msg);
     }
 
     /**
@@ -349,7 +363,14 @@ class EmployeeController extends Controller implements HasMiddleware
 
         $employee->delete();
 
-        return back()->with('success', 'Employee data deleted successfully.');
+        $msg = 'Employee data deleted successfully.';
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('employee.index'));
+        }
+
+        return back()->with('success', $msg);
     }
 
     /**

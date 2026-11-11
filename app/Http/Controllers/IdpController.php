@@ -210,11 +210,19 @@ class IdpController extends Controller implements HasMiddleware
         }
         IdpPenilain::create($penilaianData);
 
-        if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'IDP data added successfully.');
+        $msg = 'IDP data added successfully.';
+        $isAdmin = auth()->check() && strtolower((string) auth()->user()->role) === 'admin';
+        $targetUrl = $request->filled('redirect_to')
+            ? $request->redirect_to
+            : route($isAdmin ? 'idp.index' : 'user-idp.index');
+
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        return redirect()->route('idp.index')->with('success', 'IDP data added successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     protected function getLegacyMapping(): array
@@ -473,13 +481,18 @@ class IdpController extends Controller implements HasMiddleware
 
         $Idp->update($validated);
 
-        if ($request->filled('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'IDP data updated successfully.');
+        $msg = 'IDP data updated successfully.';
+        $targetUrl = $request->filled('redirect_to')
+            ? $request->redirect_to
+            : route($isAdmin ? 'idp.index' : 'user-idp.index');
+
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'idp.index' : 'user-idp.index';
-
-        return redirect()->route($indexRoute)->with('success', 'IDP data updated successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function destroy($id)
@@ -496,13 +509,18 @@ class IdpController extends Controller implements HasMiddleware
 
         $Idp->delete();
 
-        if (request()->has('redirect_to')) {
-            return redirect(request()->redirect_to)->with('success', 'IDP data deleted successfully.');
+        $msg = 'IDP data deleted successfully.';
+        $targetUrl = request()->filled('redirect_to')
+            ? request()->redirect_to
+            : route($isAdmin ? 'idp.index' : 'user-idp.index');
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'idp.index' : 'user-idp.index';
-
-        return redirect()->route($indexRoute)->with('success', 'IDP data deleted successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function updateMetrics(Request $request, $id)

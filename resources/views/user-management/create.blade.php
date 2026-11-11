@@ -2,7 +2,7 @@
 
 @push('modals')
 <!-- Full screen modal overlay -->
-<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 sm:p-6 transition-opacity">
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 sm:p-6 transition-opacity" onclick="if(event.target === this) { const a = document.getElementById('closeModalLink'); if(a) a.click(); else window.location.href='{{ route('user-management.index') }}'; }">
     <!-- Modal Card -->
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col overflow-hidden animate-fade-in-up">
         
@@ -12,17 +12,17 @@
                 <h2 class="text-xl font-bold text-gray-900">Add User</h2>
                 <p class="text-sm text-gray-500 mt-1">Add new user accounts to the system</p>
             </div>
-            <a href="{{ route('user-management.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <a id="closeModalLink" href="{{ route('user-management.index') }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <i class="fas fa-times text-lg"></i>
             </a>
         </div>
 
-        <form action="{{ route('user-management.store') }}" method="POST" novalidate class="flex flex-col flex-1 overflow-hidden" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+        <form action="{{ route('user-management.store') }}" method="POST" novalidate hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden">
             @csrf
 
             <!-- Body -->
             <div class="p-6 overflow-y-auto flex-1 bg-white custom-scrollbar">
-                @if ($errors->any())
+                @if (isset($errors) && $errors->any())
                     <div class="bg-red-50 text-red-500 p-4 rounded-lg mb-6 border border-red-200">
                         <ul class="list-disc pl-5 text-sm">
                             @foreach ($errors->all() as $error)
@@ -121,7 +121,7 @@
                         <select name="role" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent outline-none transition-all text-sm">
                             <option value="">-- Select Role --</option>
                             @foreach($dbRoles as $r)
-                                <option value="{{ $r->name }}" {{ old('role') == $r->name ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
+                                <option value="{{ $r->name }}" {{ strtolower((string) old('role')) === strtolower((string) $r->name) ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -180,10 +180,9 @@
                 <a href="{{ route('user-management.index') }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">
                     Cancel
                 </a>
-                <button type="submit" :disabled="isSubmitting" class="bg-[#06b6d4] hover:bg-cyan-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-cyan-500/30 transition-all flex items-center gap-2">
-                    <i class="fas fa-save" x-show="!isSubmitting"></i>
-                    <i class="fas fa-spinner fa-spin" x-show="isSubmitting" style="display: none;"></i>
-                    <span x-text="isSubmitting ? 'Saving...' : 'Save User'"></span>
+                <button type="submit" class="bg-[#06b6d4] hover:bg-cyan-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-cyan-500/30 transition-all flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    <span>Save User</span>
                 </button>
             </div>
         </form>
@@ -201,5 +200,13 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 </style>
+<script>
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const a = document.getElementById('closeModalLink');
+        if (a) a.click(); else window.location.href = "{{ route('user-management.index') }}";
+    }
+});
+</script>
 @endpush
 

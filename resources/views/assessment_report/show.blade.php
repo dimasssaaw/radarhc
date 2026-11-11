@@ -230,7 +230,7 @@
                 <i class="fas fa-times text-sm"></i>
             </button>
         </div>
-        <form action="{{ $activeReport ? route('assessment-report.update', $activeReport->id) : route('assessment-report.store') }}" method="POST" hx-boost="false" data-hx-boost="false" class="px-5 py-4">
+        <form action="{{ $activeReport ? route('assessment-report.update', $activeReport->id) : route('assessment-report.store') }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="px-5 py-4">
             @csrf
             @if($activeReport) @method('PUT') @endif
             <input type="hidden" name="id_karyawan" value="{{ $karyawan->id }}">
@@ -429,7 +429,6 @@
 }
 </style>
 @endsection
-
 
 
 

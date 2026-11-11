@@ -33,9 +33,15 @@
             
             <!-- Navigation -->
             <nav class="mt-2 flex flex-col gap-1 pb-4">
-                <a href="{{ route('dashboard') ?? 'javascript:void(0);' }}" class="menu-3d flex items-center font-medium text-sm {{ request()->routeIs('dashboard') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600' }}" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
+                @if(strtolower(auth()->user()->role ?? '') === 'admin')
+                <a href="{{ route('dashboard') }}" class="menu-3d flex items-center font-medium text-sm {{ request()->routeIs('dashboard') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600' }}" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
                     <i class="fas fa-border-all w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Dashboard HC</span>
                 </a>
+                @else
+                <a href="{{ route('user.dashboard') }}" class="menu-3d flex items-center font-medium text-sm {{ request()->routeIs('user.dashboard') ? 'sidebar-active text-[#0284c7]' : 'text-gray-600' }}" :class="sidebarCollapsed ? 'justify-center !px-0 !mx-auto w-11 h-11 mb-1' : 'gap-3'">
+                    <i class="fas fa-border-all w-5 text-center text-lg"></i> <span x-show="!sidebarCollapsed" class="whitespace-nowrap">Dashboard HC</span>
+                </a>
+                @endif
                 
                 @if(strtolower(auth()->user()->role ?? '') === 'admin')
                 @can('lihat_karyawan')
@@ -87,11 +93,15 @@
                         @if(strtolower(auth()->user()->role ?? '') !== 'admin')
                             <a href="{{ route('user-idp.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('user-idp*') ? 'active font-bold' : '' }}"><i class="fas fa-bullseye"></i> IDP</a>
                         @endif
+                        @if(strtolower(auth()->user()->role ?? '') === 'admin')
                         @can('lihat_training')
                             <a href="{{ route('training.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('training*') ? 'active font-bold' : '' }}"><i class="fas fa-graduation-cap"></i> Training</a>
-                        @else
-                            <a href="{{ route('user-training.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('user-training*') ? 'active font-bold' : '' }}"><i class="fas fa-graduation-cap"></i> Training</a>
                         @endcan
+                        @endif
+
+                        @if(strtolower(auth()->user()->role ?? '') !== 'admin')
+                            <a href="{{ route('user-training.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('user-training*') ? 'active font-bold' : '' }}"><i class="fas fa-graduation-cap"></i> Training</a>
+                        @endif
                         @if(strtolower(auth()->user()->role ?? '') === 'admin')
                         @can('lihat_certification')
                             <a href="{{ route('certification.index') }}" class="submenu-3d flex items-center gap-2 {{ request()->is('certification*') ? 'active font-bold' : '' }}"><i class="fas fa-certificate"></i> Certification</a>

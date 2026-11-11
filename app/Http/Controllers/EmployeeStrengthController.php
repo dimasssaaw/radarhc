@@ -26,6 +26,12 @@ class EmployeeStrengthController extends Controller implements HasMiddleware
 
         EmployeeStrength::create($request->all());
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Strength & Weakness data added successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
+
         return back()->with('success', 'Strength & Weakness data added successfully.');
     }
 
@@ -39,6 +45,12 @@ class EmployeeStrengthController extends Controller implements HasMiddleware
         $item = EmployeeStrength::findOrFail($id);
         $item->update($request->only(['strength', 'weakness']));
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Strength & Weakness data updated successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
+
         return back()->with('success', 'Strength & Weakness data updated successfully.');
     }
 
@@ -46,6 +58,12 @@ class EmployeeStrengthController extends Controller implements HasMiddleware
     {
         $item = EmployeeStrength::findOrFail($id);
         $item->delete();
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', 'Strength & Weakness data deleted successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
 
         return back()->with('success', 'Strength & Weakness data deleted successfully.');
     }

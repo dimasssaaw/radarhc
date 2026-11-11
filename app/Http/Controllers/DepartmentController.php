@@ -37,7 +37,15 @@ class DepartmentController extends Controller implements HasMiddleware
 
         Department::create($validated);
 
-        return redirect()->route('department.index')->with('success', 'Department added successfully.');
+        $msg = 'Department added successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Location', route('department.index'));
+        }
+
+        return redirect()->route('department.index')->with('success', $msg);
     }
 
     /**
@@ -63,7 +71,15 @@ class DepartmentController extends Controller implements HasMiddleware
 
         $department->update($validated);
 
-        return redirect()->route('department.index')->with('success', 'Department updated successfully.');
+        $msg = 'Department updated successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Location', route('department.index'));
+        }
+
+        return redirect()->route('department.index')->with('success', $msg);
     }
 
     /**
@@ -75,11 +91,27 @@ class DepartmentController extends Controller implements HasMiddleware
 
         // Prevent deletion if employees are still associated with this department
         if ($department->karyawan()->count() > 0) {
-            return redirect()->route('department.index')->with('error', 'Department cannot be deleted because there are still employees associated with it.');
+            $errorMsg = 'Department cannot be deleted because there are still employees associated with it.';
+            if (request()->header('HX-Request')) {
+                session()->flash('error', $errorMsg);
+
+                return response('', 200)
+                    ->header('HX-Location', route('department.index'));
+            }
+
+            return redirect()->route('department.index')->with('error', $errorMsg);
         }
 
         $department->delete();
 
-        return redirect()->route('department.index')->with('success', 'Department deleted successfully.');
+        $msg = 'Department deleted successfully.';
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Location', route('department.index'));
+        }
+
+        return redirect()->route('department.index')->with('success', $msg);
     }
 }

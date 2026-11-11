@@ -41,7 +41,14 @@ class RoleController extends Controller implements HasMiddleware
 
         Role::create(['name' => $validated['name']]);
 
-        return redirect()->route('role.index')->with('success', 'Role added successfully.');
+        $msg = 'Role added successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('role.index'));
+        }
+
+        return redirect()->route('role.index')->with('success', $msg);
     }
 
     public function show(string $id)
@@ -67,7 +74,14 @@ class RoleController extends Controller implements HasMiddleware
 
         $role->update(['name' => $validated['name']]);
 
-        return redirect()->route('role.index')->with('success', 'Role updated successfully.');
+        $msg = 'Role updated successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('role.index'));
+        }
+
+        return redirect()->route('role.index')->with('success', $msg);
     }
 
     public function destroy(string $id)
@@ -77,6 +91,13 @@ class RoleController extends Controller implements HasMiddleware
         // Prevent deletion if used? There is no relation set up yet, but we can just delete
         $role->delete();
 
-        return redirect()->route('role.index')->with('success', 'Role deleted successfully.');
+        $msg = 'Role deleted successfully.';
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('role.index'));
+        }
+
+        return redirect()->route('role.index')->with('success', $msg);
     }
 }

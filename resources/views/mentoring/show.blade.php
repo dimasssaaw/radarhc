@@ -255,7 +255,7 @@
             }" 
             class="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-gray-200">
             
-            <form action="{{ $actionUrl }}" method="POST" hx-boost="false">
+            <form action="{{ $actionUrl }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true">
                 @csrf
 
                 <!-- Header Banner -->
@@ -413,7 +413,7 @@
                 </button>
             </div>
             
-            <form action="{{ !empty($mentoring->id) ? route('mentoring.update-info', $mentoring->id) : route('mentoring.update-employee-info', $mentoring->karyawan->id) }}" method="POST" hx-boost="false" class="flex flex-col overflow-hidden">
+            <form action="{{ !empty($mentoring->id) ? route('mentoring.update-info', $mentoring->id) : route('mentoring.update-employee-info', $mentoring->karyawan->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col overflow-hidden">
                 @csrf
                 
                 <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
@@ -490,7 +490,7 @@
                 </button>
             </div>
             
-            <form action="{{ !empty($mentoring->id) ? route('mentoring.update-progress', $mentoring->id) : route('mentoring.update-employee-progress', $mentoring->karyawan->id) }}" method="POST" hx-boost="false" class="flex flex-col">
+            <form action="{{ !empty($mentoring->id) ? route('mentoring.update-progress', $mentoring->id) : route('mentoring.update-employee-progress', $mentoring->karyawan->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col">
                 @csrf
                 
                 <div class="bg-white px-5 py-3 sm:px-6 space-y-2.5 max-h-[50vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
@@ -523,4 +523,3 @@
 </div>
 @endpush
 @endsection
-

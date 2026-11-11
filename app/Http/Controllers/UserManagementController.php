@@ -30,11 +30,12 @@ class UserManagementController extends Controller implements HasMiddleware
         $users = User::when($search, function ($query, $search) {
             return $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('npk', 'like', "%{$search}%");
             });
         })
             ->when($role, function ($query, $role) {
-                return $query->where('role', $role);
+                return $query->whereRaw('LOWER(role) = ?', [strtolower($role)]);
             })
             ->when($status, function ($query, $status) {
                 return $query->where('status', $status);
@@ -42,7 +43,9 @@ class UserManagementController extends Controller implements HasMiddleware
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('user-management.index', compact('users', 'search', 'role', 'status'));
+        $dbRoles = Role::orderBy('name')->get();
+
+        return view('user-management.index', compact('users', 'search', 'role', 'status', 'dbRoles'));
     }
 
     public function create(Request $request)
@@ -54,11 +57,12 @@ class UserManagementController extends Controller implements HasMiddleware
         $users = User::when($search, function ($query, $search) {
             return $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('npk', 'like', "%{$search}%");
             });
         })
             ->when($role, function ($query, $role) {
-                return $query->where('role', $role);
+                return $query->whereRaw('LOWER(role) = ?', [strtolower($role)]);
             })
             ->when($status, function ($query, $status) {
                 return $query->where('status', $status);
@@ -88,6 +92,7 @@ class UserManagementController extends Controller implements HasMiddleware
         $data['password'] = bcrypt($data['password']);
 
         $user = User::create($data);
+        $user->syncRoles([$data['role']]);
 
         // Sync direct permissions if provided
         $permissionsToSync = [];
@@ -103,13 +108,20 @@ class UserManagementController extends Controller implements HasMiddleware
         }
         $user->syncPermissions($permissionsToSync);
 
+        $msg = 'User added successfully and notification email has been sent.';
         try {
             Mail::to($user->email)->send(new UserAccountCreated($user, $rawPassword));
         } catch (\Exception $e) {
-            return redirect()->route('user-management.index')->with('success', 'User added successfully, but email failed to send (Check SMTP configuration).');
+            $msg = 'User added successfully, but email failed to send (Check SMTP configuration).';
         }
 
-        return redirect()->route('user-management.index')->with('success', 'User added successfully and notification email has been sent.');
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('user-management.index'));
+        }
+
+        return redirect()->route('user-management.index')->with('success', $msg);
     }
 
     public function edit($id, Request $request)
@@ -121,11 +133,12 @@ class UserManagementController extends Controller implements HasMiddleware
         $users = User::when($search, function ($query, $search) {
             return $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('npk', 'like', "%{$search}%");
             });
         })
             ->when($role, function ($query, $role) {
-                return $query->where('role', $role);
+                return $query->whereRaw('LOWER(role) = ?', [strtolower($role)]);
             })
             ->when($status, function ($query, $status) {
                 return $query->where('status', $status);
@@ -159,6 +172,10 @@ class UserManagementController extends Controller implements HasMiddleware
             'password' => 'nullable|string|min:8',
         ]);
 
+        if ($user_management->id === auth()->id() && $request->input('status') === 'nonaktif') {
+            return redirect()->back()->with('error', 'You cannot deactivate your own account.')->withInput();
+        }
+
         $data = $request->except('modal');
         $isPasswordChanged = false;
         $rawPassword = null;
@@ -172,6 +189,7 @@ class UserManagementController extends Controller implements HasMiddleware
         }
 
         $user_management->update($data);
+        $user_management->syncRoles([$data['role']]);
 
         // Sync direct permissions
         $permissionsToSync = [];
@@ -187,24 +205,46 @@ class UserManagementController extends Controller implements HasMiddleware
         }
         $user_management->syncPermissions($permissionsToSync);
 
-        // Send reset email if password was changed
+        $msg = 'User updated successfully.';
         if ($isPasswordChanged) {
             try {
                 Mail::to($user_management->email)->send(new UserPasswordReset($user_management, $rawPassword));
-
-                return redirect()->route('user-management.index')->with('success', 'User updated successfully and new password notification has been sent to employee\'s email.');
+                $msg = 'User updated successfully and new password notification has been sent to employee\'s email.';
             } catch (\Exception $e) {
-                return redirect()->route('user-management.index')->with('success', 'User updated successfully, but reset password email failed to send (Check SMTP configuration).');
+                $msg = 'User updated successfully, but reset password email failed to send (Check SMTP configuration).';
             }
         }
 
-        return redirect()->route('user-management.index')->with('success', 'User updated successfully.');
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', route('user-management.index'));
+        }
+
+        return redirect()->route('user-management.index')->with('success', $msg);
     }
 
     public function destroy($id)
     {
         $user_management = User::findOrFail($id);
+
+        if ($user_management->id === auth()->id()) {
+            if (request()->header('HX-Request')) {
+                session()->flash('error', 'You cannot delete your own account.');
+
+                return response('', 200)->header('HX-Location', route('user-management.index'));
+            }
+
+            return redirect()->route('user-management.index')->with('error', 'You cannot delete your own account.');
+        }
+
         $user_management->delete();
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', 'User deleted successfully.');
+
+            return response('', 200)->header('HX-Location', route('user-management.index'));
+        }
 
         return redirect()->route('user-management.index')->with('success', 'User deleted successfully.');
     }

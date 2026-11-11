@@ -178,13 +178,18 @@ class AssessmentReportController extends Controller implements HasMiddleware
             $report->save();
         }
 
-        if ($request->has('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Assessment report data added successfully.');
+        $msg = 'Assessment report data added successfully.';
+        $targetUrl = $request->has('redirect_to') && ! empty($request->redirect_to)
+            ? $request->redirect_to
+            : route($isAdmin ? 'assessment-report.index' : 'user-assessment-report.index');
+
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
-
-        return redirect()->route($indexRoute)->with('success', 'Assessment report data added successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function showEmployee($employee_id)
@@ -346,13 +351,18 @@ class AssessmentReportController extends Controller implements HasMiddleware
             $report->save();
         }
 
-        if ($request->has('redirect_to')) {
-            return redirect($request->redirect_to)->with('success', 'Assessment report data updated successfully.');
+        $msg = 'Assessment report data updated successfully.';
+        $targetUrl = $request->has('redirect_to') && ! empty($request->redirect_to)
+            ? $request->redirect_to
+            : route($isAdmin ? 'assessment-report.index' : 'user-assessment-report.index');
+
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
-
-        return redirect()->route($indexRoute)->with('success', 'Assessment report data updated successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function destroy($id)
@@ -369,13 +379,18 @@ class AssessmentReportController extends Controller implements HasMiddleware
 
         $report->delete();
 
-        if (request()->has('redirect_to')) {
-            return redirect(request('redirect_to'))->with('success', 'Assessment report data deleted successfully.');
+        $msg = 'Assessment report data deleted successfully.';
+        $targetUrl = request()->has('redirect_to') && ! empty(request('redirect_to'))
+            ? request('redirect_to')
+            : route($isAdmin ? 'assessment-report.index' : 'user-assessment-report.index');
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)->header('HX-Location', $targetUrl);
         }
 
-        $indexRoute = $isAdmin ? 'assessment-report.index' : 'user-assessment-report.index';
-
-        return redirect()->route($indexRoute)->with('success', 'Assessment report data deleted successfully.');
+        return redirect($targetUrl)->with('success', $msg);
     }
 
     public function updateSelectedCharts(Request $request, $id)

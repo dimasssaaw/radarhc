@@ -121,6 +121,12 @@ class CertificationController extends Controller implements HasMiddleware
 
         $certification->save();
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Certification added successfully.');
+
+            return response('', 200)->header('HX-Location', route('certification.show', $employee_id));
+        }
+
         return redirect()->back()->with('success', 'Certification added successfully.');
     }
 
@@ -173,6 +179,12 @@ class CertificationController extends Controller implements HasMiddleware
 
         $certification->save();
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Certification updated successfully.');
+
+            return response('', 200)->header('HX-Location', route('certification.show', $certification->id_karyawan));
+        }
+
         return redirect()->back()->with('success', 'Certification updated successfully.');
     }
 
@@ -194,6 +206,12 @@ class CertificationController extends Controller implements HasMiddleware
         }
 
         $certification->delete();
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', 'Certification deleted successfully.');
+
+            return response('', 200)->header('HX-Location', route('certification.show', $certification->id_karyawan));
+        }
 
         return redirect()->back()->with('success', 'Certification deleted successfully.');
     }

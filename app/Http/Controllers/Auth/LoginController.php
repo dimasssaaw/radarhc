@@ -29,6 +29,18 @@ class LoginController extends Controller
                 ->onlyInput('npk');
         }
 
+        $user = Auth::user();
+
+        if (strtolower((string) $user->status) !== 'aktif') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()
+                ->withErrors(['npk' => 'Akun Anda berstatus nonaktif. Silakan hubungi administrator.'])
+                ->onlyInput('npk');
+        }
+
         $request->session()->regenerate();
 
         // Update last login time

@@ -213,7 +213,7 @@
                         </a>
                         @endcan
                         @can('hapus_assessment')
-                        <form action="{{ route('assessment-report.destroy', $report->id) }}" method="POST" hx-boost="false" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this year\'s Assessment Report data?');">
+                        <form action="{{ route('assessment-report.destroy', $report->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this year\'s Assessment Report data?');">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="redirect_to" value="{{ url()->current() }}">

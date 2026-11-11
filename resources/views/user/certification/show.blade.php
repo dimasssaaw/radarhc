@@ -118,7 +118,7 @@
                             
                             <!-- Delete -->
                             @can('hapus_certification')
-                            <form action="{{ route('certification.destroy', $cert->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this certification?');">
+                            <form action="{{ route('certification.destroy', $cert->id) }}" method="POST" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this certification?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-gray-400 hover:text-red-600 border border-gray-200 p-1.5 rounded-md hover:bg-red-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5" title="Delete">
@@ -166,7 +166,7 @@
             </button>
         </div>
         
-        <form action="{{ route('certification.store', $employee->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden">
+        <form action="{{ route('certification.store', $employee->id) }}" method="POST" enctype="multipart/form-data" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden">
             @csrf
             
             <!-- Body -->
@@ -232,7 +232,7 @@
             </button>
         </div>
         
-        <form id="editForm" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden">
+        <form id="editForm" method="POST" enctype="multipart/form-data" hx-target="body" hx-swap="innerHTML" hx-push-url="true" class="flex flex-col flex-1 overflow-hidden">
             @csrf
             @method('PUT')
             
@@ -431,4 +431,3 @@
     }
 </script>
 @endpush
-

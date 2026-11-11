@@ -26,6 +26,12 @@ class EmployeeViaCharacterController extends Controller implements HasMiddleware
 
         EmployeeViaCharacter::create($request->all());
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Via Character data added successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
+
         return back()->with('success', 'Via Character data added successfully.');
     }
 
@@ -39,6 +45,12 @@ class EmployeeViaCharacterController extends Controller implements HasMiddleware
         $item = EmployeeViaCharacter::findOrFail($id);
         $item->update($request->only(['overuse_strength', 'underuse_strength']));
 
+        if ($request->header('HX-Request')) {
+            session()->flash('success', 'Via Character data updated successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
+
         return back()->with('success', 'Via Character data updated successfully.');
     }
 
@@ -46,6 +58,12 @@ class EmployeeViaCharacterController extends Controller implements HasMiddleware
     {
         $item = EmployeeViaCharacter::findOrFail($id);
         $item->delete();
+
+        if (request()->header('HX-Request')) {
+            session()->flash('success', 'Via Character data deleted successfully.');
+
+            return response('', 200)->header('HX-Location', url()->previous());
+        }
 
         return back()->with('success', 'Via Character data deleted successfully.');
     }

@@ -7,6 +7,7 @@ use App\Models\IdpCompetencyGroup;
 use App\Models\Position;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
@@ -28,6 +29,26 @@ class MasterIdpController extends Controller implements HasMiddleware
         ];
     }
 
+    private function hxOrRedirect(Request $request, string $msg, ?string $activePosition = null): Response|RedirectResponse
+    {
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+            if (! empty($activePosition)) {
+                session()->flash('active_position', $activePosition);
+            }
+
+            return response('', 200)
+                ->header('HX-Redirect', route('master-idp.index'));
+        }
+
+        $redirect = redirect()->route('master-idp.index')->with('success', $msg);
+        if (! empty($activePosition)) {
+            $redirect->with('active_position', $activePosition);
+        }
+
+        return $redirect;
+    }
+
     /**
      * Display listing of IDP competency groups and competencies.
      */
@@ -47,7 +68,7 @@ class MasterIdpController extends Controller implements HasMiddleware
     /**
      * Store a newly created competency group (chart title).
      */
-    public function storeGroup(Request $request): RedirectResponse
+    public function storeGroup(Request $request): Response|RedirectResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -60,15 +81,13 @@ class MasterIdpController extends Controller implements HasMiddleware
 
         IdpCompetencyGroup::create($validated);
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $validated['target_position'])
-            ->with('success', 'Kelompok Chart IDP berhasil ditambahkan.');
+        return $this->hxOrRedirect($request, 'Kelompok Chart IDP berhasil ditambahkan.', $validated['target_position']);
     }
 
     /**
      * Copy an existing competency group and all its competencies to a target position.
      */
-    public function copyGroup(Request $request): RedirectResponse
+    public function copyGroup(Request $request): Response|RedirectResponse
     {
         $validated = $request->validate([
             'source_group_id' => 'required|exists:idp_competency_groups,id',
@@ -95,15 +114,13 @@ class MasterIdpController extends Controller implements HasMiddleware
             ]);
         }
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $validated['target_position'])
-            ->with('success', "Chart '{$sourceGroup->title}' beserta seluruh kompetensinya berhasil disalin ke jabatan ".ucwords($validated['target_position']).'.');
+        return $this->hxOrRedirect($request, "Chart '{$sourceGroup->title}' beserta seluruh kompetensinya berhasil disalin ke jabatan ".ucwords($validated['target_position']).'.', $validated['target_position']);
     }
 
     /**
      * Update the specified competency group.
      */
-    public function updateGroup(Request $request, int|string $id): RedirectResponse
+    public function updateGroup(Request $request, int|string $id): Response|RedirectResponse
     {
         $group = IdpCompetencyGroup::findOrFail($id);
 
@@ -115,29 +132,25 @@ class MasterIdpController extends Controller implements HasMiddleware
 
         $group->update($validated);
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $validated['target_position'])
-            ->with('success', 'Kelompok Chart IDP berhasil diperbarui.');
+        return $this->hxOrRedirect($request, 'Kelompok Chart IDP berhasil diperbarui.', $validated['target_position']);
     }
 
     /**
      * Remove the specified competency group.
      */
-    public function destroyGroup(int|string $id): RedirectResponse
+    public function destroyGroup(Request $request, int|string $id): Response|RedirectResponse
     {
         $group = IdpCompetencyGroup::findOrFail($id);
         $targetPos = $group->target_position;
         $group->delete();
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $targetPos)
-            ->with('success', 'Kelompok Chart IDP dan seluruh kompetensi di dalamnya berhasil dihapus.');
+        return $this->hxOrRedirect($request, 'Kelompok Chart IDP dan seluruh kompetensi di dalamnya berhasil dihapus.', $targetPos);
     }
 
     /**
      * Store a newly created competency under a specific group.
      */
-    public function storeCompetency(Request $request, int|string $groupId): RedirectResponse
+    public function storeCompetency(Request $request, int|string $groupId): Response|RedirectResponse
     {
         $group = IdpCompetencyGroup::findOrFail($groupId);
 
@@ -154,15 +167,13 @@ class MasterIdpController extends Controller implements HasMiddleware
 
         IdpCompetency::create($validated);
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $group->target_position)
-            ->with('success', "Kompetensi berhasil ditambahkan ke chart '{$group->title}'.");
+        return $this->hxOrRedirect($request, "Kompetensi berhasil ditambahkan ke chart '{$group->title}'.", $group->target_position);
     }
 
     /**
      * Update the specified competency.
      */
-    public function updateCompetency(Request $request, int|string $id): RedirectResponse
+    public function updateCompetency(Request $request, int|string $id): Response|RedirectResponse
     {
         $competency = IdpCompetency::with('group')->findOrFail($id);
 
@@ -175,22 +186,18 @@ class MasterIdpController extends Controller implements HasMiddleware
 
         $competency->update($validated);
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $competency->group?->target_position)
-            ->with('success', 'Kompetensi berhasil diperbarui.');
+        return $this->hxOrRedirect($request, 'Kompetensi berhasil diperbarui.', $competency->group?->target_position);
     }
 
     /**
      * Remove the specified competency.
      */
-    public function destroyCompetency(int|string $id): RedirectResponse
+    public function destroyCompetency(Request $request, int|string $id): Response|RedirectResponse
     {
         $competency = IdpCompetency::with('group')->findOrFail($id);
         $targetPos = $competency->group?->target_position;
         $competency->delete();
 
-        return redirect()->route('master-idp.index')
-            ->with('active_position', $targetPos)
-            ->with('success', 'Kompetensi berhasil dihapus.');
+        return $this->hxOrRedirect($request, 'Kompetensi berhasil dihapus.', $targetPos);
     }
 }

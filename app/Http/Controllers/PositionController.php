@@ -37,7 +37,15 @@ class PositionController extends Controller implements HasMiddleware
 
         Position::create($validated);
 
-        return redirect()->route('position.index')->with('success', 'Position added successfully.');
+        $msg = 'Position added successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Location', route('position.index'));
+        }
+
+        return redirect()->route('position.index')->with('success', $msg);
     }
 
     /**
@@ -53,7 +61,15 @@ class PositionController extends Controller implements HasMiddleware
 
         $position->update($validated);
 
-        return redirect()->route('position.index')->with('success', 'Position updated successfully.');
+        $msg = 'Position updated successfully.';
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Location', route('position.index'));
+        }
+
+        return redirect()->route('position.index')->with('success', $msg);
     }
 
     /**
@@ -65,11 +81,27 @@ class PositionController extends Controller implements HasMiddleware
 
         // Prevent deletion if employees are still associated with this position
         if ($position->karyawan()->count() > 0) {
-            return redirect()->route('position.index')->with('error', 'Position cannot be deleted because there are still employees associated with it.');
+            $errorMsg = 'Position cannot be deleted because there are still employees associated with it.';
+            if (request()->header('HX-Request')) {
+                session()->flash('error', $errorMsg);
+
+                return response('', 200)
+                    ->header('HX-Location', route('position.index'));
+            }
+
+            return redirect()->route('position.index')->with('error', $errorMsg);
         }
 
         $position->delete();
 
-        return redirect()->route('position.index')->with('success', 'Position deleted successfully.');
+        $msg = 'Position deleted successfully.';
+        if (request()->header('HX-Request')) {
+            session()->flash('success', $msg);
+
+            return response('', 200)
+                ->header('HX-Location', route('position.index'));
+        }
+
+        return redirect()->route('position.index')->with('success', $msg);
     }
 }
